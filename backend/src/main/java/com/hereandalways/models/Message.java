@@ -32,14 +32,13 @@ public class Message {
 
   // Relationships
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "legacy_owner_id", nullable = false)
-  foreignKey = @ForeignKey(name = "fk_message_legacy_owner")
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "legacy_owner_id", nullable = false, foreignKey = @ForeignKey(name = "fk_message_legacy_owner"))
   private User legacyOwner;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "trustee_id", nullable = false)
-  foreignKey = @ForeignKey(name = "fk_message_trustee")
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "trustee_id", foreignKey = @ForeignKey(name = "fk_message_trustee"), nullable = true)
+  
   private User trustee;
 
   // Callbacks

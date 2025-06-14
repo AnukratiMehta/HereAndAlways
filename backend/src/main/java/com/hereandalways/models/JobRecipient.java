@@ -30,12 +30,21 @@ public class JobRecipient {
     // Relationships
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_id", nullable = false)
-    private ScheduledJob job;
+@JoinColumn(
+    name = "job_id",
+    nullable = false,
+    foreignKey = @ForeignKey(name = "fk_jobrecipient_job")
+)
+private ScheduledJob job;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trustee_id")
-    private User trustee; // Null until registration
+@ManyToOne(fetch = FetchType.LAZY, optional = true)
+@JoinColumn(
+    name = "trustee_id",
+    nullable = true,
+    foreignKey = @ForeignKey(name = "fk_jobrecipient_trustee")
+)
+private User trustee;
+
 
     //  Callback
 
