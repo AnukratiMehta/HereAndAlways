@@ -36,16 +36,21 @@ public class LegacyOwnerTrustee {
   @JoinColumn(name = "trustee_id", nullable = false, foreignKey = @ForeignKey(name = "fk_trustee"))
   private User trustee;
 
+  // Callbacks
+
   @PrePersist
   protected void onCreate() {
-    this.invitedAt = LocalDateTime.now(); // Auto-set invite time
+    this.invitedAt = LocalDateTime.now();
   }
 
-  // Runs only on updates
   @PreUpdate
   protected void onUpdate() {
     if (this.status == TrusteeStatus.APPROVED && this.approvedAt == null) {
       this.approvedAt = LocalDateTime.now();
     }
   }
+
+  //   Constructor
+
+public LegacyOwnerTrustee() {}
 }

@@ -60,4 +60,8 @@ public class User {
   // Cascade and OrphanRemoval not needed here because this is an inverse relationship.
   // We only need it for parents.
   private List<LegacyOwnerTrustee> trustedBy = new ArrayList<>();
+
+  //   Constructor
+
+public User() {}
 }
