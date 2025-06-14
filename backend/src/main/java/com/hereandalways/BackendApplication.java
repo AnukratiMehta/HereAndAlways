@@ -1,4 +1,4 @@
-package com.hereandalways.backend;
+package com.hereandalways;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

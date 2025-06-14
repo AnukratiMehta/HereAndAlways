@@ -39,12 +39,16 @@ public class User {
 
      
     // JPA lifecycle callbacks
+
+    // Runs only on first save
     @PrePersist
      protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
      }
- 
+
+
+    // Runs only on updates
      @PreUpdate
      protected void onUpdate() {
         updatedAt = LocalDateTime.now();
