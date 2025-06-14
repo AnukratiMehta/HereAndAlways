@@ -1,0 +1,17 @@
+# === ROOT-LEVEL IGNORES (GLOBAL) ===
+# OS metadata
+.DS_Store
+*.swp
+
+# Environment files
+.env
+.env.local
+*.env
+
+# System files
+Thumbs.db
+
+# IDE - Global overrides (supersedes project-specific IDE rules)
+.idea/workspace.xml
+.idea/modules.xml
+.vscode/launch.json
