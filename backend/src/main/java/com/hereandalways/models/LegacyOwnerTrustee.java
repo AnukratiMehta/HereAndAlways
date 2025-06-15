@@ -52,5 +52,5 @@ public class LegacyOwnerTrustee {
 
   //   Constructor
 
-public LegacyOwnerTrustee() {}
+  public LegacyOwnerTrustee() {}
 }

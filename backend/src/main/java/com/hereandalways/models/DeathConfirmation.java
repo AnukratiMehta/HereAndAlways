@@ -1,51 +1,48 @@
 package com.hereandalways.models;
 
+import com.hereandalways.models.enums.ConfirmationStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import com.hereandalways.models.enums.ConfirmationStatus;
 
 @Entity
 @Table(name = "death_confirmation")
 public class DeathConfirmation {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  private UUID id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "confirmation_status", nullable = false)
-    private ConfirmationStatus status = ConfirmationStatus.PENDING;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "confirmation_status", nullable = false)
+  private ConfirmationStatus status = ConfirmationStatus.PENDING;
 
-    @Column(name = "confirmed_at")
-    private LocalDateTime confirmedAt;
+  @Column(name = "confirmed_at")
+  private LocalDateTime confirmedAt;
 
-    // Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "legacy_owner_id",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "fk_death_confirmation_owner")
-    )
-    private User legacyOwner;
+  // Relationships
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "legacy_owner_id",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "fk_death_confirmation_owner"))
+  private User legacyOwner;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-        name = "trustee_id",
-        nullable = false,
-        foreignKey = @ForeignKey(name = "fk_death_confirmation_trustee")
-    )
-    private User trustee;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "trustee_id",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "fk_death_confirmation_trustee"))
+  private User trustee;
 
-    // Callback
-    @PreUpdate
-    protected void onUpdate() {
-        if (this.status == ConfirmationStatus.CONFIRMED && this.confirmedAt == null) {
-            this.confirmedAt = LocalDateTime.now();
-        }
+  // Callback
+  @PreUpdate
+  protected void onUpdate() {
+    if (this.status == ConfirmationStatus.CONFIRMED && this.confirmedAt == null) {
+      this.confirmedAt = LocalDateTime.now();
     }
+  }
 
-    // Constructor
-    public DeathConfirmation() {}
-
+  // Constructor
+  public DeathConfirmation() {}
 }

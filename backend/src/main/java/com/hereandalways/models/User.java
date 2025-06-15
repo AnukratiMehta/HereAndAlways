@@ -35,10 +35,10 @@ public class User {
   private LocalDateTime updatedAt;
 
   @Column(name = "is_external_trustee", nullable = false)
-    private boolean isExternalTrustee = false;
-    
+  private boolean isExternalTrustee = false;
+
   @Column(name = "external_trustee_email")
-    private String externalTrusteeEmail; 
+  private String externalTrusteeEmail;
 
   // JPA lifecycle callbacks
 
@@ -69,5 +69,5 @@ public class User {
 
   //   Constructor
 
-public User() {}
+  public User() {}
 }
