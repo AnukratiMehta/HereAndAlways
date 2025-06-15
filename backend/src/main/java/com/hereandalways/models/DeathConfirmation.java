@@ -7,8 +7,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "death_confirmation")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeathConfirmation {
