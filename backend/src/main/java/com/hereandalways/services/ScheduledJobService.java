@@ -1,6 +1,8 @@
 package com.hereandalways.services;
 
 import com.hereandalways.models.*;
+import com.hereandalways.models.enums.JobStatus;
+import com.hereandalways.models.enums.RecipientStatus;
 import com.hereandalways.repositories.*;
 import java.time.LocalDateTime;
 import java.util.*;

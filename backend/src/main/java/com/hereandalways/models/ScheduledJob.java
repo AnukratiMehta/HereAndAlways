@@ -8,6 +8,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "scheduled_job")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ScheduledJob {
 
   @Id
@@ -93,7 +97,4 @@ public class ScheduledJob {
         break;
     }
   }
-
-  // Constructors
-  public ScheduledJob() {}
 }

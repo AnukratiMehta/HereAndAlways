@@ -7,6 +7,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "digital_asset")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DigitalAsset {
 
   @Id
@@ -44,7 +48,4 @@ public class DigitalAsset {
   protected void onCreate() {
     this.createdAt = LocalDateTime.now();
   }
-
-  // Constructor
-  public DigitalAsset() {}
 }

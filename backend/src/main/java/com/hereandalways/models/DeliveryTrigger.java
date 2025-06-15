@@ -7,6 +7,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "delivery_trigger")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DeliveryTrigger {
 
   @Id
@@ -42,6 +46,4 @@ public class DeliveryTrigger {
   protected void onCreate() {
     this.createdAt = LocalDateTime.now();
   }
-
-  public DeliveryTrigger() {}
 }

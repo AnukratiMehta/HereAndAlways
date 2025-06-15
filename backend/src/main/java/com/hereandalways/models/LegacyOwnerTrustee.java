@@ -7,6 +7,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "legacy_owner_trustee")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class LegacyOwnerTrustee {
 
   @Id
@@ -49,8 +53,4 @@ public class LegacyOwnerTrustee {
       this.approvedAt = LocalDateTime.now();
     }
   }
-
-  //   Constructor
-
-  public LegacyOwnerTrustee() {}
 }

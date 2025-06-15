@@ -7,6 +7,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "messages")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Message {
 
   @Id
@@ -52,8 +56,4 @@ public class Message {
   protected void onCreate() {
     createdAt = LocalDateTime.now();
   }
-
-  //   Constructor
-
-  public Message() {}
 }

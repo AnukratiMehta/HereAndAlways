@@ -6,6 +6,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "audit_log")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuditLog {
 
   @Id
@@ -33,7 +37,4 @@ public class AuditLog {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_audit_log_user"))
   private User user;
-
-  // Constructor
-  public AuditLog() {}
 }

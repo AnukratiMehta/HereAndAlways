@@ -7,6 +7,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "death_confirmation")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DeathConfirmation {
 
   @Id
@@ -42,7 +46,4 @@ public class DeathConfirmation {
       this.confirmedAt = LocalDateTime.now();
     }
   }
-
-  // Constructor
-  public DeathConfirmation() {}
 }

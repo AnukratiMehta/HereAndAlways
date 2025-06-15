@@ -6,6 +6,10 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "job_recipient")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class JobRecipient {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -51,8 +55,4 @@ public class JobRecipient {
       this.accessCode = UUID.randomUUID().toString();
     }
   }
-
-  // Constructor
-
-  public JobRecipient() {}
 }
