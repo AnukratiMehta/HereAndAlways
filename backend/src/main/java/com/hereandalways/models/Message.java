@@ -18,11 +18,11 @@ public class Message {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(nullable = "false")
+  @Column(nullable = false)
   private String subject;
 
   @Lob // For large data, better than TEXT
-  @Column(nullable = "false")
+  @Column(nullable = false)
   private String body;
 
   @Enumerated(EnumType.STRING)

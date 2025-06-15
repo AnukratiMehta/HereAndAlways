@@ -26,9 +26,12 @@ public class DeliveryTriggerController {
   }
 
   @PutMapping("/{id}/activate")
-  public ResponseEntity<Void> activateTrigger(@PathVariable UUID id, @RequestParam UUID adminId) {
-    triggerService.activateTrigger(adminId, id);
-    return ResponseEntity.ok().build();
+  public ResponseEntity<Void> activateTrigger(
+      @PathVariable UUID id, 
+      @RequestParam UUID adminId,
+      @RequestParam LocalDateTime triggerDate) {
+      triggerService.activateTrigger(adminId, id, triggerDate);
+      return ResponseEntity.ok().build();
   }
 
   @PutMapping("/{id}/deactivate")
