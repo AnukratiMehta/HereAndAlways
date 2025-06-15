@@ -34,6 +34,12 @@ public class User {
   @Column(name = "updated_at")
   private LocalDateTime updatedAt;
 
+  @Column(name = "is_external_trustee", nullable = false)
+    private boolean isExternalTrustee = false;
+    
+  @Column(name = "external_trustee_email")
+    private String externalTrusteeEmail; 
+
   // JPA lifecycle callbacks
 
   // Runs only on first save
