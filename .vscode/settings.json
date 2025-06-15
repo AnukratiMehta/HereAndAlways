@@ -1,15 +1,4 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "java.compile.nullAnalysis.mode": "automatic",
-    "java.jdt.ls.java.home": "/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home",
-    "java.import.gradle.enabled": false,
-    "java.import.maven.enabled": true,
-    "java.configuration.runtimes": [
-      {
-        "name": "JavaSE-17",
-        "path": "/Library/Java/JavaVirtualMachines/jdk-17.jdk/Contents/Home",
-        "default": true
-      }
-    ]
+  "java.jdt.ls.java.home": ""
   }
   

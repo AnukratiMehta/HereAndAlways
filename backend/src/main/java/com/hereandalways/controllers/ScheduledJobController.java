@@ -1,7 +1,11 @@
 package com.hereandalways.controllers;
 
 import com.hereandalways.models.ScheduledJob;
+import com.hereandalways.models.enums.JobType;
+import com.hereandalways.models.enums.ScheduleType;
 import com.hereandalways.services.ScheduledJobService;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +22,10 @@ public class ScheduledJobController {
   @PostMapping
   public ResponseEntity<ScheduledJob> createJob(
       @RequestParam UUID entityId,
-      @RequestParam String jobType,
+      @RequestParam JobType jobType,
       @RequestParam UUID ownerId,
-      @RequestParam String scheduleType,
-      @RequestParam(required = false) String exactTime,
+      @RequestParam ScheduleType scheduleType,
+      @RequestParam(required = false) LocalDateTime exactTime,
       @RequestParam(required = false) Integer timeOffset,
       @RequestParam List<String> trusteeEmails) {
 
@@ -32,7 +36,7 @@ public class ScheduledJobController {
 
   @PostMapping("/process-death")
   public ResponseEntity<Void> processDeathConfirmation(
-      @RequestParam UUID ownerId, @RequestParam String deathDate) {
+      @RequestParam UUID ownerId, @RequestParam LocalDateTime deathDate) {
 
     jobService.processDeathConfirmation(ownerId, deathDate);
     return ResponseEntity.ok().build();

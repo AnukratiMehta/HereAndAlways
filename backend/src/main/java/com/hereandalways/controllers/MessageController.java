@@ -1,12 +1,14 @@
 package com.hereandalways.controllers;
 
 import com.hereandalways.models.Message;
+import com.hereandalways.models.enums.ScheduleType;
 import com.hereandalways.services.MessageService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/messages")
@@ -26,19 +28,9 @@ public class MessageController {
 
   @PutMapping("/{id}/schedule")
   public ResponseEntity<Void> scheduleDelivery(
-      @PathVariable UUID id, @RequestParam String scheduleType, @RequestParam String deliveryTime) {
+      @PathVariable UUID id, @RequestParam ScheduleType scheduleType, @RequestParam LocalDateTime deliveryTime) {
     messageService.scheduleDelivery(id, scheduleType, deliveryTime);
     return ResponseEntity.ok().build();
   }
 
-  @GetMapping("/owner/{ownerId}")
-  public ResponseEntity<List<Message>> getMessagesByOwner(@PathVariable UUID ownerId) {
-    return ResponseEntity.ok(messageService.getMessagesByOwner(ownerId));
-  }
-
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteMessage(@PathVariable UUID id, @RequestParam UUID ownerId) {
-    messageService.deleteMessage(id, ownerId);
-    return ResponseEntity.noContent().build();
-  }
 }

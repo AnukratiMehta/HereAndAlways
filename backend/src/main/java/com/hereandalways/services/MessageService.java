@@ -42,7 +42,7 @@ public class MessageService {
   }
 
   @Transactional
-  public void scheduleDelivery(
+  public void scheduleDelivery( 
       UUID messageId, ScheduleType scheduleType, LocalDateTime deliveryTime) {
     Message message =
         messageRepo

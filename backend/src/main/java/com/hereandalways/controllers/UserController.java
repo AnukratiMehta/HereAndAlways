@@ -1,7 +1,6 @@
 package com.hereandalways.controllers;
 
 import com.hereandalways.models.User;
-import com.hereandalways.models.enums.UserRole;
 import com.hereandalways.services.UserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -73,8 +72,5 @@ public class UserController {
     return ResponseEntity.ok(userService.findAdmins());
   }
 
-  @GetMapping("/role/{role}")
-  public ResponseEntity<List<User>> getUsersByRole(@PathVariable UserRole role) {
-    return ResponseEntity.ok(userService.findByRole(role));
-  }
+
 }

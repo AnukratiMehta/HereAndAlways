@@ -5,6 +5,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import com.hereandalways.models.enums.RecipientStatus;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 @Entity
 @Table(name = "job_recipient")
 @Getter

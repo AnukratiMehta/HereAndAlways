@@ -2,6 +2,7 @@ package com.hereandalways.services;
 
 import com.hereandalways.exceptions.ConflictException;
 import com.hereandalways.exceptions.NotFoundException;
+import com.hereandalways.models.LegacyOwnerTrustee;
 import com.hereandalways.models.User;
 import com.hereandalways.models.enums.UserRole;
 import com.hereandalways.repositories.UserRepository;
@@ -57,7 +58,7 @@ public class UserService {
 
     // Set default role if not specified
     if (user.getRole() == null) {
-      user.setRole(UserRole.USER);
+      user.setRole(UserRole.LEGACY_OWNER);
     }
 
     // Commit only if all above steps succeed
@@ -130,4 +131,5 @@ public class UserService {
     User user = findById(userId);
     return user.getTrustees().stream().map(LegacyOwnerTrustee::getTrustee).toList();
   }
+
 }

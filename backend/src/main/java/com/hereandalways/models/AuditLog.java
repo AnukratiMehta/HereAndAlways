@@ -6,6 +6,10 @@ import java.util.UUID;
 import com.hereandalways.models.enums.AuditAction;
 import com.hereandalways.models.enums.AuditEntity;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "audit_log")

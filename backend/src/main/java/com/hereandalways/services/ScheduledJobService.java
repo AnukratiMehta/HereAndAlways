@@ -6,17 +6,14 @@ import com.hereandalways.models.enums.RecipientStatus;
 import com.hereandalways.repositories.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.EnumSet;
-import java.util.HashMap;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.UUID;
-import java.time.LocalDateTime;
+
 import com.hereandalways.models.enums.ScheduleType;
 import com.hereandalways.models.enums.JobType;
-
 
 
 @Service
@@ -115,7 +112,7 @@ public class ScheduledJobService {
 
           // Check if delivery should happen immediately
           if (job.getScheduledFor().isBefore(LocalDateTime.now())) {
-            deliverJobContent(job);
+            // deliverJobContent(job);
             job.setStatus(JobStatus.COMPLETED);
             job.setExecutedAt(LocalDateTime.now());
           }
@@ -138,7 +135,7 @@ public class ScheduledJobService {
         jobRepo.findById(jobId).orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
     if (job.getScheduleType() == ScheduleType.ABSOLUTE && job.getStatus() == JobStatus.PENDING) {
-      deliverJobContent(job);
+      // deliverJobContent(job);
       job.setStatus(JobStatus.COMPLETED);
       job.setExecutedAt(LocalDateTime.now());
       jobRepo.save(job);
@@ -185,32 +182,29 @@ public class ScheduledJobService {
    * @return Map containing lists of messages and assets
    */
   @Transactional(readOnly = true)
-  public Map<String, List<?>> getTrusteeContent(UUID trusteeId) {
-    Map<String, List<?>> result = new HashMap<>();
-    result.put("messages", new ArrayList<>());
-    result.put("assets", new ArrayList<>());
+public Map<String, Object> getTrusteeContent(UUID trusteeId) {
+    Map<String, Object> result = new HashMap<>();
+    List<Message> messages = new ArrayList<>();
+    List<DigitalAsset> assets = new ArrayList<>();
+    result.put("messages", messages);
+    result.put("assets", assets);
 
-    // 1. Find all valid access grants
     recipientRepo
         .findByTrusteeIdAndStatus(trusteeId, RecipientStatus.REGISTERED)
-        .forEach(
-            recipient -> {
-              ScheduledJob job = recipient.getJob();
-
-              // 2. Only include if job is completed
-              if (job.getStatus() == JobStatus.COMPLETED) {
+        .forEach(recipient -> {
+            ScheduledJob job = recipient.getJob();
+            
+            if (job.getStatus() == JobStatus.COMPLETED) {
                 if (job.getJobType() == JobType.MESSAGE_DELIVERY) {
-                  messageRepo
-                      .findById(job.getEntityId())
-                      .ifPresent(msg -> result.get("messages").add(msg));
+                    messageRepo.findById(job.getEntityId())
+                        .ifPresent(messages::add); 
                 } else {
-                  assetRepo
-                      .findById(job.getEntityId())
-                      .ifPresent(asset -> result.get("assets").add(asset));
+                    assetRepo.findById(job.getEntityId())
+                        .ifPresent(assets::add); 
                 }
-              }
-            });
+            }
+        });
 
     return result;
-  }
+}
 }

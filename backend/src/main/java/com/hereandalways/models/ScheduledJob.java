@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 @Entity
 @Table(name = "scheduled_job")
 @Getter
@@ -79,11 +83,10 @@ public class ScheduledJob {
   public void calculateDeliveryTime(LocalDateTime triggerDate) {
     switch (this.scheduleType) {
       case RELATIVE_DAYS_AFTER_DEATH:
-      case RELATIVE_DAYS_AFTER_INACTIVITY:
         this.scheduledFor = triggerDate.plusDays(timeOffset);
         break;
 
-      case RELATIVE_WEEKS_AFTER_INACTIVITY:
+      case RELATIVE_WEEKS_AFTER_DEATH:
         this.scheduledFor = triggerDate.plusWeeks(timeOffset);
         break;
 
@@ -93,6 +96,10 @@ public class ScheduledJob {
 
       case RELATIVE_YEARS_AFTER_DEATH:
         this.scheduledFor = triggerDate.plusYears(timeOffset);
+        break;
+
+      case IMMEDIATELY_AFTER_CONFIRMATION:
+        this.scheduledFor = triggerDate;
         break;
 
       case ABSOLUTE:

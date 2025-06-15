@@ -1,6 +1,7 @@
 package com.hereandalways.services;
 
 import com.hereandalways.models.*;
+import com.hereandalways.models.enums.UserRole;
 import com.hereandalways.repositories.LegacyOwnerTrusteeRepository;
 import com.hereandalways.repositories.UserRepository;
 import java.util.List;
@@ -26,8 +27,8 @@ public class LegacyOwnerTrusteeService {
     } else {
       // Create external trustee record
       trustee = new User();
-      trustee.setExternal(true);
-      trustee.setContactEmail(email);
+      trustee.setExternalTrustee(true);
+      trustee.setEmail(email);
       trustee.setRole(UserRole.TRUSTEE);
       trustee = userRepo.save(trustee);
     }

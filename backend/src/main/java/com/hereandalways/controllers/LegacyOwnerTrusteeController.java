@@ -41,7 +41,7 @@ public class LegacyOwnerTrusteeController {
   @DeleteMapping("/{relationshipId}")
   public ResponseEntity<Void> removeTrustee(
       @PathVariable UUID relationshipId, @RequestParam @NotNull UUID ownerId) {
-    trusteeService.removeTrustee(relationshipId, ownerId);
+    trusteeService.removeTrustee(relationshipId);
     return ResponseEntity.noContent().build();
   }
 }
