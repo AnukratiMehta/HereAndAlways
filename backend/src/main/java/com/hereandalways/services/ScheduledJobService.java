@@ -19,20 +19,6 @@ public class ScheduledJobService {
   private final MessageRepository messageRepo;
   private final DigitalAssetRepository assetRepo;
 
-  // ==== JOB SCHEDULING ==== //
-
-  /**
-   * Creates a new scheduled job with flexible timing options.
-   *
-   * @param entityId ID of the Message/DigitalAsset to deliver
-   * @param jobType MESSAGE_DELIVERY or ASSET_TRANSFER
-   * @param ownerId Legacy owner creating the job
-   * @param scheduleType ABSOLUTE or relative timing (e.g., RELATIVE_DAYS_AFTER_DEATH)
-   * @param exactTime Required for ABSOLUTE, null otherwise
-   * @param timeOffset Required for relative schedules, null otherwise
-   * @param trusteeEmails List of trustee emails to receive access
-   * @return The created ScheduledJob
-   */
   @Transactional
   public ScheduledJob createScheduledJob(
       UUID entityId,
