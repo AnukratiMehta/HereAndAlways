@@ -7,6 +7,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.hereandalways.models.enums.AuditEntity;
+import java.time.LocalDateTime;
+
 
 @RestController
 @RequestMapping("/api/audit-logs")
@@ -17,7 +20,7 @@ public class AuditLogController {
 
   @GetMapping("/entity")
   public ResponseEntity<List<AuditLog>> getEntityHistory(
-      @RequestParam String entity, @RequestParam UUID entityId) {
+      @RequestParam AuditEntity entity, @RequestParam UUID entityId) {
     return ResponseEntity.ok(auditLogService.getEntityAuditHistory(entity, entityId));
   }
 
@@ -27,9 +30,9 @@ public class AuditLogController {
     return ResponseEntity.ok(auditLogService.getUserActivity(userId, limit));
   }
 
-  @GetMapping("/date-range")
-  public ResponseEntity<List<AuditLog>> getLogsByDateRange(
-      @RequestParam String start, @RequestParam String end) {
-    return ResponseEntity.ok(auditLogService.getAuditLogsByDateRange(start, end));
-  }
+  // @GetMapping("/date-range")
+  // public ResponseEntity<List<AuditLog>> getLogsByDateRange(
+  //     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start, @RequestParam String end) {
+  //   return ResponseEntity.ok(auditLogService.getAuditLogsByDateRange(start, end));
+  // }
 }

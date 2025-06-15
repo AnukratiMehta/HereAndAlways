@@ -3,6 +3,9 @@ package com.hereandalways.models;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.hereandalways.models.enums.AuditAction;
+import com.hereandalways.models.enums.AuditEntity;
+
 
 @Entity
 @Table(name = "audit_log")

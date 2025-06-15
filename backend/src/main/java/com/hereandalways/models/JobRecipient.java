@@ -3,6 +3,7 @@ package com.hereandalways.models;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.hereandalways.models.enums.RecipientStatus;
 
 @Entity
 @Table(name = "job_recipient")

@@ -9,7 +9,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.EnumSet;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +16,6 @@ public class MessageService {
   private final MessageRepository messageRepo;
   private final UserRepository userRepo;
   private final ScheduledJobService jobService;
-  
 
   @Transactional
   public Message createDraft(UUID ownerId, UUID trusteeId, String subject, String body) {

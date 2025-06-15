@@ -2,11 +2,12 @@ package com.hereandalways.models;
 
 import com.hereandalways.models.enums.JobStatus;
 import com.hereandalways.models.enums.JobType;
+import com.hereandalways.models.enums.ScheduleType;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
-import java.util.ArrayList; 
-import java.util.List; 
 
 @Entity
 @Table(name = "scheduled_job")

@@ -1,12 +1,12 @@
 package com.hereandalways.repositories;
 
 import com.hereandalways.models.User;
+import com.hereandalways.models.enums.UserRole;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
-import java.time.LocalDateTime;
-import com.hereandalways.models.enums.UserRole;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
   // Inherits CRUD methods like save(), findById(), delete(), etc.

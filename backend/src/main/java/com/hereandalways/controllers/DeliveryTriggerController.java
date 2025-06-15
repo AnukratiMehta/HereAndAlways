@@ -7,6 +7,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/triggers")
@@ -27,11 +28,9 @@ public class DeliveryTriggerController {
 
   @PutMapping("/{id}/activate")
   public ResponseEntity<Void> activateTrigger(
-      @PathVariable UUID id, 
-      @RequestParam UUID adminId,
-      @RequestParam LocalDateTime triggerDate) {
-      triggerService.activateTrigger(adminId, id, triggerDate);
-      return ResponseEntity.ok().build();
+      @PathVariable UUID id, @RequestParam UUID adminId, @RequestParam LocalDateTime triggerDate) {
+    triggerService.activateTrigger(adminId, id, triggerDate);
+    return ResponseEntity.ok().build();
   }
 
   @PutMapping("/{id}/deactivate")

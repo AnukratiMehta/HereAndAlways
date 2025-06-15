@@ -1,10 +1,10 @@
 package com.hereandalways.repositories;
 
-import com.hereandalways.models.DigitalTrigger;
+import com.hereandalways.models.DeliveryTrigger;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface DigitalTriggerRepository extends JpaRepository<DigitalTrigger, UUID> {
+public interface DeliveryTriggerRepository extends JpaRepository<DeliveryTrigger, UUID> {
   // Inherits CRUD methods like save(), findById(), delete(), etc.
 
 }
