@@ -8,6 +8,7 @@ import {
   faSignOutAlt,
   faPaperPlane,
   faFilePen,
+  faEye,
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -18,7 +19,8 @@ const icons = {
   settings: faCog,
   logout: faSignOutAlt,
   send: faPaperPlane,
-  save: faFilePen
+  save: faFilePen,
+  eye: faEye,
 };
 
 export { FontAwesomeIcon, icons };

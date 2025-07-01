@@ -4,6 +4,7 @@ import NewMessage from "../components/messages/NewMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../icons/icons";
 import Button from "../components/shared/Button";
+import RecentMessages from "../components/messages/RecentMessages";
 
 const Messages = () => {
   const [showModal, setShowModal] = useState(false);
@@ -18,15 +19,16 @@ const Messages = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Messages</h1>
           <Button
-  onClick={() => setShowModal(true)}
-  variant="primary"
-  icon={icons.send}
-  label="New Message"
-/>
+            onClick={() => setShowModal(true)}
+            variant="primary"
+            icon={icons.send}
+            label="New Message"
+          />
 
         </div>
 
-        {/* Here you could show the message list later */}
+                <RecentMessages ownerId={ownerId} />
+
 
         {showModal && (
           <NewMessage ownerId={ownerId} onClose={() => setShowModal(false)} />

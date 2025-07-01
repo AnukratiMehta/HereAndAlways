@@ -12,4 +12,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findByLegacyOwnerId(UUID legacyOwnerId);
 
     List<Message> findByLegacyOwnerIdAndDeliveryStatus(UUID legacyOwnerId, com.hereandalways.models.enums.DeliveryStatus status);
+
+    List<Message> findByLegacyOwnerIdOrderByLastAccessedAtDesc(UUID ownerId);
+
 }

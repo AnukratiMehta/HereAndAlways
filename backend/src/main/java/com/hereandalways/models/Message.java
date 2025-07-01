@@ -38,6 +38,10 @@ public class Message {
   @Column(name = "scheduled_delivery")
   private LocalDateTime scheduledDelivery;
 
+  @Column(name = "last_accessed_at")
+  private LocalDateTime lastAccessedAt;
+
+
   // Relationships
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -57,7 +61,9 @@ public class Message {
   // Callbacks
 
   @PrePersist
-  protected void onCreate() {
+protected void onCreate() {
     createdAt = LocalDateTime.now();
-  }
+    lastAccessedAt = createdAt;
+}
+
 }

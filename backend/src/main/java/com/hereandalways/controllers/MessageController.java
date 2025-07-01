@@ -20,15 +20,11 @@ public class MessageController {
 
     private final MessageService messageService;
 
-    /**
-     * Create a new message (save as draft or queue to send)
-     */
     @PostMapping("/{ownerId}")
     public ResponseEntity<MessageResponse> createMessage(
             @PathVariable UUID ownerId,
             @RequestBody MessageRequest request
     ) {
-        // default status
         DeliveryStatus status = request.getDeliveryStatus() != null
                 ? DeliveryStatus.valueOf(request.getDeliveryStatus())
                 : DeliveryStatus.DRAFT;
@@ -54,9 +50,6 @@ public class MessageController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get all messages for a legacy owner
-     */
     @GetMapping("/{ownerId}")
     public ResponseEntity<List<MessageResponse>> getMessages(@PathVariable UUID ownerId) {
         List<MessageResponse> responses = messageService.getMessagesForOwner(ownerId)
@@ -74,18 +67,26 @@ public class MessageController {
         return ResponseEntity.ok(responses);
     }
 
-    /**
-     * Delete a message
-     */
+    @GetMapping("/view/{messageId}")
+    public ResponseEntity<MessageResponse> getMessage(@PathVariable UUID messageId) {
+        Message msg = messageService.getMessage(messageId);
+        MessageResponse response = new MessageResponse(
+                msg.getId(),
+                msg.getSubject(),
+                msg.getBody(),
+                msg.getDeliveryStatus().name(),
+                msg.getScheduledDelivery(),
+                msg.getCreatedAt()
+        );
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{messageId}")
     public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
         messageService.deleteMessage(messageId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Update the status of a message
-     */
     @PatchMapping("/{messageId}/status")
     public ResponseEntity<MessageResponse> updateStatus(
             @PathVariable UUID messageId,

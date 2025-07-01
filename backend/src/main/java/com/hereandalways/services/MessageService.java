@@ -64,10 +64,15 @@ public class MessageService {
         return messageRepo.findByLegacyOwnerId(ownerId);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<Message> getMessage(UUID id) {
-        return messageRepo.findById(id);
-    }
+    @Transactional
+public Message getMessage(UUID id) {
+    Message message = messageRepo.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Message not found with id: " + id));
+
+    message.setLastAccessedAt(LocalDateTime.now());
+    return messageRepo.save(message); // persist updated timestamp
+}
+
 
     @Transactional
     public void deleteMessage(UUID id) {
@@ -82,4 +87,10 @@ public class MessageService {
         message.setDeliveryStatus(newStatus);
         return messageRepo.save(message);
     }
+
+    @Transactional(readOnly = true)
+public List<Message> getRecentMessages(UUID ownerId) {
+    return messageRepo.findByLegacyOwnerIdOrderByLastAccessedAtDesc(ownerId);
+}
+
 }
