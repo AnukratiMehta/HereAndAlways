@@ -1,66 +1,59 @@
 package com.hereandalways.services;
 
-import com.hereandalways.models.*;
-import com.hereandalways.models.enums.*;
-import com.hereandalways.repositories.*;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import com.hereandalways.models.Message;
+import com.hereandalways.models.User;
+import com.hereandalways.models.enums.DeliveryStatus;
+import com.hereandalways.payload.request.MessageRequest;
+import com.hereandalways.repositories.MessageRepository;
+import com.hereandalways.repositories.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class MessageService {
-  private final MessageRepository messageRepo;
-  private final UserRepository userRepo;
-  private final ScheduledJobService jobService;
+
+    private final MessageRepository messageRepo;
+    private final UserRepository userRepo;
 
   @Transactional
-  public Message createDraft(UUID ownerId, UUID trusteeId, String subject, String body) {
-    User owner =
-        userRepo
-            .findById(ownerId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid owner ID"));
+public Message createMessage(UUID ownerId, MessageRequest request) {
+    User owner = userRepo.findById(ownerId)
+            .orElseThrow(() -> new IllegalArgumentException("Legacy owner not found with id: " + ownerId));
 
-    Message message = new Message();
-    message.setSubject(subject);
-    message.setBody(body);
-    message.setLegacyOwner(owner);
-    message.setDeliveryStatus(DeliveryStatus.DRAFT);
-
-    if (trusteeId != null) {
-      User trustee =
-          userRepo
-              .findById(trusteeId)
-              .orElseThrow(() -> new IllegalArgumentException("Invalid trustee ID"));
-      message.setTrustee(trustee);
+    User trustee = null;
+    if (request.getTrusteeId() != null) {
+        trustee = userRepo.findById(request.getTrusteeId())
+                .orElseThrow(() -> new IllegalArgumentException("Trustee not found with id: " + request.getTrusteeId()));
     }
 
+    Message message = new Message();
+    message.setLegacyOwner(owner);
+    message.setTrustee(trustee);
+    message.setSubject(request.getSubject());
+    message.setBody(request.getBody());
+    message.setScheduledDelivery(request.getScheduledDelivery());
+     message.setDeliveryStatus(
+        request.getScheduledDelivery() != null ? DeliveryStatus.QUEUED : DeliveryStatus.DRAFT
+    );
+
     return messageRepo.save(message);
-  }
+}
 
-  @Transactional
-  public void scheduleDelivery( 
-      UUID messageId, ScheduleType scheduleType, LocalDateTime deliveryTime) {
-    Message message =
-        messageRepo
-            .findByIdAndDeliveryStatus(messageId, DeliveryStatus.DRAFT)
-            .orElseThrow(() -> new IllegalArgumentException("Message not found or not a draft"));
 
-    message.setDeliveryStatus(DeliveryStatus.QUEUED);
-    message.setScheduledDelivery(deliveryTime);
-    messageRepo.save(message);
+    @Transactional(readOnly = true)
+    public List<Message> getMessagesForOwner(UUID ownerId) {
+        return messageRepo.findByLegacyOwnerId(ownerId);
+    }
 
-    // Create corresponding scheduled job
-    jobService.createScheduledJob(
-        message.getId(),
-        JobType.MESSAGE_DELIVERY,
-        message.getLegacyOwner().getId(),
-        scheduleType,
-        deliveryTime,
-        null, // timeOffset only used for relative schedules
-        List.of(message.getTrustee().getEmail()));
-  }
+    @Transactional
+    public void deleteMessage(UUID messageId) {
+        messageRepo.deleteById(messageId);
+    }
 }

@@ -1,17 +1,15 @@
 package com.hereandalways.repositories;
 
 import com.hereandalways.models.Message;
-import com.hereandalways.models.enums.DeliveryStatus;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.UUID;
+
+@Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
-    
-    // Used in MessageService.scheduleDelivery()
-    Optional<Message> findByIdAndDeliveryStatus(UUID id, DeliveryStatus status);
-    
-    // Used in MessageController.getMessagesByOwner()
     List<Message> findByLegacyOwnerId(UUID legacyOwnerId);
+
+    List<Message> findByLegacyOwnerIdAndDeliveryStatus(UUID legacyOwnerId, com.hereandalways.models.enums.DeliveryStatus status);
 }
