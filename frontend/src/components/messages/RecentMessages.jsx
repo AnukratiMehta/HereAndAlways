@@ -48,6 +48,7 @@ const RecentMessages = ({ ownerId }) => {
   columns={["Subject", "Status", "Scheduled For", "Created At", ""]}
   data={messages}
   renderRow={renderRow}
+  pageSize={10}
 />
 
       )}
