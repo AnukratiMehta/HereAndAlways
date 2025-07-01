@@ -60,10 +60,13 @@ public class Message {
 
   // Callbacks
 
-  @PrePersist
+@PrePersist
 protected void onCreate() {
     createdAt = LocalDateTime.now();
-    lastAccessedAt = createdAt;
+    if (lastAccessedAt == null) {
+        lastAccessedAt = createdAt;
+    }
 }
+
 
 }

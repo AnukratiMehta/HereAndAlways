@@ -6,7 +6,7 @@ import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
 import MessageEditModal from "./MessageEditModal";
 
-const RecentMessages = ({ ownerId }) => {
+const ScheduledMessages = ({ ownerId }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewingMessage, setViewingMessage] = useState(null);
@@ -15,9 +15,11 @@ const RecentMessages = ({ ownerId }) => {
   useEffect(() => {
     if (!ownerId) return;
     axios
-        .get(`/api/messages/${ownerId}/recent`)
+      .get(`/api/messages/${ownerId}`)
       .then((res) => {
-        setMessages(res.data);
+        // only QUEUED messages
+        const scheduled = res.data.filter((msg) => msg.deliveryStatus === "QUEUED");
+        setMessages(scheduled);
         setLoading(false);
       })
       .catch((err) => {
@@ -32,12 +34,12 @@ const RecentMessages = ({ ownerId }) => {
       <td className="py-2 px-4 truncate max-w-xs">
         {msg.body ? msg.body.slice(0, 50) + "..." : "—"}
       </td>
-      <td className="py-2 px-4">{msg.deliveryStatus}</td>
+      <td className="py-2 px-4">{msg.trusteeName ?? "Unassigned"}</td>
       <td className="py-2 px-4">{new Date(msg.createdAt).toLocaleDateString()}</td>
       <td className="py-2 px-4">
         <button
           className="text-brandRose hover:text-brandRose-dark cursor-pointer"
-onClick={() => setViewingMessage({ ...msg })}
+          onClick={() => setViewingMessage(msg)}
         >
           <FontAwesomeIcon icon={icons.eye} /> View
         </button>
@@ -55,12 +57,12 @@ onClick={() => setViewingMessage({ ...msg })}
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">Recent Messages</h2>
+      <h2 className="text-xl font-semibold mb-4">Scheduled Messages</h2>
       {loading ? (
         <div>Loading...</div>
       ) : (
         <Table
-          columns={["Subject", "Body", "Status", "Created On", "", ""]}
+          columns={["Subject", "Body", "Trustee", "Created On", "", ""]}
           data={messages}
           renderRow={renderRow}
           pageSize={5}
@@ -82,7 +84,10 @@ onClick={() => setViewingMessage({ ...msg })}
           onSave={() => {
             axios
               .get(`/api/messages/${ownerId}`)
-              .then((res) => setMessages(res.data))
+              .then((res) => {
+                const scheduled = res.data.filter((msg) => msg.deliveryStatus === "QUEUED");
+                setMessages(scheduled);
+              })
               .catch(console.error)
               .finally(() => setEditingMessage(null));
           }}
@@ -92,4 +97,4 @@ onClick={() => setViewingMessage({ ...msg })}
   );
 };
 
-export default RecentMessages;
+export default ScheduledMessages;

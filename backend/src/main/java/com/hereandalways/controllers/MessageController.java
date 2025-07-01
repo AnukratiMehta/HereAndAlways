@@ -91,4 +91,27 @@ public class MessageController {
                 trusteeId
         );
     }
+
+    /**
+ * Get messages for a legacy owner ordered by last accessed
+ */
+@GetMapping("/{ownerId}/recent")
+public ResponseEntity<List<MessageResponse>> getRecentMessages(@PathVariable UUID ownerId) {
+    List<MessageResponse> responses = messageService.getRecentMessages(ownerId)
+            .stream()
+            .map(msg -> new MessageResponse(
+                    msg.getId(),
+                    msg.getSubject(),
+                    msg.getBody(),
+                    msg.getDeliveryStatus().name(),
+                    msg.getScheduledDelivery(),
+                    msg.getCreatedAt(),
+                    msg.getTrustee() != null ? msg.getTrustee().getName() : null,
+                    msg.getTrustee() != null ? msg.getTrustee().getId() : null
+            ))
+            .collect(Collectors.toList());
+
+    return ResponseEntity.ok(responses);
+}
+
 }

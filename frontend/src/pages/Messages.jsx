@@ -1,10 +1,10 @@
 import { useState } from "react";
 import Sidebar from "../components/shared/Sidebar";
 import NewMessage from "../components/messages/NewMessage";
+import RecentMessages from "../components/messages/RecentMessages";
+import ScheduledMessages from "../components/messages/ScheduledMessages";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../icons/icons";
-import Button from "../components/shared/Button";
-import RecentMessages from "../components/messages/RecentMessages";
 
 const Messages = () => {
   const [showModal, setShowModal] = useState(false);
@@ -15,21 +15,25 @@ const Messages = () => {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-8 overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Messages</h1>
-          <Button
+          <button
             onClick={() => setShowModal(true)}
-            variant="primary"
-            icon={icons.send}
-            label="New Message"
-          />
-
+            className="bg-brandRose text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-brandRose-dark"
+          >
+            <FontAwesomeIcon icon={icons.send} />
+            New Message
+          </button>
         </div>
 
-                <RecentMessages ownerId={ownerId} />
+        {/* recent messages */}
+        <RecentMessages ownerId={ownerId} />
 
+        {/* scheduled messages */}
+        <ScheduledMessages ownerId={ownerId} />
 
+        {/* new message modal */}
         {showModal && (
           <NewMessage ownerId={ownerId} onClose={() => setShowModal(false)} />
         )}
