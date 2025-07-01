@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
+import Button from "../shared/Button";
 
 const NewMessage = ({ ownerId, onClose }) => {
   const [subject, setSubject] = useState("");
@@ -100,7 +101,7 @@ const NewMessage = ({ ownerId, onClose }) => {
         ></textarea>
       </div>
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">Scheduled Delivery (optional)</label>
+        <label className="block text-gray-700 font-semibold mb-1">Scheduled Delivery</label>
         <input
           type="datetime-local"
           className="border border-gray-300 rounded-lg w-full p-3 focus:outline-brandRose focus:ring-2 focus:ring-brandRose"
@@ -109,7 +110,7 @@ const NewMessage = ({ ownerId, onClose }) => {
         />
       </div>
       <div>
-        <label className="block text-gray-700 font-semibold mb-1">Trustee (optional)</label>
+        <label className="block text-gray-700 font-semibold mb-1">Trustee</label>
         <select
           className="border border-gray-300 rounded-lg w-full p-3 focus:outline-brandRose focus:ring-2 focus:ring-brandRose"
           value={trusteeId}
@@ -124,24 +125,22 @@ const NewMessage = ({ ownerId, onClose }) => {
         </select>
       </div>
       <div className="flex justify-end gap-3 mt-6">
-        <button
-          type="button"
-          onClick={handleSaveDraft}
-          className="px-4 py-2 rounded-lg border border-gray-400 text-gray-600 hover:bg-gray-100"
-        >
-          Save as Draft
-        </button>
-        <button
-          type="submit"
-          disabled={!subject || !body || !scheduledDelivery || !trusteeId}
-          className={`px-4 py-2 rounded-lg text-white ${
-            !subject || !body || !scheduledDelivery || !trusteeId
-              ? "bg-brandRose-light cursor-not-allowed"
-              : "bg-brandRose hover:bg-brandRose-dark"
-          }`}
-        >
-          Schedule Message
-        </button>
+        <Button
+  type="button"
+  variant="secondary"
+  onClick={handleSaveDraft}
+  icon={icons.save}
+  label="Save as Draft"
+/>
+
+        <Button
+  type="submit"
+  variant="primary"
+  icon={icons.send}
+  label="Schedule Message"
+  disabled={!subject || !body || !scheduledDelivery || !trusteeId}
+/>
+
       </div>
     </form>
   </div>

@@ -3,6 +3,7 @@ import Sidebar from "../components/shared/Sidebar";
 import NewMessage from "../components/messages/NewMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../icons/icons";
+import Button from "../components/shared/Button";
 
 const Messages = () => {
   const [showModal, setShowModal] = useState(false);
@@ -16,13 +17,13 @@ const Messages = () => {
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Messages</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-brandRose text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-brandRose-dark"
-          >
-            <FontAwesomeIcon icon={icons.send} />
-            New Message
-          </button>
+          <Button
+  onClick={() => setShowModal(true)}
+  variant="primary"
+  icon={icons.send}
+  label="New Message"
+/>
+
         </div>
 
         {/* Here you could show the message list later */}
