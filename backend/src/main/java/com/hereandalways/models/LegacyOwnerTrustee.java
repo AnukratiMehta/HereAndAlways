@@ -21,15 +21,15 @@ public class LegacyOwnerTrustee {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
+  @Column(name = "approved_at")
+  private LocalDateTime approvedAt;
+
+    @Column(name = "invited_at", updatable = false)
+  private LocalDateTime invitedAt;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private TrusteeStatus status;
-
-  @Column(name = "invited_at", updatable = false)
-  private LocalDateTime invitedAt;
-
-  @Column(name = "approved_at")
-  private LocalDateTime approvedAt;
 
   // Relationships
 

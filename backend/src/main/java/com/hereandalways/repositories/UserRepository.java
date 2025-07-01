@@ -1,22 +1,14 @@
 package com.hereandalways.repositories;
 
 import com.hereandalways.models.User;
-import com.hereandalways.models.enums.UserRole;
-import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
 
+@Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-  // Inherits CRUD methods like save(), findById(), delete(), etc.
-
-  // Find by exact email match
-  Optional<User> findByEmail(String email);
-
-  // Find all admins
-  List<User> findByRole(UserRole role);
-
-  // Find users created after a date
-  List<User> findByCreatedAtAfter(LocalDateTime date);
+    Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
 }

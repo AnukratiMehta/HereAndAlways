@@ -1,54 +1,58 @@
 package com.hereandalways.services;
 
 import com.hereandalways.models.*;
+import com.hereandalways.models.enums.TrusteeStatus;
 import com.hereandalways.models.enums.UserRole;
 import com.hereandalways.repositories.LegacyOwnerTrusteeRepository;
-import com.hereandalways.repositories.UserRepository;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class LegacyOwnerTrusteeService {
 
-  private final LegacyOwnerTrusteeRepository relationshipRepo;
-  private final UserRepository userRepo;
+    private final LegacyOwnerTrusteeRepository relationshipRepo;
+    private final UserService userService;
 
-  @Transactional
-  public LegacyOwnerTrustee addTrustee(UUID ownerId, UUID trusteeId, String email) {
-    User owner = userRepo.findById(ownerId).orElseThrow();
-    User trustee;
+    @Transactional
+    public LegacyOwnerTrustee addTrustee(UUID ownerId, UUID trusteeId, String email, String name) {
+        User owner = userService.getUserEntityById(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException("Legacy owner not found with id: " + ownerId));
 
-    if (trusteeId != null) {
-      trustee = userRepo.findById(trusteeId).orElseThrow();
-    } else {
-      // Create external trustee record
-      trustee = new User();
-      trustee.setExternalTrustee(true);
-      trustee.setEmail(email);
-      trustee.setRole(UserRole.TRUSTEE);
-      trustee = userRepo.save(trustee);
+        User trustee;
+
+        if (trusteeId != null) {
+            trustee = userService.getUserEntityById(trusteeId)
+                    .orElseThrow(() -> new IllegalArgumentException("Trustee not found with id: " + trusteeId));
+        } else {
+            trustee = new User();
+            trustee.setExternalTrustee(true);
+            trustee.setEmail(email);
+            trustee.setName(name); 
+            trustee.setRole(UserRole.TRUSTEE);
+            trustee.setPasswordHash("changeme"); // random default, ideally hash a random string
+            trustee = userService.saveUserEntity(trustee);
+        }
+
+        LegacyOwnerTrustee relationship = new LegacyOwnerTrustee();
+        relationship.setLegacyOwner(owner);
+        relationship.setTrustee(trustee);
+        relationship.setStatus(TrusteeStatus.PENDING);
+
+        return relationshipRepo.save(relationship);
     }
 
-    LegacyOwnerTrustee relationship = new LegacyOwnerTrustee();
-    relationship.setLegacyOwner(owner);
-    relationship.setTrustee(trustee);
+    @Transactional(readOnly = true)
+    public List<LegacyOwnerTrustee> getTrusteesForOwner(UUID ownerId) {
+        return relationshipRepo.findByLegacyOwnerId(ownerId);
+    }
 
-    return relationshipRepo.save(relationship);
-  }
-
-  /** Get all trustees for an owner */
-  @Transactional(readOnly = true)
-  public List<LegacyOwnerTrustee> getTrusteesForOwner(UUID ownerId) {
-    return relationshipRepo.findByLegacyOwnerId(ownerId);
-  }
-
-  /** Remove a trustee relationship */
-  @Transactional
-  public void removeTrustee(UUID relationshipId) {
-    relationshipRepo.deleteById(relationshipId);
-  }
+    @Transactional
+    public void removeTrustee(UUID relationshipId) {
+        relationshipRepo.deleteById(relationshipId);
+    }
 }

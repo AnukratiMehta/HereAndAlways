@@ -1,76 +1,50 @@
 package com.hereandalways.controllers;
 
-import com.hereandalways.models.User;
+import com.hereandalways.payload.request.UserRequest;
+import com.hereandalways.payload.response.UserResponse;
 import com.hereandalways.services.UserService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController // handles web requests and automatically serializes return values into JSON or XML
-@RequestMapping("/api/users") // Base URL path - All endpoints start with /api/users
-@RequiredArgsConstructor // Lombok: Creates constructor with all final dependencies
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-  private final UserService userService;
+    private final UserService userService;
 
-  /**
-   * GET /api/users Returns all users in the system
-   *
-   * <p>Flow: 1. Client makes GET request 2. userService.findAll() retrieves data 3. Spring converts
-   * List<User> to JSON 4. Wrapped in 200 OK response
-   */
-  @GetMapping
-  public ResponseEntity<List<User>> getAllUsers() {
-    return ResponseEntity.ok(
-        userService
-            .findAll()); // ResponseEntity: Wraps responses with HTTP status codes and headers
-  }
+    @PostMapping
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
+        UserResponse response = userService.createUser(request);
+        return ResponseEntity.ok(response);
+    }
 
-  @GetMapping("/{id}")
-  public ResponseEntity<User> getUserById(
-      @PathVariable UUID id) { // @PathVariable extracts {id} from URL and converts to UUID
-    return ResponseEntity.ok(userService.findById(id));
-  }
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+        UserResponse response = userService.getUserById(id);
+        return ResponseEntity.ok(response);
+    }
 
-  @GetMapping("/email/{email}")
-  public ResponseEntity<User> getUserByEmail(@PathVariable @Email String email) {
-    return ResponseEntity.ok(userService.findByEmail(email));
-  }
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
 
-  @PostMapping
-  public ResponseEntity<User> createUser(
-      @RequestBody @Valid User user) { // @Valid triggers validation defined in User entity
-    return ResponseEntity.ok(userService.create(user));
-  }
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateUser(@PathVariable UUID id, @Valid @RequestBody UserRequest request) {
+        UserResponse response = userService.updateUser(id, request);
+        return ResponseEntity.ok(response);
+    }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<User> updateUser(
-      @PathVariable UUID id,
-      @RequestBody @Valid User user) { // @RequestBody deserializes JSON to User object
-    return ResponseEntity.ok(userService.update(id, user));
-  }
-
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
-    userService.delete(id);
-    return ResponseEntity.noContent().build();
-  }
-
-  @PutMapping("/{id}/password")
-  public ResponseEntity<Void> updatePassword(
-      @PathVariable UUID id, @RequestParam String oldPassword, @RequestParam String newPassword) {
-    userService.updatePassword(id, oldPassword, newPassword);
-    return ResponseEntity.ok().build();
-  }
-
-  @GetMapping("/admins")
-  public ResponseEntity<List<User>> getAdminUsers() {
-    return ResponseEntity.ok(userService.findAdmins());
-  }
-
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -1,47 +1,73 @@
 package com.hereandalways.controllers;
 
 import com.hereandalways.models.LegacyOwnerTrustee;
+import com.hereandalways.payload.request.InviteTrusteeRequest;
+import com.hereandalways.payload.response.TrusteeResponse;
 import com.hereandalways.services.LegacyOwnerTrusteeService;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/trustees")
 @RequiredArgsConstructor
 public class LegacyOwnerTrusteeController {
 
-  private final LegacyOwnerTrusteeService trusteeService;
+    private final LegacyOwnerTrusteeService legacyOwnerTrusteeService;
 
-  @PostMapping
-  public ResponseEntity<LegacyOwnerTrustee> createTrusteeRelationship(
-      @RequestParam @NotNull UUID ownerId,
-      @RequestParam(required = false) UUID trusteeId,
-      @RequestParam(required = false) @Email String trusteeEmail) {
+    /**
+     * Invite or link a trustee to a legacy owner.
+     */
+    @PostMapping("/{ownerId}")
+    public ResponseEntity<TrusteeResponse> addTrustee(
+            @PathVariable UUID ownerId,
+            @RequestBody InviteTrusteeRequest request
+    ) {
+        LegacyOwnerTrustee relationship = legacyOwnerTrusteeService.addTrustee(
+                ownerId,
+                request.getTrusteeId(),
+                request.getEmail(),
+                request.getName()
+        );
 
-    if (trusteeId == null && trusteeEmail == null) {
-      throw new IllegalArgumentException("Either trusteeId or trusteeEmail must be provided");
+        TrusteeResponse response = new TrusteeResponse(
+                relationship.getTrustee().getId(),
+                relationship.getTrustee().getName(),
+                relationship.getTrustee().getEmail(),
+                relationship.getStatus().name()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
-    LegacyOwnerTrustee relationship = trusteeService.addTrustee(ownerId, trusteeId, trusteeEmail);
+    /**
+     * List all trustees of a given legacy owner
+     */
+    @GetMapping("/{ownerId}")
+    public ResponseEntity<List<TrusteeResponse>> getTrustees(@PathVariable UUID ownerId) {
+        List<TrusteeResponse> responses = legacyOwnerTrusteeService.getTrusteesForOwner(ownerId)
+                .stream()
+                .map(rel -> new TrusteeResponse(
+                        rel.getTrustee().getId(),
+                        rel.getTrustee().getName(),
+                        rel.getTrustee().getEmail(),
+                        rel.getStatus().name()
+                ))
+                .collect(Collectors.toList());
 
-    return ResponseEntity.status(HttpStatus.CREATED).body(relationship);
-  }
+        return ResponseEntity.ok(responses);
+    }
 
-  @GetMapping("/owner/{ownerId}")
-  public ResponseEntity<List<LegacyOwnerTrustee>> getTrusteesForOwner(@PathVariable UUID ownerId) {
-    return ResponseEntity.ok(trusteeService.getTrusteesForOwner(ownerId));
-  }
-
-  @DeleteMapping("/{relationshipId}")
-  public ResponseEntity<Void> removeTrustee(
-      @PathVariable UUID relationshipId, @RequestParam @NotNull UUID ownerId) {
-    trusteeService.removeTrustee(relationshipId);
-    return ResponseEntity.noContent().build();
-  }
+    /**
+     * Remove a trustee relationship
+     */
+    @DeleteMapping("/{relationshipId}")
+    public ResponseEntity<Void> removeTrustee(@PathVariable UUID relationshipId) {
+        legacyOwnerTrusteeService.removeTrustee(relationshipId);
+        return ResponseEntity.noContent().build();
+    }
 }
