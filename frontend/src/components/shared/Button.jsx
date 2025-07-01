@@ -32,7 +32,7 @@ const Button = ({
     case "primary":
       variantClasses = disabled
         ? "bg-brandRose-light text-white cursor-not-allowed"
-        : "bg-brandRose text-white hover:bg-brandRose-dark";
+        : "bg-brandRose text-white hover:bg-brandRose-dark cursor-pointer";
       break;
     case "secondary":
       variantClasses =

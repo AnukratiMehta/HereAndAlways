@@ -38,15 +38,7 @@ public class MessageController {
                 status
         );
 
-        MessageResponse response = new MessageResponse(
-                message.getId(),
-                message.getSubject(),
-                message.getBody(),
-                message.getDeliveryStatus().name(),
-                message.getScheduledDelivery(),
-                message.getCreatedAt()
-        );
-
+        MessageResponse response = toResponse(message);
         return ResponseEntity.ok(response);
     }
 
@@ -54,31 +46,10 @@ public class MessageController {
     public ResponseEntity<List<MessageResponse>> getMessages(@PathVariable UUID ownerId) {
         List<MessageResponse> responses = messageService.getMessagesForOwner(ownerId)
                 .stream()
-                .map(msg -> new MessageResponse(
-                        msg.getId(),
-                        msg.getSubject(),
-                        msg.getBody(),
-                        msg.getDeliveryStatus().name(),
-                        msg.getScheduledDelivery(),
-                        msg.getCreatedAt()
-                ))
+                .map(this::toResponse)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responses);
-    }
-
-    @GetMapping("/view/{messageId}")
-    public ResponseEntity<MessageResponse> getMessage(@PathVariable UUID messageId) {
-        Message msg = messageService.getMessage(messageId);
-        MessageResponse response = new MessageResponse(
-                msg.getId(),
-                msg.getSubject(),
-                msg.getBody(),
-                msg.getDeliveryStatus().name(),
-                msg.getScheduledDelivery(),
-                msg.getCreatedAt()
-        );
-        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{messageId}")
@@ -93,15 +64,31 @@ public class MessageController {
             @RequestParam String status
     ) {
         Message updated = messageService.updateStatus(messageId, DeliveryStatus.valueOf(status));
-        MessageResponse response = new MessageResponse(
-                updated.getId(),
-                updated.getSubject(),
-                updated.getBody(),
-                updated.getDeliveryStatus().name(),
-                updated.getScheduledDelivery(),
-                updated.getCreatedAt()
-        );
-
+        MessageResponse response = toResponse(updated);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Helper to convert entity to response DTO
+     */
+    private MessageResponse toResponse(Message message) {
+        String trusteeName = null;
+        UUID trusteeId = null;
+
+        if (message.getTrustee() != null) {
+            trusteeName = message.getTrustee().getName();
+            trusteeId = message.getTrustee().getId();
+        }
+
+        return new MessageResponse(
+                message.getId(),
+                message.getSubject(),
+                message.getBody(),
+                message.getDeliveryStatus().name(),
+                message.getScheduledDelivery(),
+                message.getCreatedAt(),
+                trusteeName,
+                trusteeId
+        );
     }
 }

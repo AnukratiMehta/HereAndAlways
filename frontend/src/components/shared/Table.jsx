@@ -15,14 +15,15 @@ const Table = ({ columns, data, renderRow, pageSize }) => {
     <div className="overflow-x-auto rounded border border-lightGray shadow-sm">
       <table className="min-w-full divide-y divide-lightGray text-sm text-left">
         <thead className="bg-brandRose-light text-brandRose-dark">
-          <tr>
-            {columns.map((col) => (
-              <th key={col} className="px-4 py-3 font-semibold">
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
+  <tr>
+    {columns.map((col, index) => (
+      <th key={col || index} className="px-4 py-3 font-semibold">
+        {col}
+      </th>
+    ))}
+  </tr>
+</thead>
+
         <tbody className="divide-y divide-lightGray">
           {pageData.length > 0 ? (
             pageData.map((item, index) => renderRow(item, index))
@@ -42,7 +43,7 @@ const Table = ({ columns, data, renderRow, pageSize }) => {
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
           >
             Previous
           </button>
@@ -52,7 +53,7 @@ const Table = ({ columns, data, renderRow, pageSize }) => {
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 cursor-pointer"
           >
             Next
           </button>

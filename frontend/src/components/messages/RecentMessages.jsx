@@ -37,7 +37,7 @@ const RecentMessages = ({ ownerId }) => {
       <td className="py-2 px-4">
         <button
           className="text-brandRose hover:text-brandRose-dark cursor-pointer"
-          onClick={() => setViewingMessage(msg)}
+onClick={() => setViewingMessage({ ...msg })}
         >
           <FontAwesomeIcon icon={icons.eye} /> View
         </button>

@@ -1,6 +1,8 @@
 package com.hereandalways.repositories;
 
 import com.hereandalways.models.Message;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +11,8 @@ import java.util.UUID;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, UUID> {
-    List<Message> findByLegacyOwnerId(UUID legacyOwnerId);
+@EntityGraph(attributePaths = {"trustee"})
+List<Message> findByLegacyOwnerId(UUID legacyOwnerId);
 
     List<Message> findByLegacyOwnerIdAndDeliveryStatus(UUID legacyOwnerId, com.hereandalways.models.enums.DeliveryStatus status);
 

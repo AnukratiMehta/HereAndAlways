@@ -2,6 +2,7 @@ package com.hereandalways.payload.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,4 +15,6 @@ public class MessageResponse {
     private String deliveryStatus;
     private LocalDateTime scheduledDelivery;
     private LocalDateTime createdAt;
+    private String trusteeName;
+    private UUID trusteeId;
 }

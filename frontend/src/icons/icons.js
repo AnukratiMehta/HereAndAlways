@@ -10,6 +10,7 @@ import {
   faFilePen,
   faEye,
   faPen,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -23,6 +24,7 @@ const icons = {
   save: faFilePen,
   eye: faEye,
   pen: faPen,
+  close: faXmark,
 };
 
 export { FontAwesomeIcon, icons };
