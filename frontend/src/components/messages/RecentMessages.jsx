@@ -4,11 +4,13 @@ import Table from "../shared/Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
+import MessageEditModal from "./MessageEditModal";
 
 const RecentMessages = ({ ownerId }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [viewingMessage, setViewingMessage] = useState(null);
+  const [editingMessage, setEditingMessage] = useState(null);
 
   useEffect(() => {
     if (!ownerId) return;
@@ -27,17 +29,25 @@ const RecentMessages = ({ ownerId }) => {
   const renderRow = (msg) => (
     <tr key={msg.id} className="hover:bg-gray-50">
       <td className="py-2 px-4">{msg.subject || "Untitled"}</td>
-      <td className="py-2 px-4">
-        {msg.body ? (msg.body.length > 30 ? msg.body.slice(0, 30) + "..." : msg.body) : "—"}
+      <td className="py-2 px-4 truncate max-w-xs">
+        {msg.body ? msg.body.slice(0, 50) + "..." : "—"}
       </td>
       <td className="py-2 px-4">{msg.deliveryStatus}</td>
       <td className="py-2 px-4">{new Date(msg.createdAt).toLocaleDateString()}</td>
-      <td className="py-2 px-4 text-right">
+      <td className="py-2 px-4">
         <button
-          className="text-brandRose hover:text-brandRose-dark"
-          onClick={() => setSelectedMessage(msg)}
+          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+          onClick={() => setViewingMessage(msg)}
         >
           <FontAwesomeIcon icon={icons.eye} /> View
+        </button>
+      </td>
+      <td className="py-2 px-4">
+        <button
+          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+          onClick={() => setEditingMessage(msg)}
+        >
+          <FontAwesomeIcon icon={icons.pen} /> Edit
         </button>
       </td>
     </tr>
@@ -50,17 +60,32 @@ const RecentMessages = ({ ownerId }) => {
         <div>Loading...</div>
       ) : (
         <Table
-          columns={["Subject", "Body", "Status", "Created On", ""]}
+          columns={["Subject", "Body", "Status", "Created On", "", ""]}
           data={messages}
           renderRow={renderRow}
           pageSize={5}
         />
       )}
 
-      {selectedMessage && (
+      {viewingMessage && (
         <MessageViewModal
-          message={selectedMessage}
-          onClose={() => setSelectedMessage(null)}
+          message={viewingMessage}
+          onClose={() => setViewingMessage(null)}
+        />
+      )}
+
+      {editingMessage && (
+        <MessageEditModal
+          message={editingMessage}
+          ownerId={ownerId}
+          onClose={() => setEditingMessage(null)}
+          onSave={() => {
+            axios
+              .get(`/api/messages/${ownerId}`)
+              .then((res) => setMessages(res.data))
+              .catch(console.error)
+              .finally(() => setEditingMessage(null));
+          }}
         />
       )}
     </div>

@@ -9,6 +9,7 @@ import {
   faPaperPlane,
   faFilePen,
   faEye,
+  faPen,
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -21,6 +22,7 @@ const icons = {
   send: faPaperPlane,
   save: faFilePen,
   eye: faEye,
+  pen: faPen,
 };
 
 export { FontAwesomeIcon, icons };
