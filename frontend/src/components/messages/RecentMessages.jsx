@@ -3,10 +3,12 @@ import axios from "axios";
 import Table from "../shared/Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
+import MessageViewModal from "./MessageViewModal";
 
 const RecentMessages = ({ ownerId }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMessage, setSelectedMessage] = useState(null);
 
   useEffect(() => {
     if (!ownerId) return;
@@ -25,13 +27,16 @@ const RecentMessages = ({ ownerId }) => {
   const renderRow = (msg) => (
     <tr key={msg.id} className="hover:bg-gray-50">
       <td className="py-2 px-4">{msg.subject || "Untitled"}</td>
-      <td className="py-2 px-4">{msg.deliveryStatus}</td>
       <td className="py-2 px-4">
-        {msg.scheduledDelivery ? new Date(msg.scheduledDelivery).toLocaleString() : "—"}
+        {msg.body ? (msg.body.length > 30 ? msg.body.slice(0, 30) + "..." : msg.body) : "—"}
       </td>
-      <td className="py-2 px-4">{new Date(msg.createdAt).toLocaleString()}</td>
+      <td className="py-2 px-4">{msg.deliveryStatus}</td>
+      <td className="py-2 px-4">{new Date(msg.createdAt).toLocaleDateString()}</td>
       <td className="py-2 px-4 text-right">
-        <button className="text-brandRose hover:text-brandRose-dark">
+        <button
+          className="text-brandRose hover:text-brandRose-dark"
+          onClick={() => setSelectedMessage(msg)}
+        >
           <FontAwesomeIcon icon={icons.eye} /> View
         </button>
       </td>
@@ -45,12 +50,18 @@ const RecentMessages = ({ ownerId }) => {
         <div>Loading...</div>
       ) : (
         <Table
-  columns={["Subject", "Status", "Scheduled For", "Created At", ""]}
-  data={messages}
-  renderRow={renderRow}
-  pageSize={10}
-/>
+          columns={["Subject", "Body", "Status", "Created On", ""]}
+          data={messages}
+          renderRow={renderRow}
+          pageSize={5}
+        />
+      )}
 
+      {selectedMessage && (
+        <MessageViewModal
+          message={selectedMessage}
+          onClose={() => setSelectedMessage(null)}
+        />
       )}
     </div>
   );
