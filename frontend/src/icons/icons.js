@@ -6,6 +6,8 @@ import {
   faUserShield,
   faCog,
   faSignOutAlt,
+  faPaperPlane,
+  faFilePen,
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -15,6 +17,8 @@ const icons = {
   trustees: faUserShield,
   settings: faCog,
   logout: faSignOutAlt,
+  send: faPaperPlane,
+  save: faFilePen
 };
 
 export { FontAwesomeIcon, icons };
