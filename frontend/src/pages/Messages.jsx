@@ -1,43 +1,50 @@
 import { useState } from "react";
 import Sidebar from "../components/shared/Sidebar";
-import NewMessage from "../components/messages/NewMessage";
+import ProfileBar from "../components/shared/ProfileBar";
 import RecentMessages from "../components/messages/RecentMessages";
 import ScheduledMessages from "../components/messages/ScheduledMessages";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { icons } from "../icons/icons";
+import MessageCardList from "../components/messages/MessageCardList";
 
 const Messages = () => {
-  const [showModal, setShowModal] = useState(false);
+  const [view, setView] = useState("home"); // 'home', 'drafts', 'scheduled', 'starred'
 
-  // TODO: replace this with real logged-in ownerId later
+  // TODO: Replace with real user ID later
   const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 p-8 overflow-y-auto">
+      <div className="flex-1 p-8 relative">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Messages</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-brandRose text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-brandRose-dark"
-          >
-            <FontAwesomeIcon icon={icons.send} />
-            New Message
-          </button>
         </div>
 
-        {/* recent messages */}
-        <RecentMessages ownerId={ownerId} />
+        {view === "home" && (
+          <>
+            <RecentMessages ownerId={ownerId} />
+            <ScheduledMessages ownerId={ownerId} />
+          </>
+        )}
 
-        {/* scheduled messages */}
-        <ScheduledMessages ownerId={ownerId} />
+        {view === "drafts" && (
+          <MessageCardList ownerId={ownerId} filter="DRAFT" />
+        )}
 
-        {/* new message modal */}
-        {showModal && (
-          <NewMessage ownerId={ownerId} onClose={() => setShowModal(false)} />
+        {view === "scheduled" && (
+          <MessageCardList ownerId={ownerId} filter="QUEUED" />
+        )}
+
+        {view === "starred" && (
+          <div>Starred messages view coming soon.</div>
         )}
       </div>
+      <ProfileBar
+  ownerName="John Doe"
+  setView={setView}
+  view={view}
+  onNewMessage={() => setShowModal(true)}
+/>
+
     </div>
   );
 };

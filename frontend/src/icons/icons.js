@@ -11,6 +11,10 @@ import {
   faEye,
   faPen,
   faXmark,
+  faClock,
+  faStar,
+  faPlus,
+  faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -25,6 +29,10 @@ const icons = {
   eye: faEye,
   pen: faPen,
   close: faXmark,
+  clock: faClock,
+  star: faStar,
+  plus: faPlus,
+  arrowLeft: faArrowLeft,
 };
 
 export { FontAwesomeIcon, icons };
