@@ -18,4 +18,7 @@ public interface LegacyOwnerTrusteeRepository extends JpaRepository<LegacyOwnerT
 
     // Optionally, find a specific trustee relationship between legacy owner and trustee
     LegacyOwnerTrustee findByLegacyOwnerIdAndTrusteeId(UUID legacyOwnerId, UUID trusteeId);
+
+    List<LegacyOwnerTrustee> findByLegacyOwnerIdOrderByInvitedAtDesc(UUID ownerId);
+
 }

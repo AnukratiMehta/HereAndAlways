@@ -3,6 +3,7 @@ package com.hereandalways.models;
 import com.hereandalways.models.enums.AssetType;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -47,6 +48,15 @@ public class DigitalAsset {
       nullable = false,
       foreignKey = @ForeignKey(name = "fk_digital_asset_owner"))
   private User legacyOwner;
+
+  @ManyToMany
+@JoinTable(
+    name = "asset_trustees",
+    joinColumns = @JoinColumn(name = "asset_id"),
+    inverseJoinColumns = @JoinColumn(name = "trustee_id")
+)
+private List<User> trustees;
+
 
   // Callback
   @PrePersist

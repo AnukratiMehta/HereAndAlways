@@ -3,6 +3,7 @@ package com.hereandalways.models;
 import com.hereandalways.models.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -57,6 +58,15 @@ public class Message {
       foreignKey = @ForeignKey(name = "fk_message_trustee"),
       nullable = true)
   private User trustee;
+
+  @ManyToMany
+@JoinTable(
+    name = "message_trustees",
+    joinColumns = @JoinColumn(name = "message_id"),
+    inverseJoinColumns = @JoinColumn(name = "trustee_id")
+)
+private List<User> trustees;
+
 
   // Callbacks
 

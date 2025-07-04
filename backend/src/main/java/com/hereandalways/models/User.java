@@ -3,6 +3,7 @@ package com.hereandalways.models;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import com.hereandalways.models.enums.UserRole;
 
@@ -39,6 +40,13 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @ManyToMany(mappedBy = "trustees")
+private List<Message> messages;
+
+@ManyToMany(mappedBy = "trustees")
+private List<DigitalAsset> assets;
+
 
     @PrePersist
     protected void onCreate() {

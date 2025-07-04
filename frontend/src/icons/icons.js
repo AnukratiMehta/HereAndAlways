@@ -15,6 +15,9 @@ import {
   faStar,
   faPlus,
   faArrowLeft,
+  faUserPlus,
+  faUsers,
+  faGlobe,
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -33,6 +36,11 @@ const icons = {
   star: faStar,
   plus: faPlus,
   arrowLeft: faArrowLeft,
+  userPlus: faUserPlus,
+  userShield: faUserShield,
+  users: faUsers,
+  globe: faGlobe,
+  
 };
 
 export { FontAwesomeIcon, icons };

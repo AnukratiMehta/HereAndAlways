@@ -20,14 +20,14 @@ public class LegacyOwnerTrusteeController {
     private final LegacyOwnerTrusteeService legacyOwnerTrusteeService;
 
     /**
-     * Invite or link a trustee to a legacy owner.
+     * Invite or link a trustee to a legacy owner
      */
     @PostMapping("/{ownerId}")
     public ResponseEntity<TrusteeResponse> addTrustee(
             @PathVariable UUID ownerId,
             @RequestBody InviteTrusteeRequest request
     ) {
-        LegacyOwnerTrustee relationship = legacyOwnerTrusteeService.addTrustee(
+        var relationship = legacyOwnerTrusteeService.addTrustee(
                 ownerId,
                 request.getTrusteeId(),
                 request.getEmail(),
@@ -38,7 +38,10 @@ public class LegacyOwnerTrusteeController {
                 relationship.getTrustee().getId(),
                 relationship.getTrustee().getName(),
                 relationship.getTrustee().getEmail(),
-                relationship.getStatus().name()
+                relationship.getStatus().name(),
+                relationship.getInvitedAt(),
+                List.of(), // messages will be empty on creation
+                List.of()  // assets will be empty on creation
         );
 
         return ResponseEntity.ok(response);
@@ -49,13 +52,20 @@ public class LegacyOwnerTrusteeController {
      */
     @GetMapping("/{ownerId}")
     public ResponseEntity<List<TrusteeResponse>> getTrustees(@PathVariable UUID ownerId) {
-        List<TrusteeResponse> responses = legacyOwnerTrusteeService.getTrusteesForOwner(ownerId)
+        var responses = legacyOwnerTrusteeService.getTrusteesForOwner(ownerId)
                 .stream()
                 .map(rel -> new TrusteeResponse(
                         rel.getTrustee().getId(),
                         rel.getTrustee().getName(),
                         rel.getTrustee().getEmail(),
-                        rel.getStatus().name()
+                        rel.getStatus().name(),
+                        rel.getInvitedAt(),
+                        rel.getTrustee().getMessages() != null
+                                ? rel.getTrustee().getMessages().stream()
+                                  .map(m -> m.getSubject() != null ? m.getSubject() : "Untitled")
+                                  .toList()
+                                : List.of(),
+                        List.of() // no asset linking for now
                 ))
                 .collect(Collectors.toList());
 
@@ -70,4 +80,34 @@ public class LegacyOwnerTrusteeController {
         legacyOwnerTrusteeService.removeTrustee(relationshipId);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Get recent trustees for a legacy owner
+     */
+    @GetMapping("/recent/{ownerId}")
+public ResponseEntity<List<TrusteeResponse>> getRecentTrustees(@PathVariable UUID ownerId) {
+    List<TrusteeResponse> responses = legacyOwnerTrusteeService.getRecentTrustees(ownerId)
+            .stream()
+            .map(rel -> new TrusteeResponse(
+                    rel.getTrustee().getId(),
+                    rel.getTrustee().getName(),
+                    rel.getTrustee().getEmail(),
+                    rel.getStatus().name(),
+                    rel.getInvitedAt(),
+                    rel.getTrustee().getMessages() != null
+                        ? rel.getTrustee().getMessages().stream()
+                            .map(m -> m.getSubject() != null ? m.getSubject() : "Untitled")
+                            .toList()
+                        : List.of(),
+                    rel.getTrustee().getAssets() != null
+                        ? rel.getTrustee().getAssets().stream()
+                            .map(a -> a.getName())
+                            .toList()
+                        : List.of()
+            ))
+            .toList();
+
+    return ResponseEntity.ok(responses);
+}
+
 }

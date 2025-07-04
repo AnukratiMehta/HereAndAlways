@@ -4,9 +4,11 @@ import ProfileBar from "../components/shared/ProfileBar";
 import RecentMessages from "../components/messages/RecentMessages";
 import ScheduledMessages from "../components/messages/ScheduledMessages";
 import MessageCardList from "../components/messages/MessageCardList";
+import NewMessage from "../components/messages/NewMessage";
 
 const Messages = () => {
   const [view, setView] = useState("home"); // 'home', 'drafts', 'scheduled', 'starred'
+  const [showModal, setShowModal] = useState(false);
 
   // TODO: Replace with real user ID later
   const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
@@ -37,14 +39,23 @@ const Messages = () => {
         {view === "starred" && (
           <div>Starred messages view coming soon.</div>
         )}
-      </div>
-      <ProfileBar
-  ownerName="John Doe"
-  setView={setView}
-  view={view}
-  onNewMessage={() => setShowModal(true)}
-/>
 
+        {/* new message modal */}
+        {showModal && (
+          <NewMessage
+            ownerId={ownerId}
+            onClose={() => setShowModal(false)}
+          />
+        )}
+      </div>
+
+      <ProfileBar
+        type="messages"
+        ownerName="John Doe"
+        view={view}
+        setView={setView}
+        onNewItem={() => setShowModal(true)}
+      />
     </div>
   );
 };

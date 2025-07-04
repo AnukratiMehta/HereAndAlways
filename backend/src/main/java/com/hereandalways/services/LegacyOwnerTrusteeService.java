@@ -55,4 +55,10 @@ public class LegacyOwnerTrusteeService {
     public void removeTrustee(UUID relationshipId) {
         relationshipRepo.deleteById(relationshipId);
     }
+
+    @Transactional(readOnly = true)
+public List<LegacyOwnerTrustee> getRecentTrustees(UUID ownerId) {
+    return relationshipRepo.findByLegacyOwnerIdOrderByInvitedAtDesc(ownerId);
+}
+
 }
