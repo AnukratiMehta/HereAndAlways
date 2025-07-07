@@ -5,6 +5,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hereandalways.models.enums.UserRole;
 
 @Entity
@@ -41,11 +43,14 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToMany(mappedBy = "trustees")
+@ManyToMany(mappedBy = "trustees")
+@JsonIgnore
 private List<Message> messages;
 
 @ManyToMany(mappedBy = "trustees")
+@JsonIgnore
 private List<DigitalAsset> assets;
+
 
 
     @PrePersist

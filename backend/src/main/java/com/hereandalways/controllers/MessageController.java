@@ -1,8 +1,10 @@
 package com.hereandalways.controllers;
 
 import com.hereandalways.models.Message;
+import com.hereandalways.models.User;
 import com.hereandalways.models.enums.DeliveryStatus;
 import com.hereandalways.payload.request.MessageRequest;
+import com.hereandalways.payload.request.UpdateMessageRequest;
 import com.hereandalways.payload.response.MessageResponse;
 import com.hereandalways.services.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -34,17 +36,26 @@ public class MessageController {
                 request.getSubject(),
                 request.getBody(),
                 request.getScheduledDelivery(),
-                request.getTrusteeId(),
+                request.getTrusteeIds(),   // list of trustees
                 status
         );
 
-        MessageResponse response = toResponse(message);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(toResponse(message));
     }
 
     @GetMapping("/{ownerId}")
     public ResponseEntity<List<MessageResponse>> getMessages(@PathVariable UUID ownerId) {
         List<MessageResponse> responses = messageService.getMessagesForOwner(ownerId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/{ownerId}/recent")
+    public ResponseEntity<List<MessageResponse>> getRecentMessages(@PathVariable UUID ownerId) {
+        List<MessageResponse> responses = messageService.getRecentMessages(ownerId)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -64,54 +75,54 @@ public class MessageController {
             @RequestParam String status
     ) {
         Message updated = messageService.updateStatus(messageId, DeliveryStatus.valueOf(status));
-        MessageResponse response = toResponse(updated);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(toResponse(updated));
     }
 
+    @PatchMapping("/{messageId}")
+public ResponseEntity<MessageResponse> updateMessage(
+        @PathVariable UUID messageId,
+        @RequestBody UpdateMessageRequest request
+) {
+    Message updated = messageService.updateMessage(
+            messageId,
+            request.getSubject(),
+            request.getBody(),
+            request.getScheduledDelivery(),
+            request.getTrusteeIds()
+    );
+
+    return ResponseEntity.ok(toResponse(updated));
+}
+
+
     /**
-     * Helper to convert entity to response DTO
+     * Converts a Message entity to the DTO
      */
-    private MessageResponse toResponse(Message message) {
-        String trusteeName = null;
-        UUID trusteeId = null;
+  private MessageResponse toResponse(Message message) {
+    List<String> trusteeNames = List.of();
+    List<UUID> trusteeIds = List.of();
 
-        if (message.getTrustee() != null) {
-            trusteeName = message.getTrustee().getName();
-            trusteeId = message.getTrustee().getId();
-        }
-
-        return new MessageResponse(
-                message.getId(),
-                message.getSubject(),
-                message.getBody(),
-                message.getDeliveryStatus().name(),
-                message.getScheduledDelivery(),
-                message.getCreatedAt(),
-                trusteeName,
-                trusteeId
-        );
+    if (message.getTrustees() != null && !message.getTrustees().isEmpty()) {
+        trusteeNames = message.getTrustees().stream()
+                .filter(java.util.Objects::nonNull)
+                .map(User::getName)
+                .toList();
+        trusteeIds = message.getTrustees().stream()
+                .filter(java.util.Objects::nonNull)
+                .map(User::getId)
+                .toList();
     }
 
-    /**
- * Get messages for a legacy owner ordered by last accessed
- */
-@GetMapping("/{ownerId}/recent")
-public ResponseEntity<List<MessageResponse>> getRecentMessages(@PathVariable UUID ownerId) {
-    List<MessageResponse> responses = messageService.getRecentMessages(ownerId)
-            .stream()
-            .map(msg -> new MessageResponse(
-                    msg.getId(),
-                    msg.getSubject(),
-                    msg.getBody(),
-                    msg.getDeliveryStatus().name(),
-                    msg.getScheduledDelivery(),
-                    msg.getCreatedAt(),
-                    msg.getTrustee() != null ? msg.getTrustee().getName() : null,
-                    msg.getTrustee() != null ? msg.getTrustee().getId() : null
-            ))
-            .collect(Collectors.toList());
-
-    return ResponseEntity.ok(responses);
+    return new MessageResponse(
+            message.getId(),
+            message.getSubject(),
+            message.getBody(),
+            message.getDeliveryStatus().name(),
+            message.getScheduledDelivery(),
+            message.getCreatedAt(),
+            trusteeNames,
+            trusteeIds
+    );
 }
 
 }

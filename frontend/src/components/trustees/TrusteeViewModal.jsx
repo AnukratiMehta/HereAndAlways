@@ -28,8 +28,37 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
             <span className="capitalize">{trustee.status || "—"}</span>
           </p>
           <p>
-            <strong>ID:</strong> {trustee.trusteeId}
+            <strong>Invited On:</strong>{" "}
+            {trustee.invitedAt
+              ? new Date(trustee.invitedAt).toLocaleDateString()
+              : "—"}
           </p>
+        </div>
+
+        <div className="mb-4 text-gray-700">
+          <strong>Linked Messages:</strong>
+          {trustee.linkedMessages && trustee.linkedMessages.length > 0 ? (
+            <ul className="list-disc ml-6 mt-1">
+              {trustee.linkedMessages.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          ) : (
+            <div className="ml-6 text-sm text-gray-500">No messages linked.</div>
+          )}
+        </div>
+
+        <div className="mb-4 text-gray-700">
+          <strong>Linked Assets:</strong>
+          {trustee.linkedAssets && trustee.linkedAssets.length > 0 ? (
+            <ul className="list-disc ml-6 mt-1">
+              {trustee.linkedAssets.map((asset, idx) => (
+                <li key={idx}>{asset}</li>
+              ))}
+            </ul>
+          ) : (
+            <div className="ml-6 text-sm text-gray-500">No assets linked.</div>
+          )}
         </div>
 
         <div className="flex justify-end mt-6">

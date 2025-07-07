@@ -3,6 +3,7 @@ package com.hereandalways.services;
 import com.hereandalways.models.Message;
 import com.hereandalways.models.User;
 import com.hereandalways.models.enums.DeliveryStatus;
+import com.hereandalways.payload.request.UpdateMessageRequest;
 import com.hereandalways.repositories.MessageRepository;
 import com.hereandalways.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,34 +28,33 @@ public class MessageService {
             String subject,
             String body,
             LocalDateTime scheduledDelivery,
-            UUID trusteeId,
+            List<UUID> trusteeIds,
             DeliveryStatus status
     ) {
         // find owner
         User owner = userRepo.findById(ownerId)
                 .orElseThrow(() -> new IllegalArgumentException("Owner not found with id: " + ownerId));
 
-        // if QUEUED, validate subject and body are mandatory
+        // validate for QUEUED
         if (status == DeliveryStatus.QUEUED) {
             if (subject == null || subject.isBlank() || body == null || body.isBlank()) {
                 throw new IllegalArgumentException("Subject and body are required to send a message.");
             }
         }
 
-        // trustee is optional
-        User trustee = null;
-        if (trusteeId != null) {
-            trustee = userRepo.findById(trusteeId)
-                    .orElseThrow(() -> new IllegalArgumentException("Trustee not found with id: " + trusteeId));
-        }
-
+        // create message
         Message message = new Message();
         message.setLegacyOwner(owner);
-        message.setTrustee(trustee);
-        message.setSubject(subject); // can be null for draft
-        message.setBody(body);       // can be null for draft
+        message.setSubject(subject);
+        message.setBody(body);
         message.setScheduledDelivery(scheduledDelivery);
         message.setDeliveryStatus(status);
+
+        // attach trustees if provided
+        if (trusteeIds != null && !trusteeIds.isEmpty()) {
+            List<User> trustees = userRepo.findAllById(trusteeIds);
+            message.setTrustees(trustees);
+        }
 
         return messageRepo.save(message);
     }
@@ -65,14 +65,12 @@ public class MessageService {
     }
 
     @Transactional
-public Message getMessage(UUID id) {
-    Message message = messageRepo.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Message not found with id: " + id));
-
-    message.setLastAccessedAt(LocalDateTime.now());
-    return messageRepo.save(message); // persist updated timestamp
-}
-
+    public Message getMessage(UUID id) {
+        Message message = messageRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found with id: " + id));
+        message.setLastAccessedAt(LocalDateTime.now());
+        return messageRepo.save(message);
+    }
 
     @Transactional
     public void deleteMessage(UUID id) {
@@ -83,14 +81,43 @@ public Message getMessage(UUID id) {
     public Message updateStatus(UUID messageId, DeliveryStatus newStatus) {
         Message message = messageRepo.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("Message not found with id: " + messageId));
-
         message.setDeliveryStatus(newStatus);
         return messageRepo.save(message);
     }
 
     @Transactional(readOnly = true)
-public List<Message> getRecentMessages(UUID ownerId) {
-    return messageRepo.findByLegacyOwnerIdOrderByLastAccessedAtDesc(ownerId);
+    public List<Message> getRecentMessages(UUID ownerId) {
+        return messageRepo.findByLegacyOwnerIdOrderByLastAccessedAtDesc(ownerId);
+    }
+
+    public Message updateMessage(
+        UUID messageId,
+        String subject,
+        String body,
+        LocalDateTime scheduledDelivery,
+        List<UUID> trusteeIds
+) {
+    Message message = messageRepo.findById(messageId)
+            .orElseThrow(() -> new RuntimeException("Message not found"));
+
+    if (subject != null) {
+        message.setSubject(subject);
+    }
+
+    if (body != null) {
+        message.setBody(body);
+    }
+
+    if (scheduledDelivery != null) {
+        message.setScheduledDelivery(scheduledDelivery);
+    }
+
+    if (trusteeIds != null) {
+        List<User> trustees = userRepo.findAllById(trusteeIds);
+        message.setTrustees(trustees);
+    }
+
+    return messageRepo.save(message);
 }
 
 }

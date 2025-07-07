@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-public class MessageRequest {
+public class UpdateMessageRequest {
     private String subject;
     private String body;
     private LocalDateTime scheduledDelivery;
-    private List<UUID> trusteeIds; 
-    private String deliveryStatus;
+    private List<UUID> trusteeIds;
 }

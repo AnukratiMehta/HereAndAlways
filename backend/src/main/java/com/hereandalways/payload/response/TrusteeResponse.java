@@ -10,12 +10,26 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 public class TrusteeResponse {
-
     private UUID trusteeId;
     private String trusteeName;
     private String trusteeEmail;
     private String status;
     private LocalDateTime invitedAt;
-    private List<String> linkedMessages;
-    private List<String> linkedAssets;
+
+    private List<MessageSummary> messages;
+    private List<AssetSummary> assets;
+
+    @Data
+    @AllArgsConstructor
+    public static class MessageSummary {
+        private UUID id;
+        private String subject;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AssetSummary {
+        private UUID id;
+        private String name;
+    }
 }

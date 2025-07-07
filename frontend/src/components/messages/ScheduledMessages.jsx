@@ -28,32 +28,37 @@ const ScheduledMessages = ({ ownerId }) => {
       });
   }, [ownerId]);
 
-  const renderRow = (msg) => (
-    <tr key={msg.id} className="hover:bg-gray-50">
-      <td className="py-2 px-4">{msg.subject || "Untitled"}</td>
-      <td className="py-2 px-4 truncate max-w-xs">
-        {msg.body ? msg.body.slice(0, 50) + "..." : "—"}
-      </td>
-      <td className="py-2 px-4">{msg.trusteeName ?? "Unassigned"}</td>
-      <td className="py-2 px-4">{new Date(msg.createdAt).toLocaleDateString()}</td>
-      <td className="py-2 px-4">
-        <button
-          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
-          onClick={() => setViewingMessage(msg)}
-        >
-          <FontAwesomeIcon icon={icons.eye} /> View
-        </button>
-      </td>
-      <td className="py-2 px-4">
-        <button
-          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
-          onClick={() => setEditingMessage(msg)}
-        >
-          <FontAwesomeIcon icon={icons.pen} /> Edit
-        </button>
-      </td>
-    </tr>
-  );
+const renderRow = (msg) => (
+  <tr key={msg.id} className="hover:bg-gray-50">
+    <td className="py-2 px-4">{msg.subject || "Untitled"}</td>
+    <td className="py-2 px-4 truncate max-w-xs">
+      {msg.body ? msg.body.slice(0, 50) + "..." : "—"}
+    </td>
+    <td className="py-2 px-4">
+      {msg.trusteeNames && msg.trusteeNames.length > 0
+        ? msg.trusteeNames.join(", ")
+        : "Unassigned"}
+    </td>
+    <td className="py-2 px-4">{new Date(msg.createdAt).toLocaleDateString()}</td>
+    <td className="py-2 px-4">
+      <button
+        className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+        onClick={() => setViewingMessage(msg)}
+      >
+        <FontAwesomeIcon icon={icons.eye} /> View
+      </button>
+    </td>
+    <td className="py-2 px-4">
+      <button
+        className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+        onClick={() => setEditingMessage(msg)}
+      >
+        <FontAwesomeIcon icon={icons.pen} /> Edit
+      </button>
+    </td>
+  </tr>
+);
+
 
   return (
     <div className="mt-8">

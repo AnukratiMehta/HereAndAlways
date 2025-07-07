@@ -8,11 +8,11 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [scheduledDelivery, setScheduledDelivery] = useState("");
-  const [trusteeId, setTrusteeId] = useState("");
+  const [trusteeIds, setTrusteeIds] = useState([]); // MULTIPLE
   const [deliveryStatus, setDeliveryStatus] = useState("DRAFT");
   const [trustees, setTrustees] = useState([]);
 
-  // populate the form with existing message data
+  // populate
   useEffect(() => {
     if (message) {
       setSubject(message.subject || "");
@@ -22,7 +22,7 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
           ? new Date(message.scheduledDelivery).toISOString().slice(0, 16)
           : ""
       );
-      setTrusteeId(message.trusteeId || "");
+      setTrusteeIds(message.trusteeIds || []); // MULTIPLE
       setDeliveryStatus(message.deliveryStatus || "DRAFT");
     }
   }, [message]);
@@ -42,10 +42,10 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
         subject,
         body,
         scheduledDelivery: scheduledDelivery || null,
-        trusteeId: trusteeId || null,
+        trusteeIds, // array
         deliveryStatus,
       });
-      onSave(); // refresh list etc.
+      onSave();
       onClose();
     } catch (err) {
       console.error(err);
@@ -56,11 +56,11 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
   if (!message) return null;
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center z-50">
+    <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-sm">
       <div className="bg-white rounded shadow-lg w-full max-w-xl p-6 relative border border-lightGray">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-brandRose hover:text-brandRose-dark cursor-pointer text-2xl"
+          className="absolute top-4 right-4 text-brandRose hover:text-brandRose-dark text-2xl"
         >
           &times;
         </button>
@@ -93,19 +93,24 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-gray-700">Trustee</label>
+            <label className="block text-gray-700">Trustees</label>
             <select
+              multiple
               className="border rounded w-full p-2"
-              value={trusteeId}
-              onChange={(e) => setTrusteeId(e.target.value)}
+              value={trusteeIds}
+              onChange={(e) =>
+                setTrusteeIds(
+                  Array.from(e.target.selectedOptions, (opt) => opt.value)
+                )
+              }
             >
-              <option value="">Select Trustee</option>
               {trustees.map((t) => (
                 <option key={t.trusteeId} value={t.trusteeId}>
                   {t.trusteeName}
                 </option>
               ))}
             </select>
+            <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple.</p>
           </div>
           <div>
             <label className="block text-gray-700">Status</label>
@@ -120,13 +125,10 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-4">
-  <Button
-    onClick={handleSave}
-    color="primary"
-  >
-    <FontAwesomeIcon icon={icons.save} /> Save Changes
-  </Button>
-</div>
+          <Button onClick={handleSave} color="primary">
+            <FontAwesomeIcon icon={icons.save} /> Save Changes
+          </Button>
+        </div>
       </div>
     </div>
   );
