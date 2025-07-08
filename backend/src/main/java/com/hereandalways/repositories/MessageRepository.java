@@ -7,6 +7,7 @@ import com.hereandalways.payload.response.MessageSummaryProjection;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,7 +21,8 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
     List<Message> findByLegacyOwnerIdAndDeliveryStatus(UUID legacyOwnerId, DeliveryStatus status);
 
-    List<Message> findByLegacyOwnerIdOrderByLastAccessedAtDesc(UUID legacyOwnerId);
+@EntityGraph(attributePaths = {"trustees"})
+List<Message> findByLegacyOwnerIdOrderByLastAccessedAtDesc(UUID ownerId);
 
     @Query("""
         select m.id as id, m.subject as subject
@@ -29,4 +31,16 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
         where t.id = :trusteeId
     """)
     List<MessageSummaryProjection> findMessageSummariesByTrusteeId(UUID trusteeId);
+
+    @Query("""
+    SELECT m.id as id, m.subject as subject
+    FROM Message m
+    JOIN m.trustees t
+    WHERE t.id = :trusteeId AND m.legacyOwner.id = :ownerId
+""")
+List<MessageSummaryProjection> findMessageSummariesByTrusteeIdAndOwnerId(
+    @Param("trusteeId") UUID trusteeId,
+    @Param("ownerId") UUID ownerId
+);
+
 }

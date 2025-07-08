@@ -81,36 +81,38 @@ public class LegacyOwnerTrusteeController {
     }
 
     @GetMapping("/recent/{ownerId}")
-    public ResponseEntity<List<TrusteeResponse>> getRecentTrustees(@PathVariable UUID ownerId) {
-        var relationships = legacyOwnerTrusteeService.getRecentTrustees(ownerId);
+public ResponseEntity<List<TrusteeResponse>> getRecentTrustees(@PathVariable UUID ownerId) {
+    var relationships = legacyOwnerTrusteeService.getRecentTrustees(ownerId);
 
-        var responses = relationships.stream().map(rel -> {
-            var trustee = rel.getTrustee();
+    var responses = relationships.stream().map(rel -> {
+        var trustee = rel.getTrustee();
 
-            List<MessageSummary> messages = messageRepo.findMessageSummariesByTrusteeId(trustee.getId())
-                    .stream()
-                    .map(m -> new MessageSummary(m.getId(), m.getSubject()))
-                    .toList();
+        List<MessageSummary> messages = messageRepo
+            .findMessageSummariesByTrusteeIdAndOwnerId(trustee.getId(), ownerId)
+            .stream()
+            .map(m -> new MessageSummary(m.getId(), m.getSubject()))
+            .toList();
 
-            List<AssetSummary> assets = trustee.getAssets() != null
-                    ? trustee.getAssets().stream()
-                        .map(a -> new AssetSummary(a.getId(), a.getName()))
-                        .toList()
-                    : List.of();
+        List<AssetSummary> assets = trustee.getAssets() != null
+                ? trustee.getAssets().stream()
+                    .map(a -> new AssetSummary(a.getId(), a.getName()))
+                    .toList()
+                : List.of();
 
-            return new TrusteeResponse(
-                    trustee.getId(),
-                    trustee.getName(),
-                    trustee.getEmail(),
-                    rel.getStatus().name(),
-                    rel.getInvitedAt(),
-                    messages,
-                    assets
-            );
-        }).toList();
+        return new TrusteeResponse(
+                trustee.getId(),
+                trustee.getName(),
+                trustee.getEmail(),
+                rel.getStatus().name(),
+                rel.getInvitedAt(),
+                messages,
+                assets
+        );
+    }).toList();
 
-        return ResponseEntity.ok(responses);
-    }
+    return ResponseEntity.ok(responses);
+}
+
 
     @DeleteMapping("/{relationshipId}")
     public ResponseEntity<Void> removeTrustee(@PathVariable UUID relationshipId) {
