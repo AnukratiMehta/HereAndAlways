@@ -2,6 +2,7 @@ package com.hereandalways.controllers;
 
 import com.hereandalways.models.LegacyOwnerTrustee;
 import com.hereandalways.payload.request.InviteTrusteeRequest;
+import com.hereandalways.payload.request.TrusteeUpdateRequest;
 import com.hereandalways.payload.response.TrusteeResponse;
 import com.hereandalways.payload.response.TrusteeResponse.MessageSummary;
 import com.hereandalways.payload.response.TrusteeResponse.AssetSummary;
@@ -119,4 +120,15 @@ public ResponseEntity<List<TrusteeResponse>> getRecentTrustees(@PathVariable UUI
         legacyOwnerTrusteeService.removeTrustee(relationshipId);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/update/{trusteeId}")
+public ResponseEntity<Void> updateTrustee(
+        @PathVariable UUID trusteeId,
+        @RequestBody TrusteeUpdateRequest request
+) {
+    legacyOwnerTrusteeService.updateTrustee(trusteeId, request);
+    return ResponseEntity.noContent().build();
+}
+
+
 }

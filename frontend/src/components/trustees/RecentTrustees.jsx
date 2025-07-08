@@ -4,7 +4,7 @@ import Table from "../shared/Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import TrusteeViewModal from "./TrusteeViewModal";
-// import TrusteeEditModal from "./TrusteeEditModal";
+import TrusteeEditModal from "./TrusteeEditModal";
 
 const RecentTrustees = ({ ownerId }) => {
   const [trustees, setTrustees] = useState([]);
@@ -69,7 +69,7 @@ const RecentTrustees = ({ ownerId }) => {
         />
       )}
 
-      {/* {editingTrustee && (
+      {editingTrustee && (
         <TrusteeEditModal
           trustee={editingTrustee}
           onClose={() => setEditingTrustee(null)}
@@ -81,7 +81,7 @@ const RecentTrustees = ({ ownerId }) => {
               .finally(() => setEditingTrustee(null));
           }}
         />
-      )} */}
+      )}
     </div>
   );
 };

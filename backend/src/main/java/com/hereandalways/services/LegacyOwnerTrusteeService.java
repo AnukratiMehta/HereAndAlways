@@ -3,6 +3,8 @@ package com.hereandalways.services;
 import com.hereandalways.models.*;
 import com.hereandalways.models.enums.TrusteeStatus;
 import com.hereandalways.models.enums.UserRole;
+import com.hereandalways.payload.request.TrusteeUpdateRequest;
+import com.hereandalways.payload.response.TrusteeResponse;
 import com.hereandalways.repositories.LegacyOwnerTrusteeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,5 +62,33 @@ public class LegacyOwnerTrusteeService {
 public List<LegacyOwnerTrustee> getRecentTrustees(UUID ownerId) {
     return relationshipRepo.findByLegacyOwnerIdOrderByInvitedAtDesc(ownerId);
 }
+
+@Transactional
+public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
+    User trustee = userService.getUserEntityById(trusteeId)
+            .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
+
+    // Update name/email if changed
+    trustee.setName(request.getName());
+    trustee.setEmail(request.getEmail());
+    userService.saveUserEntity(trustee); // Persist changes
+
+    // Remove selected messages
+    if (request.getMessageIdsToRemove() != null) {
+        for (UUID messageId : request.getMessageIdsToRemove()) {
+            userService.removeTrusteeFromMessage(trusteeId, messageId);
+        }
+    }
+
+    // Remove selected assets
+    if (request.getAssetIdsToRemove() != null) {
+    for (UUID assetId : request.getAssetIdsToRemove()) {
+        userService.removeTrusteeFromAsset(trusteeId, assetId);
+    }
+}
+
+}
+
+
 
 }

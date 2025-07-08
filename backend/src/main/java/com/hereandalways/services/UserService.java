@@ -4,10 +4,16 @@ import com.hereandalways.models.User;
 import com.hereandalways.payload.request.UserRequest;
 import com.hereandalways.payload.response.UserResponse;
 import com.hereandalways.repositories.UserRepository;
+
+import jakarta.transaction.Transactional;
+
 import com.hereandalways.models.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.hereandalways.repositories.MessageRepository;
+import com.hereandalways.repositories.DigitalAssetRepository;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +26,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MessageRepository messageRepo;
+    private final DigitalAssetRepository assetRepo;
+
+
 
     /** DTO-based create */
     public UserResponse createUser(UserRequest request) {
@@ -87,4 +97,25 @@ public class UserService {
         dto.setUpdatedAt(user.getUpdatedAt());
         return dto;
     }
+
+    @Transactional
+public void removeTrusteeFromMessage(UUID trusteeId, UUID messageId) {
+    var trustee = getUserEntityById(trusteeId)
+            .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
+    var message = messageRepo.findById(messageId)
+            .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+    message.getTrustees().removeIf(t -> t.getId().equals(trusteeId));
+    messageRepo.save(message);
+}
+
+@Transactional
+public void removeTrusteeFromAsset(UUID trusteeId, UUID assetId) {
+    var trustee = getUserEntityById(trusteeId)
+            .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
+    var asset = assetRepo.findById(assetId)
+            .orElseThrow(() -> new IllegalArgumentException("Asset not found"));
+    asset.getTrustees().removeIf(t -> t.getId().equals(trusteeId));
+    assetRepo.save(asset);
+}
+
 }
