@@ -4,7 +4,7 @@ import Button from "../shared/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 
-const TrusteeEditModal = ({ trustee, onClose, onSave }) => {
+const TrusteeEditModal = ({ trustee, onClose, onTrusteeUpdated }) => {
   const [messages, setMessages] = useState(trustee.messages || []);
   const [assets, setAssets] = useState(trustee.assets || []);
   const [name, setName] = useState(trustee.trusteeName || "");
@@ -18,38 +18,30 @@ const TrusteeEditModal = ({ trustee, onClose, onSave }) => {
     setAssets(assets.filter((a) => a.id !== id));
   };
 
-const handleSave = async () => {
-  const originalMessageIds = (trustee.messages || []).map((m) => m.id);
-  const originalAssetIds = (trustee.assets || []).map((a) => a.id);
+  const handleSave = async () => {
+    const originalMessageIds = (trustee.messages || []).map((m) => m.id);
+    const originalAssetIds = (trustee.assets || []).map((a) => a.id);
 
-  const currentMessageIds = messages.map((m) => m.id);
-  const currentAssetIds = assets.map((a) => a.id);
+    const currentMessageIds = messages.map((m) => m.id);
+    const currentAssetIds = assets.map((a) => a.id);
 
-  const messageIdsToRemove = originalMessageIds.filter((id) => !currentMessageIds.includes(id));
-  const assetIdsToRemove = originalAssetIds.filter((id) => !currentAssetIds.includes(id));
+    const messageIdsToRemove = originalMessageIds.filter((id) => !currentMessageIds.includes(id));
+    const assetIdsToRemove = originalAssetIds.filter((id) => !currentAssetIds.includes(id));
 
-  console.log("Saving trustee updates:");
-  console.log("Trustee ID:", trustee.trusteeId);
-  console.log("Updated Name:", name);
-  console.log("Updated Email:", email);
-  console.log("Message IDs to remove:", messageIdsToRemove);
-  console.log("Asset IDs to remove:", assetIdsToRemove);
-
-  try {
-    const response = await axios.patch(`/api/trustees/update/${trustee.trusteeId}`, {
-      name,
-      email,
-      messageIdsToRemove,
-      assetIdsToRemove,
-    });
-    console.log("Update response:", response.data);
-    onSave();
-  } catch (error) {
-    console.error("Failed to update trustee:", error);
-    alert("Something went wrong while saving changes.");
-  }
-};
-
+    try {
+      await axios.patch(`/api/trustees/update/${trustee.trusteeId}`, {
+        name,
+        email,
+        messageIdsToRemove,
+        assetIdsToRemove,
+      });
+      onTrusteeUpdated(); // trigger reload in parent
+      onClose();          // close modal
+    } catch (error) {
+      console.error("Failed to update trustee:", error);
+      alert("Something went wrong while saving changes.");
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-sm">

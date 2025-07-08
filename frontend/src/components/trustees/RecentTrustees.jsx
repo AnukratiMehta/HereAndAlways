@@ -6,7 +6,7 @@ import { icons } from "../../icons/icons";
 import TrusteeViewModal from "./TrusteeViewModal";
 import TrusteeEditModal from "./TrusteeEditModal";
 
-const RecentTrustees = ({ ownerId }) => {
+const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated }) => {
   const [trustees, setTrustees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewingTrustee, setViewingTrustee] = useState(null);
@@ -14,17 +14,13 @@ const RecentTrustees = ({ ownerId }) => {
 
   useEffect(() => {
     if (!ownerId) return;
+    setLoading(true);
     axios
       .get(`/api/trustees/recent/${ownerId}`)
-      .then((res) => {
-        setTrustees(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, [ownerId]);
+      .then((res) => setTrustees(res.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [ownerId, reloadKey]);
 
   const renderRow = (trustee) => (
     <tr key={trustee.trusteeId} className="hover:bg-gray-50">
@@ -32,16 +28,10 @@ const RecentTrustees = ({ ownerId }) => {
       <td className="py-2 px-4">{trustee.trusteeEmail || "—"}</td>
       <td className="py-2 px-4 capitalize">{trustee.status || "—"}</td>
       <td className="py-2 px-4 text-right space-x-2">
-        <button
-          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
-          onClick={() => setViewingTrustee({ ...trustee })}
-        >
+        <button onClick={() => setViewingTrustee(trustee)} className="text-brandRose hover:text-brandRose-dark">
           <FontAwesomeIcon icon={icons.eye} /> View
         </button>
-        <button
-          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
-          onClick={() => setEditingTrustee({ ...trustee })}
-        >
+        <button onClick={() => setEditingTrustee(trustee)} className="text-brandRose hover:text-brandRose-dark">
           <FontAwesomeIcon icon={icons.pen} /> Edit
         </button>
       </td>
@@ -54,32 +44,16 @@ const RecentTrustees = ({ ownerId }) => {
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <Table
-          columns={["Name", "Email", "Status", ""]}
-          data={trustees}
-          renderRow={renderRow}
-          pageSize={5}
-        />
+        <Table columns={["Name", "Email", "Status", ""]} data={trustees} renderRow={renderRow} pageSize={5} />
       )}
 
-      {viewingTrustee && (
-        <TrusteeViewModal
-          trustee={viewingTrustee}
-          onClose={() => setViewingTrustee(null)}
-        />
-      )}
+      {viewingTrustee && <TrusteeViewModal trustee={viewingTrustee} onClose={() => setViewingTrustee(null)} />}
 
       {editingTrustee && (
         <TrusteeEditModal
           trustee={editingTrustee}
           onClose={() => setEditingTrustee(null)}
-          onSave={() => {
-            axios
-              .get(`/api/trustees/recent/${ownerId}`)
-              .then((res) => setTrustees(res.data))
-              .catch(console.error)
-              .finally(() => setEditingTrustee(null));
-          }}
+          onTrusteeUpdated={onTrusteeUpdated}
         />
       )}
     </div>
