@@ -1,8 +1,8 @@
 import { useState } from "react";
 import Sidebar from "../components/shared/Sidebar";
-import ProfileBar from "../components/shared/ProfileBar"; // you will tweak this for trustees
+import ProfileBar from "../components/shared/ProfileBar";
 import RecentTrustees from "../components/trustees/RecentTrustees";
-// import PendingInvites from "../components/trustees/PendingInvites";
+import PendingTrustees from "../components/trustees/PendingTrustees";
 
 const Trustees = () => {
   const [view, setView] = useState("home");
@@ -20,7 +20,7 @@ const Trustees = () => {
         {view === "home" && (
           <>
 <RecentTrustees ownerId={ownerId} />
-            {/* <PendingInvites /> */}
+<PendingTrustees ownerId={ownerId} />
           </>
         )}
 
