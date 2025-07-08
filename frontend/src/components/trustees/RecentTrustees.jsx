@@ -27,10 +27,12 @@ const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated }) => {
       <td className="py-2 px-4">{trustee.trusteeName || "—"}</td>
       <td className="py-2 px-4">{trustee.trusteeEmail || "—"}</td>
       <td className="py-2 px-4 capitalize">{trustee.status || "—"}</td>
-      <td className="py-2 px-4 text-right space-x-2">
+      <td className="py-2 px-4">
         <button onClick={() => setViewingTrustee(trustee)} className="text-brandRose hover:text-brandRose-dark">
           <FontAwesomeIcon icon={icons.eye} /> View
         </button>
+</td>
+        <td className="py-2 px-4">
         <button onClick={() => setEditingTrustee(trustee)} className="text-brandRose hover:text-brandRose-dark">
           <FontAwesomeIcon icon={icons.pen} /> Edit
         </button>
@@ -44,7 +46,7 @@ const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated }) => {
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <Table columns={["Name", "Email", "Status", ""]} data={trustees} renderRow={renderRow} pageSize={5} />
+        <Table columns={["Name", "Email", "Status", "", ""]} data={trustees} renderRow={renderRow} pageSize={5} />
       )}
 
       {viewingTrustee && <TrusteeViewModal trustee={viewingTrustee} onClose={() => setViewingTrustee(null)} />}
