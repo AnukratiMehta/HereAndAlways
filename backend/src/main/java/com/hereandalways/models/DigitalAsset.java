@@ -26,22 +26,29 @@ public class DigitalAsset {
   @Column(nullable = false)
   private String name;
 
-  @Lob private String description;
+  @Lob
+  private String description;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "asset_type", nullable = false)
   private AssetType assetType;
 
-  @Column(name = "secure_link")
-  private String secureLink;
+  @Column(name = "download_url")
+  private String downloadUrl; // formerly 'secureLink'
 
   @Column(name = "encrypted_key", nullable = false)
   private String encryptedKey;
 
+  @Column(name = "file_size")
+  private Long fileSize;
+
+  @Column(name = "mime_type")
+  private String mimeType;
+
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  // Relationships
+  // Ownership
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "legacy_owner_id",
@@ -49,16 +56,19 @@ public class DigitalAsset {
       foreignKey = @ForeignKey(name = "fk_digital_asset_owner"))
   private User legacyOwner;
 
+  // Trustee linkage
   @ManyToMany
-@JoinTable(
-    name = "asset_trustees",
-    joinColumns = @JoinColumn(name = "asset_id"),
-    inverseJoinColumns = @JoinColumn(name = "trustee_id")
-)
-private List<User> trustees;
+  @JoinTable(
+      name = "asset_trustees",
+      joinColumns = @JoinColumn(name = "asset_id"),
+      inverseJoinColumns = @JoinColumn(name = "trustee_id")
+  )
+  private List<User> trustees;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "linked_message_id")
+  private Message linkedMessage;
 
-  // Callback
   @PrePersist
   protected void onCreate() {
     this.createdAt = LocalDateTime.now();

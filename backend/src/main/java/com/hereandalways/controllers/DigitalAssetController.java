@@ -1,16 +1,15 @@
 package com.hereandalways.controllers;
 
 import com.hereandalways.models.DigitalAsset;
-import com.hereandalways.models.enums.AssetType;
+import com.hereandalways.models.User;
 import com.hereandalways.services.DigitalAssetService;
-import jakarta.validation.constraints.NotNull;
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
+import com.hereandalways.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/assets")
@@ -18,29 +17,30 @@ import org.springframework.web.multipart.MultipartFile;
 public class DigitalAssetController {
 
   private final DigitalAssetService assetService;
+  private final UserService userService;
 
   @PostMapping
   public ResponseEntity<DigitalAsset> createAsset(
-      @RequestParam @NotNull UUID ownerId,
-      @RequestParam String name,
-      @RequestParam(required = false) String description,
-      @RequestParam AssetType type,
-      @RequestParam(required = false) MultipartFile file)
-      throws IOException {
-
-    DigitalAsset asset = assetService.createAsset(ownerId, name, description, type, file);
-    return ResponseEntity.ok(asset);
+      @RequestBody DigitalAsset asset,
+      @RequestParam UUID ownerId
+  ) {
+    DigitalAsset saved = assetService.saveAsset(asset, ownerId);
+    return ResponseEntity.ok(saved);
   }
 
-  @GetMapping("/owner/{ownerId}")
-  public ResponseEntity<List<DigitalAsset>> getAllAssets(@PathVariable UUID ownerId) {
+  @GetMapping
+  public ResponseEntity<List<DigitalAsset>> getAssetsByOwner(@RequestParam UUID ownerId) {
     return ResponseEntity.ok(assetService.getAssetsByOwner(ownerId));
   }
 
-  @DeleteMapping("/{assetId}")
-  public ResponseEntity<Void> deleteAsset(@PathVariable UUID assetId, @RequestParam UUID ownerId)
-      throws IOException {
-    assetService.deleteAsset(assetId, ownerId);
+  @GetMapping("/trustee/{trusteeId}")
+  public ResponseEntity<List<DigitalAsset>> getAssetsByTrustee(@PathVariable UUID trusteeId) {
+    return ResponseEntity.ok(assetService.getAssetsByTrustee(trusteeId));
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteAsset(@PathVariable UUID id) {
+    assetService.deleteAsset(id);
     return ResponseEntity.noContent().build();
   }
 }
