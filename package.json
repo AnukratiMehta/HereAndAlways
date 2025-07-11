@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@supabase/supabase-js": "^2.50.5",
     "axios": "^1.10.0",
     "prop-types": "^15.8.1"
   }
