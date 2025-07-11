@@ -15,3 +15,5 @@ Thumbs.db
 .idea/workspace.xml
 .idea/modules.xml
 .vscode/launch.json
+
+node_modules
