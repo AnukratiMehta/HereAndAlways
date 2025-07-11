@@ -90,6 +90,46 @@ const ProfileBar = ({
       );
     }
 
+    if (type === "assets") {
+  return (
+    <div className="space-y-2 text-sm font-medium">
+      <button
+        onClick={() => setView("all")}
+        className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+          view === "all"
+            ? "bg-brandRose text-white"
+            : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+        }`}
+      >
+        <FontAwesomeIcon icon={icons.assets} />
+        All Assets
+      </button>
+      <button
+        onClick={() => setView("messages")}
+        className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+          view === "messages"
+            ? "bg-brandRose text-white"
+            : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+        }`}
+      >
+        <FontAwesomeIcon icon={icons.messages} />
+        Linked to Messages
+      </button>
+      <button
+        onClick={() => setView("trustees")}
+        className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+          view === "trustees"
+            ? "bg-brandRose text-white"
+            : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+        }`}
+      >
+        <FontAwesomeIcon icon={icons.userShield} />
+        Linked to Trustees
+      </button>
+    </div>
+  );
+}
+
     return null;
   };
 
@@ -128,13 +168,18 @@ const ProfileBar = ({
 
         {/* New item button */}
         <Button
-          onClick={onNewItem}
-          color="primary"
-          className="w-full mb-4"
-        >
-          <FontAwesomeIcon icon={icons.plus} className="mr-2" />
-          {type === "messages" ? "New Message" : "Invite Trustee"}
-        </Button>
+  onClick={onNewItem}
+  color="primary"
+  className="w-full mb-4"
+>
+  <FontAwesomeIcon icon={icons.plus} className="mr-2" />
+  {type === "messages"
+    ? "New Message"
+    : type === "assets"
+    ? "Upload Asset"
+    : "Invite Trustee"}
+</Button>
+
 
         {/* filters */}
         {renderFilters()}

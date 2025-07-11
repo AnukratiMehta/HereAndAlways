@@ -18,6 +18,13 @@ import {
   faUserPlus,
   faUsers,
   faGlobe,
+  faUpload,
+  faKey,
+  faFileAlt,
+  faLink,
+  faImage,
+  faVideo,
+  faMusic
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -40,7 +47,13 @@ const icons = {
   userShield: faUserShield,
   users: faUsers,
   globe: faGlobe,
-  
+  upload: faUpload,
+  key: faKey,
+  fileAlt: faFileAlt,
+  link: faLink,
+  image: faImage,
+  video: faVideo,
+  music: faMusic,  
 };
 
 export { FontAwesomeIcon, icons };
