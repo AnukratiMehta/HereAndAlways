@@ -4,7 +4,8 @@ import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
 import axios from "axios";
 import { supabase } from "../../utils/supabaseClient";
-import { v4 as uuidv4 } from "uuid";
+import { generateAESKey, exportKeyAsBase64 } from "../../utils/encryptionUtils";
+
 
 const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
   const [files, setFiles] = useState([]);
@@ -13,66 +14,68 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
     setFiles(Array.from(e.target.files));
   };
 
-const handleUpload = async () => {
-  if (files.length === 0) {
-    alert("Please select at least one file to upload.");
-    return;
-  }
 
+const handleUpload = async () => {
   try {
     const uploadedAssets = [];
 
     for (const file of files) {
-      console.log("Uploading file:", file.name);
+      // 1. Generate AES key and export to base64
+      const key = await generateAESKey();
+      const encryptedKey = await exportKeyAsBase64(key);
 
-      const filePath = `${uuidv4()}_${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // 2. Upload file first
+      const filePath = `${crypto.randomUUID()}_${file.name}`; // avoid clashes
+
+      const { error } = await supabase.storage
         .from("assets")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          upsert: false,
+          contentType: file.type,
+          cacheControl: "3600",
+          metadata: {
+            owner_id: "1d28bf25-fce1-4e4f-9309-b3471db1d88b",
+          },
+        });
 
-      if (uploadError) {
-        console.error("Supabase upload error:", uploadError.message);
+      if (error) {
+        console.error("Supabase upload error:", error.message);
         continue;
       }
 
-      const { data: urlData, error: urlError } = supabase.storage
-        .from("assets")
-        .getPublicUrl(filePath);
-
-      if (urlError) {
-        console.error("URL fetch error:", urlError.message);
-        continue;
-      }
-
+      // 3. Now POST to backend with the actual downloadUrl
       const metadata = {
         name: file.name,
         assetType: "DOCUMENT",
-        downloadUrl: urlData.publicUrl,
-        encryptedKey: "placeholder-key",
         fileSize: file.size,
         mimeType: file.type,
         description: "",
+        downloadUrl: `/assets/${filePath}`,
+        encryptedKey,
       };
 
-      const response = await axios.post(
+      const backendResponse = await axios.post(
         `/api/assets?ownerId=1d28bf25-fce1-4e4f-9309-b3471db1d88b`,
         metadata
       );
 
-      console.log("Backend response:", response.data);
-      uploadedAssets.push(response.data);
+      uploadedAssets.push(backendResponse.data);
     }
 
-    if (uploadedAssets.length > 0) {
-      onUploadComplete(uploadedAssets);
-    } else {
-      alert("No assets were uploaded. Check console for errors.");
+    if (uploadedAssets.length === 0) {
+      alert("No assets were uploaded. Check console for details.");
+      return;
     }
+
+    onUploadComplete(uploadedAssets);
   } catch (err) {
     console.error("Upload failed:", err);
-    alert("Upload failed. See console for details.");
+    alert("Upload failed. Check console for details.");
   }
 };
+
+
+
 
 
 

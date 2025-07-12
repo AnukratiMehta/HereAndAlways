@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
 import AssetUploadForm from "../components/assets/AssetUploadForm";
@@ -10,6 +11,22 @@ const Assets = () => {
   const [assets, setAssets] = useState([]);
 
   const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
+
+  // ✅ Fetch assets on initial load
+  useEffect(() => {
+    const fetchAssets = async () => {
+      try {
+        const response = await axios.get("/api/assets", {
+          params: { ownerId },
+        });
+        setAssets(response.data);
+      } catch (err) {
+        console.error("Failed to load assets", err);
+      }
+    };
+
+    fetchAssets();
+  }, [ownerId]);
 
   const handleUploadComplete = (newAssets) => {
     setAssets((prev) => [...prev, ...newAssets]);

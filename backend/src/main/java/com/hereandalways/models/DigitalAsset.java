@@ -26,15 +26,15 @@ public class DigitalAsset {
   @Column(nullable = false)
   private String name;
 
-  @Lob
-  private String description;
+  @Column(columnDefinition = "TEXT")
+private String description;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "asset_type", nullable = false)
   private AssetType assetType;
 
   @Column(name = "download_url")
-  private String downloadUrl; // formerly 'secureLink'
+  private String downloadUrl;
 
   @Column(name = "encrypted_key", nullable = false)
   private String encryptedKey;
