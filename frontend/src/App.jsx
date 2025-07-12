@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Messages from './pages/Messages';
 import Trustees from './pages/Trustees';
 import Assets from './pages/Assets';
+import Vault from './pages/Vault';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/trustees" element={<Trustees />} />
         <Route path="/assets" element={<Assets />} />
+        <Route path="/vault" element={<Vault />} />
 
 
       </Routes>

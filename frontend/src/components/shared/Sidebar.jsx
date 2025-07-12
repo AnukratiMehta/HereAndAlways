@@ -6,8 +6,10 @@ const Sidebar = () => {
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
     { to: '/messages', label: 'Messages', icon: 'messages' },
-    { to: '/assets', label: 'Digital Assets', icon: 'assets' },
+    { to: '/assets', label: 'Memories', icon: 'assets' },
+    { to: '/vault', label: 'Vault', icon: 'vault' },
     { to: '/trustees', label: 'Trustees', icon: 'trustees' },
+
   ];
 
   const bottomItems = [

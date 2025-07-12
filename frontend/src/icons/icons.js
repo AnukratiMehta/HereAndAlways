@@ -58,7 +58,8 @@ const icons = {
   video: faVideo,
   music: faMusic,
   trash: faTrashCan,
-  download: faDownload  
+  download: faDownload,
+  vault: faKey,  
 };
 
 export { FontAwesomeIcon, icons };
