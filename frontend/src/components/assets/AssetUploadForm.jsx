@@ -9,6 +9,22 @@ import { generateAESKey, exportKeyAsBase64 } from "../../utils/encryptionUtils";
 
 const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
 
+// Utility to determine assetType from MIME type
+const determineAssetType = (mimeType) => {
+  if (!mimeType) return "DOCUMENT";
+
+  if (mimeType.startsWith("image/")) return "IMAGE";
+  if (mimeType.startsWith("video/")) return "VIDEO";
+  if (mimeType.startsWith("audio/")) return "MUSIC";
+  if (mimeType === "application/pdf" || mimeType.includes("document")) return "DOCUMENT";
+  if (mimeType === "text/plain" || mimeType === "application/json") return "DOCUMENT";
+  if (mimeType.includes("zip") || mimeType.includes("compressed")) return "DOCUMENT";
+  if (mimeType.includes("msword") || mimeType.includes("wordprocessingml")) return "DOCUMENT";
+  if (mimeType.includes("spreadsheetml") || mimeType.includes("excel")) return "DOCUMENT";
+
+  return "DOCUMENT";
+};
+
 const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
   const [files, setFiles] = useState([]);
   const [trustees, setTrustees] = useState([]);
@@ -43,20 +59,26 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
       const uploadedAssets = [];
 
       for (const file of files) {
-        const key = await generateAESKey();
-        const encryptedKey = await exportKeyAsBase64(key);
-        const filePath = `${crypto.randomUUID()}_${file.name}`;
+  const key = await generateAESKey();
+  const encryptedKey = await exportKeyAsBase64(key);
 
-        const { error } = await supabase.storage
-          .from("assets")
-          .upload(filePath, file, {
-            upsert: false,
-            contentType: file.type,
-            cacheControl: "3600",
-            metadata: {
-              owner_id: ownerId,
-            },
-          });
+  const sanitizedFileName = file.name
+    .replace(/\s+/g, "_")
+    .replace(/[^\w.\-()]/g, "");
+
+  const filePath = `${crypto.randomUUID()}_${sanitizedFileName}`;
+  const assetType = determineAssetType(file.type);
+
+  const { error } = await supabase.storage
+    .from("assets")
+    .upload(filePath, file, {
+      upsert: false,
+      contentType: file.type,
+      cacheControl: "3600",
+      metadata: {
+        owner_id: ownerId,
+      },
+    });
 
         if (error) {
           console.error("Supabase upload error:", error.message);
@@ -65,7 +87,7 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
 
         const metadata = {
           name: file.name,
-          assetType: "DOCUMENT",
+          assetType,
           fileSize: file.size,
           mimeType: file.type,
           description: "",
@@ -73,7 +95,6 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
           encryptedKey,
           trusteeIds: linkAllEnabled ? selectedTrustees.map(t => t.value) : [],
           messageIds: linkAllEnabled ? selectedMessageIds.map((m) => m.value) : [],
-
         };
 
         const backendResponse = await axios.post(
@@ -118,7 +139,6 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
         </ul>
       )}
 
-      {/* Link all toggle */}
       <div className="flex items-center mb-4">
         <input
           type="checkbox"
@@ -134,23 +154,20 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
 
       {linkAllEnabled && (
         <>
-         {/* Trustee multi-dropdown */}
-<div className="mb-4">
-  <label className="block font-medium text-sm mb-1">Select Trustees:</label>
-  <Select
-    isMulti
-    options={trustees.map((t) => ({
-  value: t.trusteeId,
-  label: t.trusteeName || t.trusteeEmail || "Unnamed",
-}))}
-    value={selectedTrustees}
-    onChange={(selected) => setSelectedTrustees(selected || [])}
-    placeholder="Choose trustees..."
-  />
-</div>
+          <div className="mb-4">
+            <label className="block font-medium text-sm mb-1">Select Trustees:</label>
+            <Select
+              isMulti
+              options={trustees.map((t) => ({
+                value: t.trusteeId,
+                label: t.trusteeName || t.trusteeEmail || "Unnamed",
+              }))}
+              value={selectedTrustees}
+              onChange={(selected) => setSelectedTrustees(selected || [])}
+              placeholder="Choose trustees..."
+            />
+          </div>
 
-
-          {/* Message multi-dropdown */}
           <div className="mb-4">
             <label className="block font-medium text-sm mb-1">Select Message:</label>
             <Select

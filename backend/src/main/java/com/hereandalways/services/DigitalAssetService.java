@@ -3,6 +3,7 @@ package com.hereandalways.services;
 import com.hereandalways.models.DigitalAsset;
 import com.hereandalways.models.Message;
 import com.hereandalways.models.User;
+import com.hereandalways.models.enums.AssetType;
 import com.hereandalways.payload.request.DigitalAssetRequest;
 import com.hereandalways.payload.response.DigitalAssetResponse;
 import com.hereandalways.repositories.DigitalAssetRepository;
@@ -61,7 +62,6 @@ public class DigitalAssetService {
       if (updates.containsKey("description")) {
         asset.setDescription(updates.get("description"));
       }
-      // Add more fields here if needed
       assetRepo.save(asset);
     });
     return opt;
@@ -90,10 +90,15 @@ public class DigitalAssetService {
         ? new HashSet<>(messageRepo.findAllById(request.getMessageIds()))
         : new HashSet<>();
 
+    AssetType type = request.getAssetType();
+    if (type == null || type == AssetType.DOCUMENT) {
+      type = inferAssetType(request.getMimeType());
+    }
+
     DigitalAsset asset = new DigitalAsset();
     asset.setName(request.getName());
     asset.setDescription(request.getDescription());
-    asset.setAssetType(request.getAssetType());
+    asset.setAssetType(type);
     asset.setDownloadUrl(request.getDownloadUrl());
     asset.setEncryptedKey(request.getEncryptedKey());
     asset.setFileSize(request.getFileSize());
@@ -113,22 +118,26 @@ public class DigitalAssetService {
 
     DigitalAsset asset = existingOpt.get();
 
-    // Update fields if present
     if (request.getName() != null) asset.setName(request.getName());
     if (request.getDescription() != null) asset.setDescription(request.getDescription());
-    if (request.getAssetType() != null) asset.setAssetType(request.getAssetType());
     if (request.getDownloadUrl() != null) asset.setDownloadUrl(request.getDownloadUrl());
     if (request.getEncryptedKey() != null) asset.setEncryptedKey(request.getEncryptedKey());
     if (request.getFileSize() != null) asset.setFileSize(request.getFileSize());
     if (request.getMimeType() != null) asset.setMimeType(request.getMimeType());
 
-    // Update trustees
+    if (request.getAssetType() != null) {
+      AssetType type = request.getAssetType();
+      if (type == AssetType.DOCUMENT) {
+        type = inferAssetType(request.getMimeType());
+      }
+      asset.setAssetType(type);
+    }
+
     if (request.getTrusteeIds() != null) {
       List<User> updatedTrustees = userRepo.findAllById(request.getTrusteeIds());
       asset.setTrustees(updatedTrustees);
     }
 
-    // Update linked messages
     if (request.getMessageIds() != null) {
       Set<Message> updatedMessages = new HashSet<>(messageRepo.findAllById(request.getMessageIds()));
       asset.setLinkedMessages(updatedMessages);
@@ -137,7 +146,16 @@ public class DigitalAssetService {
     DigitalAsset updated = assetRepo.save(asset);
     return Optional.of(DigitalAssetResponse.fromEntity(updated));
   }
-  
+
+  private AssetType inferAssetType(String mimeType) {
+    if (mimeType == null) return AssetType.DOCUMENT;
+    if (mimeType.startsWith("image/")) return AssetType.IMAGE;
+    if (mimeType.startsWith("video/")) return AssetType.VIDEO;
+    if (mimeType.startsWith("audio/")) return AssetType.MUSIC;
+    if (mimeType.contains("pdf") || mimeType.contains("msword") || mimeType.contains("document")) return AssetType.DOCUMENT;
+    if (mimeType.contains("spreadsheet") || mimeType.contains("excel")) return AssetType.DOCUMENT;
+    if (mimeType.contains("zip") || mimeType.contains("compressed")) return AssetType.DOCUMENT;
+    if (mimeType.contains("plain") || mimeType.contains("json")) return AssetType.DOCUMENT;
+    return AssetType.DOCUMENT;
+  }
 }
-
-
