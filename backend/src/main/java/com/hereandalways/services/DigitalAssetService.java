@@ -67,8 +67,14 @@ public class DigitalAssetService {
     return opt;
   }
 
+  @Transactional
   public void deleteAsset(UUID id) {
-    assetRepo.deleteById(id);
+    Optional<DigitalAsset> assetOpt = assetRepo.findById(id);
+    assetOpt.ifPresent(asset -> {
+      asset.getTrustees().clear();
+      asset.setLinkedMessages(new HashSet<>());
+      assetRepo.delete(asset);
+    });
   }
 
   @Transactional
@@ -131,4 +137,7 @@ public class DigitalAssetService {
     DigitalAsset updated = assetRepo.save(asset);
     return Optional.of(DigitalAssetResponse.fromEntity(updated));
   }
+  
 }
+
+

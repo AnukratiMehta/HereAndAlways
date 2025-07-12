@@ -12,7 +12,11 @@ const Assets = () => {
 
   const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
 
-  // ✅ Fetch assets on initial load
+const handleDelete = (deletedId) => {
+  setAssets((prev) => prev.filter((asset) => asset.id !== deletedId));
+};
+
+
   useEffect(() => {
     const fetchAssets = async () => {
       try {
@@ -67,8 +71,9 @@ const Assets = () => {
         {filteredAssets.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filteredAssets.map((asset, idx) => (
-              <AssetCard key={idx} asset={asset} />
-            ))}
+  <AssetCard key={idx} asset={asset} onDelete={handleDelete} />
+))}
+
           </div>
         ) : (
           <div className="text-gray-500">No assets uploaded yet.</div>
