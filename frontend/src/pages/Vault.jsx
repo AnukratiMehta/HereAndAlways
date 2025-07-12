@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
+import CredentialUploadForm from "../components/vault/CredentialUploadForm";
 
 const Vault = () => {
   const [view, setView] = useState("home");
@@ -70,10 +71,13 @@ const Vault = () => {
           <h1 className="text-2xl font-bold">Secure Vault</h1>
         </div>
 
-        {/* TODO: Add VaultForm and VaultModal when ready */}
         {showModal && (
-          <div className="text-gray-600">VaultForm goes here...</div>
-        )}
+  <CredentialUploadForm
+    onUploadComplete={handleUploadComplete}
+    onCancel={() => setShowModal(false)}
+  />
+)}
+
 
         {editingCredential && (
           <div className="text-gray-600">EditVaultModal goes here...</div>

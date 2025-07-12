@@ -26,8 +26,12 @@ import {
   faVideo,
   faMusic,
   faTrashCan,
-  faDownLong,
-  faDownload
+  faDownload,
+  faLock,
+  faHashtag,
+  faCreditCard,
+  faSpinner,
+  faSave
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -59,7 +63,12 @@ const icons = {
   music: faMusic,
   trash: faTrashCan,
   download: faDownload,
-  vault: faKey,  
+  vault: faKey,
+  lock: faLock,
+  instagram: faHashtag,
+  creditCard: faCreditCard,
+  spinner: faSpinner,
+  save: faSave  
 };
 
 export { FontAwesomeIcon, icons };

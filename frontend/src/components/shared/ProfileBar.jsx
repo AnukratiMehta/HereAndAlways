@@ -13,7 +13,39 @@ const ProfileBar = ({
     if (type === "messages") {
       return (
         <div className="space-y-2 text-sm font-medium">
-          {/* ...existing buttons */}
+          <button
+            onClick={() => setView("drafts")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "drafts"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.save} />
+            Drafts
+          </button>
+          <button
+            onClick={() => setView("scheduled")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "scheduled"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.clock} />
+            Scheduled
+          </button>
+          <button
+            onClick={() => setView("starred")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "starred"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.star} />
+            Starred
+          </button>
         </div>
       );
     }
@@ -21,7 +53,39 @@ const ProfileBar = ({
     if (type === "trustees") {
       return (
         <div className="space-y-2 text-sm font-medium">
-          {/* ...existing buttons */}
+          <button
+            onClick={() => setView("individual")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "individual"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.userShield} />
+            Individual Trustees
+          </button>
+          <button
+            onClick={() => setView("external")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "external"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.globe} />
+            External Trustees
+          </button>
+          <button
+            onClick={() => setView("group")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "group"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.users} />
+            Group Trustees
+          </button>
         </div>
       );
     }
@@ -29,7 +93,39 @@ const ProfileBar = ({
     if (type === "assets") {
       return (
         <div className="space-y-2 text-sm font-medium">
-          {/* ...existing buttons */}
+          <button
+            onClick={() => setView("all")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "all"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.assets} />
+            All Assets
+          </button>
+          <button
+            onClick={() => setView("messages")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "messages"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.messages} />
+            Linked to Messages
+          </button>
+          <button
+            onClick={() => setView("trustees")}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
+              view === "trustees"
+                ? "bg-brandRose text-white"
+                : "hover:bg-brandRose hover:text-white text-brandRose-dark"
+            }`}
+          >
+            <FontAwesomeIcon icon={icons.userShield} />
+            Linked to Trustees
+          </button>
         </div>
       );
     }
@@ -83,7 +179,7 @@ const ProfileBar = ({
       style={{
         marginRight: "1rem",
         marginBottom: "1rem",
-        height: "calc(100vh - 6rem)",
+        height: "calc(100vh - 6rem)"
       }}
     >
       <div>
@@ -98,7 +194,7 @@ const ProfileBar = ({
           </div>
         </div>
 
-        {/* Back button */}
+        {/* Back button for non-home views */}
         {view !== "home" && (
           <Button
             onClick={() => setView("home")}
@@ -110,8 +206,12 @@ const ProfileBar = ({
           </Button>
         )}
 
-        {/* New item */}
-        <Button onClick={onNewItem} color="primary" className="w-full mb-4">
+        {/* New item button */}
+        <Button
+          onClick={onNewItem}
+          color="primary"
+          className="w-full mb-4"
+        >
           <FontAwesomeIcon icon={icons.plus} className="mr-2" />
           {type === "messages"
             ? "New Message"
@@ -122,7 +222,7 @@ const ProfileBar = ({
             : "Invite Trustee"}
         </Button>
 
-        {/* Filters */}
+        {/* filters */}
         {renderFilters()}
       </div>
 
