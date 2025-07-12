@@ -126,7 +126,32 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
     <div className="bg-white shadow rounded-xl p-6 mb-6 border border-lightGray">
       <h2 className="text-xl font-semibold mb-4">Upload Assets</h2>
 
-      <input type="file" multiple onChange={handleFileChange} className="mb-4" />
+<div className="mb-4">
+  <label
+    htmlFor="file-upload"
+    className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-gray-700 bg-white rounded-md shadow-sm text-sm font-medium cursor-pointer hover:bg-gray-100 transition"
+  >
+    Choose Files
+  </label>
+
+  <input
+    id="file-upload"
+    type="file"
+    multiple
+    onChange={handleFileChange}
+    className="hidden"
+  />
+
+  {files.length > 0 && (
+    <ul className="mt-2 text-sm text-gray-600">
+      {files.map((file, idx) => (
+        <li key={idx}>
+          {file.name} <span className="text-xs text-gray-400">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
 
       {files.length > 0 && (
         <ul className="mb-4 text-sm text-gray-600">
