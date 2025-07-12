@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
@@ -8,11 +9,11 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [scheduledDelivery, setScheduledDelivery] = useState("");
-  const [trusteeIds, setTrusteeIds] = useState([]); // MULTIPLE
+  const [selectedTrustees, setSelectedTrustees] = useState([]);
   const [deliveryStatus, setDeliveryStatus] = useState("DRAFT");
   const [trustees, setTrustees] = useState([]);
 
-  // populate
+  // Populate fields when message is passed
   useEffect(() => {
     if (message) {
       setSubject(message.subject || "");
@@ -22,17 +23,35 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
           ? new Date(message.scheduledDelivery).toISOString().slice(0, 16)
           : ""
       );
-      setTrusteeIds(message.trusteeIds || []); // MULTIPLE
+      setSelectedTrustees(
+        message.trusteeIds?.map((id) => ({
+          value: id,
+          label: "", // Will be updated after fetching full trustee data
+        })) || []
+      );
       setDeliveryStatus(message.deliveryStatus || "DRAFT");
     }
   }, [message]);
 
-  // load trustees
+  // Fetch trustees and match them to pre-selected IDs
   useEffect(() => {
     if (!ownerId) return;
     axios
       .get(`/api/trustees/${ownerId}`)
-      .then((res) => setTrustees(res.data))
+      .then((res) => {
+        setTrustees(res.data);
+
+        // Map selectedTrustees to full labels
+        setSelectedTrustees((prev) =>
+          prev.map((t) => {
+            const full = res.data.find((tt) => tt.trusteeId === t.value);
+            return {
+              value: t.value,
+              label: full?.trusteeName || full?.trusteeEmail || "Unnamed",
+            };
+          })
+        );
+      })
       .catch((err) => console.error(err));
   }, [ownerId]);
 
@@ -42,7 +61,7 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
         subject,
         body,
         scheduledDelivery: scheduledDelivery || null,
-        trusteeIds, // array
+        trusteeIds: selectedTrustees.map((t) => t.value),
         deliveryStatus,
       });
       onSave();
@@ -93,24 +112,17 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className="block text-gray-700">Trustees</label>
-            <select
-              multiple
-              className="border rounded w-full p-2"
-              value={trusteeIds}
-              onChange={(e) =>
-                setTrusteeIds(
-                  Array.from(e.target.selectedOptions, (opt) => opt.value)
-                )
-              }
-            >
-              {trustees.map((t) => (
-                <option key={t.trusteeId} value={t.trusteeId}>
-                  {t.trusteeName}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple.</p>
+            <label className="block text-gray-700 mb-1">Trustees</label>
+            <Select
+              isMulti
+              options={trustees.map((t) => ({
+                value: t.trusteeId,
+                label: t.trusteeName || t.trusteeEmail || "Unnamed",
+              }))}
+              value={selectedTrustees}
+              onChange={(selected) => setSelectedTrustees(selected || [])}
+              placeholder="Choose trustees..."
+            />
           </div>
           <div>
             <label className="block text-gray-700">Status</label>
