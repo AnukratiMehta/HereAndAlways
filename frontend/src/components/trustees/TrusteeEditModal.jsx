@@ -78,10 +78,10 @@ const TrusteeEditModal = ({ trustee, onClose, onTrusteeUpdated }) => {
         <div className="mb-4">
           <strong>Linked Messages:</strong>
           {messages.length > 0 ? (
-            <ul className="list-disc ml-6 mt-1">
+            <ul className="list-disc ml-6 mt-1 space-y-1">
               {messages.map((msg) => (
-                <li key={msg.id} className="flex justify-between items-center">
-                  {msg.subject}
+                <li key={msg.id} className="flex justify-between items-start">
+                  <span className="pr-2 break-words max-w-xs">{msg.subject}</span>
                   <button
                     onClick={() => handleRemoveMessage(msg.id)}
                     className="text-sm text-red-500 hover:underline"
@@ -99,10 +99,10 @@ const TrusteeEditModal = ({ trustee, onClose, onTrusteeUpdated }) => {
         <div className="mb-4">
           <strong>Linked Assets:</strong>
           {assets.length > 0 ? (
-            <ul className="list-disc ml-6 mt-1">
+            <ul className="list-disc ml-6 mt-1 space-y-1">
               {assets.map((asset) => (
-                <li key={asset.id} className="flex justify-between items-center">
-                  {asset.name}
+                <li key={asset.id} className="flex justify-between items-start">
+                  <span className="pr-2 break-words max-w-xs">{asset.name}</span>
                   <button
                     onClick={() => handleRemoveAsset(asset.id)}
                     className="text-sm text-red-500 hover:underline"
