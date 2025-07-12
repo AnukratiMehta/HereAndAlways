@@ -1,6 +1,7 @@
 package com.hereandalways.controllers;
 
 import com.hereandalways.models.DigitalAsset;
+import com.hereandalways.payload.request.DigitalAssetRequest;
 import com.hereandalways.payload.response.DigitalAssetResponse;
 import com.hereandalways.services.DigitalAssetService;
 import com.hereandalways.services.UserService;
@@ -21,13 +22,13 @@ public class DigitalAssetController {
   private final DigitalAssetService assetService;
   private final UserService userService;
 
-  @PostMapping
+@PostMapping
 public ResponseEntity<DigitalAssetResponse> createAsset(
-    @RequestBody DigitalAsset asset,
+    @RequestBody DigitalAssetRequest request,
     @RequestParam UUID ownerId
 ) {
-    DigitalAsset saved = assetService.saveAsset(asset, ownerId);
-    return ResponseEntity.ok(DigitalAssetResponse.fromEntity(saved));
+    DigitalAssetResponse response = assetService.createAsset(request, ownerId);
+    return ResponseEntity.ok(response);
 }
 
 
@@ -63,4 +64,14 @@ public ResponseEntity<List<DigitalAssetResponse>> getAssetsByTrustee(@PathVariab
     assetService.deleteAsset(id);
     return ResponseEntity.noContent().build();
   }
+
+  @PutMapping("/{id}")
+public ResponseEntity<DigitalAssetResponse> updateAsset(
+    @PathVariable UUID id,
+    @RequestBody DigitalAssetRequest request
+) {
+    Optional<DigitalAssetResponse> updated = assetService.updateAsset(id, request);
+    return updated.map(ResponseEntity::ok)
+                  .orElseGet(() -> ResponseEntity.notFound().build());
+}
 }

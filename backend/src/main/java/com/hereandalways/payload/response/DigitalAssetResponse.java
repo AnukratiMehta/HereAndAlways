@@ -66,13 +66,17 @@ public class DigitalAssetResponse {
                     : null
             )
             .linkedMessage(
-                asset.getLinkedMessage() != null
-                    ? LinkedMessageSummary.builder()
-                        .id(asset.getLinkedMessage().getId())
-                        .title(asset.getLinkedMessage().getSubject())
-                        .build()
+    asset.getLinkedMessage() != null
+        ? LinkedMessageSummary.builder()
+            .id(asset.getLinkedMessage().getId())
+            .title(
+                org.hibernate.Hibernate.isInitialized(asset.getLinkedMessage())
+                    ? asset.getLinkedMessage().getSubject()
                     : null
             )
+            .build()
+        : null
+)
             .build();
     }
 }

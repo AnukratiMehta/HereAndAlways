@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
@@ -6,89 +7,107 @@ import axios from "axios";
 import { supabase } from "../../utils/supabaseClient";
 import { generateAESKey, exportKeyAsBase64 } from "../../utils/encryptionUtils";
 
+const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
 
 const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
   const [files, setFiles] = useState([]);
+  const [trustees, setTrustees] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [linkAllEnabled, setLinkAllEnabled] = useState(false);
+  const [selectedTrustees, setSelectedTrustees] = useState([]);
+  const [selectedMessageIds, setSelectedMessageIds] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [trusteeRes, messageRes] = await Promise.all([
+          axios.get(`/api/trustees/${ownerId}`),
+          axios.get(`/api/messages/${ownerId}`),
+        ]);
+        setTrustees(trusteeRes.data);
+        setMessages(messageRes.data);
+      } catch (err) {
+        console.error("Failed to fetch trustees or messages:", err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleFileChange = (e) => {
     setFiles(Array.from(e.target.files));
   };
 
+  const handleUpload = async () => {
+    try {
+      const uploadedAssets = [];
 
-const handleUpload = async () => {
-  try {
-    const uploadedAssets = [];
+      for (const file of files) {
+        const key = await generateAESKey();
+        const encryptedKey = await exportKeyAsBase64(key);
+        const filePath = `${crypto.randomUUID()}_${file.name}`;
 
-    for (const file of files) {
-      // 1. Generate AES key and export to base64
-      const key = await generateAESKey();
-      const encryptedKey = await exportKeyAsBase64(key);
+        const { error } = await supabase.storage
+          .from("assets")
+          .upload(filePath, file, {
+            upsert: false,
+            contentType: file.type,
+            cacheControl: "3600",
+            metadata: {
+              owner_id: ownerId,
+            },
+          });
 
-      // 2. Upload file first
-      const filePath = `${crypto.randomUUID()}_${file.name}`; // avoid clashes
+        if (error) {
+          console.error("Supabase upload error:", error.message);
+          continue;
+        }
 
-      const { error } = await supabase.storage
-        .from("assets")
-        .upload(filePath, file, {
-          upsert: false,
-          contentType: file.type,
-          cacheControl: "3600",
-          metadata: {
-            owner_id: "1d28bf25-fce1-4e4f-9309-b3471db1d88b",
-          },
-        });
+        const metadata = {
+          name: file.name,
+          assetType: "DOCUMENT",
+          fileSize: file.size,
+          mimeType: file.type,
+          description: "",
+          downloadUrl: `/assets/${filePath}`,
+          encryptedKey,
+          trusteeIds: linkAllEnabled ? selectedTrustees.map(t => t.value) : [],
+          messageId:
+            linkAllEnabled && selectedMessageIds.length > 0
+              ? selectedMessageIds[0].value
+              : null,
+        };
 
-      if (error) {
-        console.error("Supabase upload error:", error.message);
-        continue;
+        const backendResponse = await axios.post(
+          `/api/assets?ownerId=${ownerId}`,
+          metadata
+        );
+
+        uploadedAssets.push(backendResponse.data);
       }
 
-      // 3. Now POST to backend with the actual downloadUrl
-      const metadata = {
-        name: file.name,
-        assetType: "DOCUMENT",
-        fileSize: file.size,
-        mimeType: file.type,
-        description: "",
-        downloadUrl: `/assets/${filePath}`,
-        encryptedKey,
-      };
+      if (uploadedAssets.length === 0) {
+        alert("No assets were uploaded. Check console for details.");
+        return;
+      }
 
-      const backendResponse = await axios.post(
-        `/api/assets?ownerId=1d28bf25-fce1-4e4f-9309-b3471db1d88b`,
-        metadata
-      );
+      setFiles([]);
+      setSelectedTrustees([]);
+      setSelectedMessageIds([]);
+      setLinkAllEnabled(false);
 
-      uploadedAssets.push(backendResponse.data);
+      onUploadComplete(uploadedAssets);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed. Check console for details.");
     }
-
-    if (uploadedAssets.length === 0) {
-      alert("No assets were uploaded. Check console for details.");
-      return;
-    }
-
-    onUploadComplete(uploadedAssets);
-  } catch (err) {
-    console.error("Upload failed:", err);
-    alert("Upload failed. Check console for details.");
-  }
-};
-
-
-
-
-
+  };
 
   return (
     <div className="bg-white shadow rounded-xl p-6 mb-6 border border-lightGray">
       <h2 className="text-xl font-semibold mb-4">Upload Assets</h2>
 
-      <input
-        type="file"
-        multiple
-        onChange={handleFileChange}
-        className="mb-4"
-      />
+      <input type="file" multiple onChange={handleFileChange} className="mb-4" />
 
       {files.length > 0 && (
         <ul className="mb-4 text-sm text-gray-600">
@@ -99,6 +118,60 @@ const handleUpload = async () => {
             </li>
           ))}
         </ul>
+      )}
+
+      {/* Link all toggle */}
+      <div className="flex items-center mb-4">
+        <input
+          type="checkbox"
+          id="linkAll"
+          checked={linkAllEnabled}
+          onChange={(e) => setLinkAllEnabled(e.target.checked)}
+          className="mr-2"
+        />
+        <label htmlFor="linkAll" className="text-sm">
+          Link all files to the same trustees and/or message
+        </label>
+      </div>
+
+      {linkAllEnabled && (
+        <>
+         {/* Trustee multi-dropdown */}
+<div className="mb-4">
+  <label className="block font-medium text-sm mb-1">Select Trustees:</label>
+  <Select
+    isMulti
+    options={trustees.map((t) => ({
+  value: t.trusteeId,
+  label: t.trusteeName || t.trusteeEmail || "Unnamed",
+}))}
+    value={selectedTrustees}
+    onChange={(selected) => setSelectedTrustees(selected || [])}
+    placeholder="Choose trustees..."
+  />
+</div>
+
+
+          {/* Message multi-dropdown */}
+          <div className="mb-4">
+            <label className="block font-medium text-sm mb-1">Select Message:</label>
+            <Select
+              isMulti
+              options={messages.map((m) => ({
+                value: m.id,
+                label: m.subject,
+              }))}
+              value={selectedMessageIds}
+              onChange={(selected) => setSelectedMessageIds(selected || [])}
+              placeholder="Choose message..."
+            />
+            {selectedMessageIds.length > 1 && (
+              <p className="text-xs text-gray-500 mt-1">
+                Only the first selected message will be used for linking.
+              </p>
+            )}
+          </div>
+        </>
       )}
 
       <div className="flex gap-4">

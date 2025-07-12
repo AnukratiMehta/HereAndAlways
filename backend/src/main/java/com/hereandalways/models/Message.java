@@ -1,5 +1,6 @@
 package com.hereandalways.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hereandalways.models.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -27,7 +28,11 @@ public class Message {
     private String subject;
 
     @Lob
-    private String body;
+@Basic(fetch = FetchType.LAZY)
+@Column
+@JsonIgnore
+private String body;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
