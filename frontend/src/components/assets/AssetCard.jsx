@@ -14,7 +14,7 @@ const assetTypeIcons = {
   DEFAULT: icons.file,
 };
 
-const AssetCard = ({ asset, onDelete }) => {
+const AssetCard = ({ asset, onDelete, onEdit }) => {
   const {
     id,
     name,
@@ -56,14 +56,21 @@ const AssetCard = ({ asset, onDelete }) => {
   };
 
   return (
-    <div className="border border-lightGray rounded-xl p-4 shadow-sm bg-white flex flex-col gap-2 text-sm w-full max-w-sm">
-      <div className="flex items-start gap-2 text-brandRose text-lg mb-1 break-words">
-  <FontAwesomeIcon icon={icon} className="mt-1" />
-  <span className="font-semibold break-words break-all whitespace-normal max-w-[90%]">
-    {name}
-  </span>
-</div>
+    <div className="border border-lightGray rounded-xl p-4 shadow-sm bg-white flex flex-col gap-2 text-sm w-full max-w-md relative">
+      <button
+        onClick={() => onEdit(asset)}
+        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+        title="Edit asset"
+      >
+        <FontAwesomeIcon icon={icons.pen} />
+      </button>
 
+      <div className="flex items-start gap-2 text-brandRose text-lg mb-1 break-words pr-6">
+        <FontAwesomeIcon icon={icon} className="mt-1" />
+        <span className="font-semibold break-words break-all whitespace-normal max-w-full">
+          {name}
+        </span>
+      </div>
 
       <div className="text-gray-500">
         Uploaded: {createdAt ? new Date(createdAt).toLocaleDateString() : "Unknown"}
@@ -97,9 +104,9 @@ const AssetCard = ({ asset, onDelete }) => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
             <h2 className="text-lg font-semibold mb-4 text-red-600">Delete Asset</h2>
             <p className="text-gray-700 mb-6 break-words">
-  Are you sure you want to permanently delete
-  <strong className="block break-words break-all whitespace-normal mt-1">{name}?</strong>
-</p>
+              Are you sure you want to permanently delete
+              <strong className="block break-words break-all whitespace-normal mt-1">{name}?</strong>
+            </p>
 
             <div className="flex justify-between gap-4">
               <button
