@@ -4,6 +4,7 @@ import com.hereandalways.models.enums.AssetType;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -65,9 +66,15 @@ private String description;
   )
   private List<User> trustees;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "linked_message_id")
-  private Message linkedMessage;
+@ManyToMany
+@JoinTable(
+    name = "asset_messages",
+    joinColumns = @JoinColumn(name = "asset_id"),
+    inverseJoinColumns = @JoinColumn(name = "message_id")
+)
+private Set<Message> linkedMessages; // CHANGED FROM List to Set
+
+
 
   @PrePersist
   protected void onCreate() {

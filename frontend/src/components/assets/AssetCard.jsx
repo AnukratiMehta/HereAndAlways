@@ -109,9 +109,12 @@ const handleDownload = async () => {
 
 
       <div>
-        <span className="font-medium text-charcoal">Message: </span>
-        {linkedMessage?.title || <span className="text-gray-400">—</span>}
-      </div>
+  <span className="font-medium text-charcoal">Messages: </span>
+  {Array.isArray(asset.linkedMessages) && asset.linkedMessages.length > 0
+    ? asset.linkedMessages.map((m) => m.title).join(", ")
+    : <span className="text-gray-400">—</span>}
+</div>
+
 
       <div className="flex gap-4 mt-2">
         <button onClick={handleDownload} className="text-blue-600 hover:underline">

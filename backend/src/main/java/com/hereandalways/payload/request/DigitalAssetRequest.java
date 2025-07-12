@@ -17,5 +17,5 @@ public class DigitalAssetRequest {
     private String mimeType;
 
     private List<UUID> trusteeIds;   
-    private UUID messageId;          
+    private List<UUID> messageIds;
 }

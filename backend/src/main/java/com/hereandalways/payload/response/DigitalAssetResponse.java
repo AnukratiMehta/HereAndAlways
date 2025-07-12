@@ -27,7 +27,7 @@ public class DigitalAssetResponse {
     private UUID legacyOwnerId;
 
     private List<TrusteeSummary> linkedTrustees;
-    private LinkedMessageSummary linkedMessage;
+    private List<LinkedMessageSummary> linkedMessages;
 
     @Data
     @Builder
@@ -65,18 +65,16 @@ public class DigitalAssetResponse {
                         .collect(Collectors.toList())
                     : null
             )
-            .linkedMessage(
-    asset.getLinkedMessage() != null
-        ? LinkedMessageSummary.builder()
-            .id(asset.getLinkedMessage().getId())
-            .title(
-                org.hibernate.Hibernate.isInitialized(asset.getLinkedMessage())
-                    ? asset.getLinkedMessage().getSubject()
+            .linkedMessages(
+                asset.getLinkedMessages() != null
+                    ? asset.getLinkedMessages().stream()
+                        .map(m -> LinkedMessageSummary.builder()
+                            .id(m.getId())
+                            .title(org.hibernate.Hibernate.isInitialized(m) ? m.getSubject() : null)
+                            .build())
+                        .collect(Collectors.toList())
                     : null
             )
-            .build()
-        : null
-)
             .build();
     }
 }

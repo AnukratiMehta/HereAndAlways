@@ -1,6 +1,5 @@
 package com.hereandalways.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hereandalways.models.DigitalAsset;
 import com.hereandalways.models.Message;
 import com.hereandalways.models.User;
@@ -34,10 +33,12 @@ public class DigitalAssetService {
   @Value("${supabase.serviceRoleKey}")
   private String serviceRoleKey;
 
+  @Transactional
   public List<DigitalAsset> getAssetsByOwner(UUID ownerId) {
     return assetRepo.findByLegacyOwnerId(ownerId);
   }
 
+  @Transactional
   public List<DigitalAsset> getAssetsByTrustee(UUID trusteeId) {
     return assetRepo.findByTrustees_Id(trusteeId);
   }
@@ -71,7 +72,7 @@ public class DigitalAssetService {
   }
 
   @Transactional
-public DigitalAssetResponse createAsset(DigitalAssetRequest request, UUID ownerId) {
+  public DigitalAssetResponse createAsset(DigitalAssetRequest request, UUID ownerId) {
     User owner = userRepo.findById(ownerId)
         .orElseThrow(() -> new IllegalArgumentException("Invalid owner ID"));
 
@@ -79,11 +80,9 @@ public DigitalAssetResponse createAsset(DigitalAssetRequest request, UUID ownerI
         ? userRepo.findAllById(request.getTrusteeIds())
         : new ArrayList<>();
 
-    Message linkedMessage = null;
-    if (request.getMessageId() != null) {
-        linkedMessage = messageRepo.findById(request.getMessageId())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid message ID"));
-    }
+    Set<Message> linkedMessages = request.getMessageIds() != null && !request.getMessageIds().isEmpty()
+        ? new HashSet<>(messageRepo.findAllById(request.getMessageIds()))
+        : new HashSet<>();
 
     DigitalAsset asset = new DigitalAsset();
     asset.setName(request.getName());
@@ -95,14 +94,14 @@ public DigitalAssetResponse createAsset(DigitalAssetRequest request, UUID ownerI
     asset.setMimeType(request.getMimeType());
     asset.setLegacyOwner(owner);
     asset.setTrustees(trustees);
-    asset.setLinkedMessage(linkedMessage);
+    asset.setLinkedMessages(linkedMessages);
 
     DigitalAsset saved = assetRepo.save(asset);
     return DigitalAssetResponse.fromEntity(saved);
-}
+  }
 
-@Transactional
-public Optional<DigitalAssetResponse> updateAsset(UUID id, DigitalAssetRequest request) {
+  @Transactional
+  public Optional<DigitalAssetResponse> updateAsset(UUID id, DigitalAssetRequest request) {
     Optional<DigitalAsset> existingOpt = assetRepo.findById(id);
     if (existingOpt.isEmpty()) return Optional.empty();
 
@@ -119,23 +118,17 @@ public Optional<DigitalAssetResponse> updateAsset(UUID id, DigitalAssetRequest r
 
     // Update trustees
     if (request.getTrusteeIds() != null) {
-        List<User> updatedTrustees = userRepo.findAllById(request.getTrusteeIds());
-        asset.setTrustees(updatedTrustees);
+      List<User> updatedTrustees = userRepo.findAllById(request.getTrusteeIds());
+      asset.setTrustees(updatedTrustees);
     }
 
-    // Update linked message
-    if (request.getMessageId() != null) {
-        asset.setLinkedMessage(
-            messageRepo.findById(request.getMessageId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid message ID"))
-        );
-    } else {
-        asset.setLinkedMessage(null); // Unlink if null provided
+    // Update linked messages
+    if (request.getMessageIds() != null) {
+      Set<Message> updatedMessages = new HashSet<>(messageRepo.findAllById(request.getMessageIds()));
+      asset.setLinkedMessages(updatedMessages);
     }
 
     DigitalAsset updated = assetRepo.save(asset);
     return Optional.of(DigitalAssetResponse.fromEntity(updated));
-}
-
-
+  }
 }

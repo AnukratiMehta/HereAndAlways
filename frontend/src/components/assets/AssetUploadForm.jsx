@@ -72,10 +72,8 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
           downloadUrl: `/assets/${filePath}`,
           encryptedKey,
           trusteeIds: linkAllEnabled ? selectedTrustees.map(t => t.value) : [],
-          messageId:
-            linkAllEnabled && selectedMessageIds.length > 0
-              ? selectedMessageIds[0].value
-              : null,
+          messageIds: linkAllEnabled ? selectedMessageIds.map((m) => m.value) : [],
+
         };
 
         const backendResponse = await axios.post(
