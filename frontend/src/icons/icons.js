@@ -24,7 +24,10 @@ import {
   faLink,
   faImage,
   faVideo,
-  faMusic
+  faMusic,
+  faTrashCan,
+  faDownLong,
+  faDownload
 } from '@fortawesome/free-solid-svg-icons';
 
 const icons = {
@@ -53,7 +56,9 @@ const icons = {
   link: faLink,
   image: faImage,
   video: faVideo,
-  music: faMusic,  
+  music: faMusic,
+  trash: faTrashCan,
+  download: faDownload  
 };
 
 export { FontAwesomeIcon, icons };

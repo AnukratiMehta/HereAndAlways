@@ -34,17 +34,13 @@ const AssetCard = ({ asset, onDelete, onEdit }) => {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      // Step 1: Delete from Supabase storage
       const { error: storageError } = await supabase.storage
         .from("assets")
         .remove([filePath]);
 
       if (storageError) throw new Error(`Storage delete failed: ${storageError.message}`);
 
-      // Step 2: Delete from backend DB
       await axios.delete(`/api/assets/${id}`);
-      
-      // Notify parent
       onDelete(id);
     } catch (err) {
       console.error("Deletion error:", err);
@@ -90,12 +86,20 @@ const AssetCard = ({ asset, onDelete, onEdit }) => {
           : <span className="text-gray-400">—</span>}
       </div>
 
-      <div className="flex gap-4 mt-2">
-        <button onClick={() => window.open(downloadUrl, "_blank")} className="text-blue-600 hover:underline">
-          Download
+      <div className="mt-auto pt-4 flex justify-end gap-4">
+        <button
+          onClick={() => window.open(downloadUrl, "_blank")}
+          title="Download"
+          className="text-blue-600 hover:text-blue-800"
+        >
+          <FontAwesomeIcon icon={icons.download} />
         </button>
-        <button onClick={() => setShowConfirm(true)} className="text-red-500 hover:underline">
-          Delete
+        <button
+          onClick={() => setShowConfirm(true)}
+          title="Delete"
+          className="text-red-500 hover:text-red-700"
+        >
+          <FontAwesomeIcon icon={icons.trash} />
         </button>
       </div>
 
