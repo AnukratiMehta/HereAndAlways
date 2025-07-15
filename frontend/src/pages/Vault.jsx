@@ -3,6 +3,7 @@ import axios from "axios";
 import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
 import CredentialUploadForm from "../components/vault/CredentialUploadForm";
+import VaultCard from "../components/vault/VaultCard";
 
 const Vault = () => {
   const [view, setView] = useState("home");
@@ -10,7 +11,7 @@ const Vault = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCredential, setEditingCredential] = useState(null);
 
-  const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b"; // Replace with actual logic later
+  const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
 
   useEffect(() => {
     const fetchCredentials = async () => {
@@ -50,9 +51,9 @@ const Vault = () => {
   const getFilteredCredentials = () => {
     switch (view) {
       case "social":
-        return credentials.filter((c) => c.category === "Social");
+        return credentials.filter((c) => c.category === "SOCIAL");
       case "bank":
-        return credentials.filter((c) => c.category === "Bank");
+        return credentials.filter((c) => c.category === "BANK");
       case "all":
       case "home":
       default:
@@ -71,31 +72,31 @@ const Vault = () => {
           <h1 className="text-2xl font-bold">Secure Vault</h1>
         </div>
 
+        {/* Modal for adding new credential */}
         {showModal && (
-  <CredentialUploadForm
-    onUploadComplete={handleUploadComplete}
-    onCancel={() => setShowModal(false)}
-  />
-)}
+          <CredentialUploadForm
+            onUploadComplete={handleUploadComplete}
+            onCancel={() => setShowModal(false)}
+          />
+        )}
 
-
+        {/* Edit modal placeholder */}
         {editingCredential && (
           <div className="text-gray-600">EditVaultModal goes here...</div>
         )}
 
+        {/* VaultCard grid */}
         {filteredCredentials.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filteredCredentials.map((cred) => (
-  <VaultCard
-    key={cred.id}
-    credential={cred}
-    onView={(item) => console.log("View", item)}
-    onEdit={handleEditClick}
-    onDelete={handleDelete}
-  />
-))}
-
-            <div className="text-gray-600">VaultCard placeholders...</div>
+              <VaultCard
+                key={cred.id}
+                credential={cred}
+                onView={(item) => console.log("View", item)}
+                onEdit={handleEditClick}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
         ) : (
           <div className="text-gray-500">No credentials saved yet.</div>
