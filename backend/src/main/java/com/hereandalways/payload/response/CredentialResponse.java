@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.hereandalways.models.enums.VaultCategory;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -19,5 +18,7 @@ public class CredentialResponse {
     private String notes;
     private LocalDateTime createdAt;
     private List<UUID> trusteeIds;
-}
 
+    private String passwordOrPin;  
+    private String encryptedKey;    
+}

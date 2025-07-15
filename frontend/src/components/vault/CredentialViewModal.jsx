@@ -2,14 +2,48 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
+import { decryptTextWithBase64Key } from "../../utils/encryptionUtils";
 
 const CredentialViewModal = ({ credential, onClose }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [decryptedPassword, setDecryptedPassword] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+const handleReveal = async () => {
+  if (showPassword) {
+    setShowPassword(false);
+    return;
+  }
+
+  if (decryptedPassword) {
+    setShowPassword(true);
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const fileResponse = await fetch(credential.passwordOrPin);
+    if (!fileResponse.ok) throw new Error("Failed to fetch encrypted content");
+    const encryptedText = await fileResponse.text();
+
+    const decrypted = await decryptTextWithBase64Key(
+      encryptedText,
+      credential.encryptedKey
+    );
+    setDecryptedPassword(decrypted);
+    setShowPassword(true);
+  } catch (err) {
+    console.error("Failed to decrypt:", err);
+    alert("Failed to reveal password.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg relative border border-lightGray">
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-brandRose hover:text-brandRose-dark text-2xl font-bold"
@@ -32,16 +66,17 @@ const CredentialViewModal = ({ credential, onClose }) => {
             <span className="font-medium">Password / PIN:</span>{" "}
             {showPassword ? (
               <span className="ml-2 font-mono text-gray-800">
-                {credential.decryptedPassword || "[decrypted placeholder]"}
+                {decryptedPassword || "[Decryption failed]"}
               </span>
             ) : (
               <span className="ml-2 text-gray-400">••••••••</span>
             )}
             <button
-              onClick={() => setShowPassword((prev) => !prev)}
+              onClick={handleReveal}
               className="ml-3 text-xs text-brandRose hover:underline"
+              disabled={loading}
             >
-              {showPassword ? "Hide" : "Reveal"}
+              {loading ? "Decrypting..." : showPassword ? "Hide" : "Reveal"}
             </button>
           </div>
           <div>
@@ -57,7 +92,7 @@ const CredentialViewModal = ({ credential, onClose }) => {
           )}
           <div>
             <span className="font-medium">Linked Trustees:</span>{" "}
-            {credential.trustees && credential.trustees.length > 0
+            {credential.trustees?.length > 0
               ? credential.trustees.join(", ")
               : <span className="text-gray-400">None</span>}
           </div>

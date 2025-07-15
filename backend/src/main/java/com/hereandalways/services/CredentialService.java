@@ -36,7 +36,8 @@ public class CredentialService {
         credential.setLegacyOwner(owner);
         credential.setTitle(request.getTitle());
         credential.setUsernameOrCardNumber(request.getUsernameOrCardNumber());
-        credential.setPasswordOrPin(encrypt(request.getPasswordOrPin())); // 🔐 Encrypt here
+        credential.setPasswordOrPin(request.getPasswordOrPin()); 
+        credential.setEncryptedKey(request.getEncryptedKey());          
         credential.setNotes(request.getNotes());
         credential.setCategory(request.getCategory());
         credential.setLinkedTrustees(trustees);
@@ -62,21 +63,24 @@ public class CredentialService {
     }
 
     private CredentialResponse toResponse(Credential credential) {
-        return CredentialResponse.builder()
-                .id(credential.getId())
-                .title(credential.getTitle())
-                .usernameOrCardNumber(credential.getUsernameOrCardNumber())
-                .notes(credential.getNotes())
-                .category(credential.getCategory())
-                .createdAt(credential.getCreatedAt())
-                .trusteeIds(
-                        credential.getLinkedTrustees()
-                                .stream()
-                                .map(User::getId)
-                                .collect(Collectors.toList())
-                )
-                .build();
-    }
+    return CredentialResponse.builder()
+            .id(credential.getId())
+            .title(credential.getTitle())
+            .usernameOrCardNumber(credential.getUsernameOrCardNumber())
+            .notes(credential.getNotes())
+            .category(credential.getCategory())
+            .createdAt(credential.getCreatedAt())
+            .passwordOrPin(credential.getPasswordOrPin())     
+            .encryptedKey(credential.getEncryptedKey())       
+            .trusteeIds(
+                credential.getLinkedTrustees()
+                        .stream()
+                        .map(User::getId)
+                        .collect(Collectors.toList())
+            )
+            .build();
+}
+
 
     private String encrypt(String input) {
         // 🔐 Temporary simple Base64 for demo — replace with AES or secure solution

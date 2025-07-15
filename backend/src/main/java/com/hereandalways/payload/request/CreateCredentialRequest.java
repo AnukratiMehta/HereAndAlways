@@ -13,9 +13,11 @@ import java.util.UUID;
 public class CreateCredentialRequest {
     private String title;
     private String usernameOrCardNumber;
-    private String passwordOrPin; // plaintext – encrypt in service
+    private String passwordOrPin;
     private String notes;
     private VaultCategory category;
     private List<UUID> trusteeIds;
+    private String encryptedKey;
+
 }
 

@@ -34,6 +34,10 @@ public class Credential {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String passwordOrPin;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String encryptedKey;
+
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private VaultCategory category;

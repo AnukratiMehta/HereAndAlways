@@ -35,3 +35,27 @@ export async function encryptText(plainText, key) {
   return btoa(String.fromCharCode(...combined));
 }
 
+export async function decryptTextWithBase64Key(encryptedB64, keyB64) {
+  const combined = Uint8Array.from(atob(encryptedB64), c => c.charCodeAt(0));
+  const iv = combined.slice(0, 12);
+  const data = combined.slice(12);
+
+  const rawKey = Uint8Array.from(atob(keyB64), c => c.charCodeAt(0));
+  const cryptoKey = await window.crypto.subtle.importKey(
+    "raw",
+    rawKey,
+    "AES-GCM",
+    true,
+    ["decrypt"]
+  );
+
+  const decrypted = await window.crypto.subtle.decrypt(
+    { name: "AES-GCM", iv },
+    cryptoKey,
+    data
+  );
+
+  return new TextDecoder().decode(decrypted);
+}
+
+
