@@ -37,6 +37,15 @@ const VaultCard = ({ credential, onView, onEdit, onDelete }) => {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col justify-between h-full relative">
+      {/* Edit icon top-right */}
+      <button
+        onClick={() => onEdit?.(credential)}
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+        title="Edit"
+      >
+        <FontAwesomeIcon icon={icons.pen} />
+      </button>
+
       <div className="flex items-center gap-3 mb-3">
         <div className="p-3 rounded-full bg-brandRose text-white shadow">
           <FontAwesomeIcon icon={getCategoryIcon(credential.category)} />
@@ -56,24 +65,21 @@ const VaultCard = ({ credential, onView, onEdit, onDelete }) => {
           : "—"}
       </div>
 
-      <div className="flex justify-between items-center mt-auto gap-2">
+      {/* View + Delete icons */}
+      <div className="mt-auto pt-4 flex justify-end gap-4 text-lg">
         <button
           onClick={() => onView?.(credential)}
-          className="text-brandRose hover:underline text-sm"
+          title="View"
+          className="text-brandRose hover:text-brandRose-dark"
         >
-          View
-        </button>
-        <button
-          onClick={() => onEdit?.(credential)}
-          className="text-gray-600 hover:text-black text-sm"
-        >
-          Edit
+          <FontAwesomeIcon icon={icons.eye} />
         </button>
         <button
           onClick={() => setShowConfirm(true)}
-          className="text-red-500 hover:underline text-sm"
+          title="Delete"
+          className="text-red-500 hover:text-red-700"
         >
-          Delete
+          <FontAwesomeIcon icon={icons.trash} />
         </button>
       </div>
 

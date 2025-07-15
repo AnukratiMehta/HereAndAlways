@@ -4,12 +4,14 @@ import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
 import CredentialUploadForm from "../components/vault/CredentialUploadForm";
 import VaultCard from "../components/vault/VaultCard";
+import CredentialViewModal from "../components/vault/CredentialViewModal";
 
 const Vault = () => {
   const [view, setView] = useState("home");
   const [credentials, setCredentials] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingCredential, setEditingCredential] = useState(null);
+  const [viewingCredential, setViewingCredential] = useState(null);
 
   const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
 
@@ -28,19 +30,27 @@ const Vault = () => {
     fetchCredentials();
   }, [ownerId]);
 
-const handleDelete = (deletedId) => {
-  setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
-};
+  useEffect(() => {
+    document.body.style.overflow = showModal || viewingCredential ? "hidden" : "auto";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showModal, viewingCredential]);
 
-
+  const handleDelete = (deletedId) => {
+    setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
+  };
 
   const handleEditClick = (credential) => {
     setEditingCredential(credential);
+    // If you add an EditCredentialModal later, you can handle it here
   };
 
   const handleUpdate = (updatedCredential) => {
     setCredentials((prev) =>
-      prev.map((item) => (item.id === updatedCredential.id ? updatedCredential : item))
+      prev.map((item) =>
+        item.id === updatedCredential.id ? updatedCredential : item
+      )
     );
     setEditingCredential(null);
   };
@@ -74,27 +84,13 @@ const handleDelete = (deletedId) => {
           <h1 className="text-2xl font-bold">Secure Vault</h1>
         </div>
 
-        {/* Modal for adding new credential */}
-        {showModal && (
-          <CredentialUploadForm
-            onUploadComplete={handleUploadComplete}
-            onCancel={() => setShowModal(false)}
-          />
-        )}
-
-        {/* Edit modal placeholder */}
-        {editingCredential && (
-          <div className="text-gray-600">EditVaultModal goes here...</div>
-        )}
-
-        {/* VaultCard grid */}
         {filteredCredentials.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filteredCredentials.map((cred) => (
               <VaultCard
                 key={cred.id}
                 credential={cred}
-                onView={(item) => console.log("View", item)}
+                onView={(c) => setViewingCredential(c)}
                 onEdit={handleEditClick}
                 onDelete={handleDelete}
               />
@@ -112,6 +108,20 @@ const handleDelete = (deletedId) => {
         setView={setView}
         onNewItem={() => setShowModal(true)}
       />
+
+      {showModal && (
+        <CredentialUploadForm
+          onUploadComplete={handleUploadComplete}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
+
+      {viewingCredential && (
+        <CredentialViewModal
+          credential={viewingCredential}
+          onClose={() => setViewingCredential(null)}
+        />
+      )}
     </div>
   );
 };
