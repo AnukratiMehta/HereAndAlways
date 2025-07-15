@@ -85,7 +85,16 @@ const Vault = () => {
 
         {filteredCredentials.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {/* TODO: Map VaultCards here */}
+            {filteredCredentials.map((cred) => (
+  <VaultCard
+    key={cred.id}
+    credential={cred}
+    onView={(item) => console.log("View", item)}
+    onEdit={handleEditClick}
+    onDelete={handleDelete}
+  />
+))}
+
             <div className="text-gray-600">VaultCard placeholders...</div>
           </div>
         ) : (
