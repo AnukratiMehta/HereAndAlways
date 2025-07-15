@@ -31,8 +31,8 @@ public class Credential {
     @Column(nullable = false)
     private String usernameOrCardNumber;
 
-    @Column(nullable = false)
-    private String passwordOrPin; // Encrypted in service layer
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String passwordOrPin;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

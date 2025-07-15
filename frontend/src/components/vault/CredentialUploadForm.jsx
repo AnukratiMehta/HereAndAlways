@@ -4,8 +4,14 @@ import Button from "../shared/Button";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
+import { supabase } from "../../utils/supabaseClient";
+import {
+  generateAESKey,
+  exportKeyAsBase64,
+  encryptText,
+} from "../../utils/encryptionUtils";
 
-const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b"; // Replace with real user logic if needed
+const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
 
 const CredentialUploadForm = ({ onUploadComplete, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -54,13 +60,50 @@ const CredentialUploadForm = ({ onUploadComplete, onCancel }) => {
     e.preventDefault();
     setLoading(true);
 
-    const payload = {
-      ...formData,
-      category: formData.category.value,
-      trusteeIds: linkAllEnabled ? selectedTrustees.map((t) => t.value) : [],
-    };
-
     try {
+      // 1. Encrypt the password/PIN
+      const key = await generateAESKey();
+      const encryptedKey = await exportKeyAsBase64(key);
+      const encryptedPassword = await encryptText(formData.passwordOrPin, key);
+
+      // 2. Create filename and upload to Supabase
+      const safeName = formData.title.replace(/\s+/g, "_").replace(/[^\w.-]/g, "").toLowerCase();
+      const fileName = `${crypto.randomUUID()}_${safeName}.txt`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("vault")
+        .upload(fileName, encryptedPassword, {
+          upsert: false,
+          contentType: "text/plain",
+          cacheControl: "3600",
+        });
+
+      if (uploadError) {
+        console.error("Supabase upload error:", uploadError.message);
+        alert("Upload to Supabase failed.");
+        return;
+      }
+
+      // 3. Get signed URL
+      const { data: urlData, error: urlError } = await supabase.storage
+        .from("vault")
+        .createSignedUrl(fileName, 7 * 24 * 60 * 60); // 7 days
+
+      if (urlError || !urlData?.signedUrl) {
+        console.error("Signed URL generation failed:", urlError);
+        alert("Signed URL failed.");
+        return;
+      }
+
+      // 4. Prepare payload
+      const payload = {
+        ...formData,
+        category: formData.category.value,
+        passwordOrPin: urlData.signedUrl,
+        encryptedKey,
+        trusteeIds: linkAllEnabled ? selectedTrustees.map((t) => t.value) : [],
+      };
+
       const response = await axios.post(`/api/credentials?ownerId=${ownerId}`, payload);
       onUploadComplete(response.data);
     } catch (error) {

@@ -86,4 +86,14 @@ public class CredentialService {
     public Optional<Credential> getCredentialById(UUID credentialId) {
         return credentialRepository.findById(credentialId);
     }
+
+    @Transactional
+public void deleteCredential(UUID credentialId) {
+    Credential credential = credentialRepository.findById(credentialId)
+            .orElseThrow(() -> new RuntimeException("Credential not found"));
+
+    credentialRepository.delete(credential);
+}
+
+    
 }
