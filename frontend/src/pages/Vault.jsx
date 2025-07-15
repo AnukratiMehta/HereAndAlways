@@ -3,8 +3,9 @@ import axios from "axios";
 import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
 import CredentialUploadForm from "../components/vault/CredentialUploadForm";
-import VaultCard from "../components/vault/VaultCard";
+import CredentialEditModal from "../components/vault/CredentialEditModal";
 import CredentialViewModal from "../components/vault/CredentialViewModal";
+import VaultCard from "../components/vault/VaultCard";
 
 const Vault = () => {
   const [view, setView] = useState("home");
@@ -31,11 +32,12 @@ const Vault = () => {
   }, [ownerId]);
 
   useEffect(() => {
-    document.body.style.overflow = showModal || viewingCredential ? "hidden" : "auto";
+    const modalOpen = showModal || editingCredential || viewingCredential;
+    document.body.style.overflow = modalOpen ? "hidden" : "auto";
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [showModal, viewingCredential]);
+  }, [showModal, editingCredential, viewingCredential]);
 
   const handleDelete = (deletedId) => {
     setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
@@ -43,7 +45,6 @@ const Vault = () => {
 
   const handleEditClick = (credential) => {
     setEditingCredential(credential);
-    // If you add an EditCredentialModal later, you can handle it here
   };
 
   const handleUpdate = (updatedCredential) => {
@@ -109,6 +110,7 @@ const Vault = () => {
         onNewItem={() => setShowModal(true)}
       />
 
+      {/* Upload form modal */}
       {showModal && (
         <CredentialUploadForm
           onUploadComplete={handleUploadComplete}
@@ -116,6 +118,17 @@ const Vault = () => {
         />
       )}
 
+      {/* Edit modal */}
+      {editingCredential && (
+        <CredentialEditModal
+          credential={editingCredential}
+          ownerId={ownerId}
+          onClose={() => setEditingCredential(null)}
+          onUpdate={handleUpdate}
+        />
+      )}
+
+      {/* View modal */}
       {viewingCredential && (
         <CredentialViewModal
           credential={viewingCredential}

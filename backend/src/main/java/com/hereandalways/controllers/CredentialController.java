@@ -59,4 +59,15 @@ public ResponseEntity<Void> deleteCredential(@PathVariable UUID credentialId) {
     return ResponseEntity.noContent().build();
 }
 
+@PutMapping("/{credentialId}")
+public ResponseEntity<CredentialResponse> updateCredential(
+        @PathVariable UUID credentialId,
+        @RequestParam UUID ownerId,
+        @RequestBody CreateCredentialRequest request
+) {
+    CredentialResponse updated = credentialService.updateCredential(credentialId, ownerId, request);
+    return ResponseEntity.ok(updated);
+}
+
+
 }

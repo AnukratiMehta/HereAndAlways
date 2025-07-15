@@ -60,9 +60,7 @@ const VaultCard = ({ credential, onView, onEdit, onDelete }) => {
 
       <div className="text-sm text-gray-600 mb-4">
         <span className="font-medium">ID:</span>{" "}
-        {credential.usernameOrCardNumber
-          ? credential.usernameOrCardNumber.replace(/.(?=.{4})/g, "*")
-          : "—"}
+        {credential.usernameOrCardNumber}
       </div>
 
       {/* View + Delete icons */}

@@ -99,5 +99,40 @@ public void deleteCredential(UUID credentialId) {
     credentialRepository.delete(credential);
 }
 
+@Transactional
+public CredentialResponse updateCredential(UUID credentialId, UUID ownerId, CreateCredentialRequest request) {
+    Credential credential = credentialRepository.findById(credentialId)
+            .orElseThrow(() -> new RuntimeException("Credential not found"));
+
+    if (!credential.getLegacyOwner().getId().equals(ownerId)) {
+        throw new RuntimeException("Unauthorized: Credential does not belong to owner");
+    }
+
+    credential.setTitle(request.getTitle());
+    credential.setUsernameOrCardNumber(request.getUsernameOrCardNumber());
+    credential.setNotes(request.getNotes());
+    credential.setCategory(request.getCategory());
+    credential.setUpdatedAt(LocalDateTime.now());
+
+    // Only update password and key if provided
+    if (request.getPasswordOrPin() != null && !request.getPasswordOrPin().isBlank()) {
+        credential.setPasswordOrPin(request.getPasswordOrPin());
+    }
+
+    if (request.getEncryptedKey() != null && !request.getEncryptedKey().isBlank()) {
+        credential.setEncryptedKey(request.getEncryptedKey());
+    }
+
+    // Update trustees
+    List<User> trustees = request.getTrusteeIds() != null
+            ? userRepository.findAllById(request.getTrusteeIds())
+            : new ArrayList<>();
+    credential.setLinkedTrustees(trustees);
+
+    Credential saved = credentialRepository.save(credential);
+    return toResponse(saved);
+}
+
+
     
 }
