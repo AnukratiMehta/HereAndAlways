@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import { supabase } from "../../utils/supabaseClient";
 import axios from "axios";
+import ConfirmDeleteModal from "../shared/ConfirmDeleteModal";
 
 const assetTypeIcons = {
   PASSWORD: icons.key,
@@ -104,31 +105,13 @@ const AssetCard = ({ asset, onDelete, onEdit }) => {
       </div>
 
       {showConfirm && (
-        <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-            <h2 className="text-lg font-semibold mb-4 text-red-600">Delete Asset</h2>
-            <p className="text-gray-700 mb-6 break-words">
-              Are you sure you want to permanently delete
-              <strong className="block break-words break-all whitespace-normal mt-1">{name}?</strong>
-            </p>
-
-            <div className="flex justify-between gap-4">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="flex-1 py-1 border border-gray-300 rounded hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="flex-1 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                {deleting ? "Deleting..." : "Confirm"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDeleteModal
+          title="Delete Asset"
+          itemName={name}
+          onConfirm={handleDelete}
+          onCancel={() => setShowConfirm(false)}
+          loading={deleting}
+        />
       )}
     </div>
   );

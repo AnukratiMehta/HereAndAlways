@@ -52,4 +52,11 @@ public class CredentialController {
         List<CredentialResponse> filtered = credentialService.getByCategory(ownerId, category);
         return ResponseEntity.ok(filtered);
     }
+
+    @DeleteMapping("/{credentialId}")
+public ResponseEntity<Void> deleteCredential(@PathVariable UUID credentialId) {
+    credentialService.deleteCredential(credentialId);
+    return ResponseEntity.noContent().build();
+}
+
 }

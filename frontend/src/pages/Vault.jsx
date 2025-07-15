@@ -28,9 +28,11 @@ const Vault = () => {
     fetchCredentials();
   }, [ownerId]);
 
-  const handleDelete = (deletedId) => {
-    setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
-  };
+const handleDelete = (deletedId) => {
+  setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
+};
+
+
 
   const handleEditClick = (credential) => {
     setEditingCredential(credential);
