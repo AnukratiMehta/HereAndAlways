@@ -115,7 +115,16 @@ const CredentialUploadForm = ({ onUploadComplete, onCancel }) => {
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 max-w-md mx-auto border border-lightGray">
+      <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50">
+    <div className="bg-white shadow-xl rounded-2xl p-6 max-w-lg w-full relative border border-lightGray">
+      <button
+        onClick={onCancel}
+        className="absolute top-3 right-3 text-brandRose hover:text-brandRose-dark text-2xl font-bold"
+        aria-label="Close"
+      >
+        &times;
+      </button>
+
       <h2 className="text-xl font-semibold mb-4">New Credential</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -223,6 +232,7 @@ const CredentialUploadForm = ({ onUploadComplete, onCancel }) => {
         </div>
       </form>
     </div>
+  </div>
   );
 };
 

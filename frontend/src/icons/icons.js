@@ -68,7 +68,8 @@ const icons = {
   instagram: faHashtag,
   creditCard: faCreditCard,
   spinner: faSpinner,
-  save: faSave  
+  save: faSave,
+  envelope: faEnvelope  
 };
 
 export { FontAwesomeIcon, icons };
