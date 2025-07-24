@@ -86,8 +86,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    /** reusable mapper */
-    private UserResponse mapToResponse(User user) {
+    public UserResponse mapToResponse(User user) {
         UserResponse dto = new UserResponse();
         dto.setId(user.getId());
         dto.setName(user.getName());
