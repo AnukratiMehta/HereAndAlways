@@ -6,12 +6,15 @@ import Messages from './pages/Messages';
 import Trustees from './pages/Trustees';
 import Assets from './pages/Assets';
 import Vault from './pages/Vault';
+import SignUp from './pages/SignUp';
+import Login from './pages/Login';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<UserTest />} />
+        <Route path="/" element={< SignUp />} />
+         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/trustees" element={<Trustees />} />
