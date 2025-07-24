@@ -1,11 +1,15 @@
+// src/pages/SignUp.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { signup } from '../services/auth';
 
 export default function SignUp() {
+  const [name, setName]               = useState('');
   const [email, setEmail]             = useState('');
   const [password, setPassword]       = useState('');
   const [confirmPassword, setConfirm] = useState('');
   const [error, setError]             = useState(null);
+  const navigate                      = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -15,8 +19,9 @@ export default function SignUp() {
       return;
     }
     try {
-      // TODO: call your signup API here
-      console.log('Signing up:', { email, password });
+      const { token } = await signup({ name, email, password });
+      localStorage.setItem('token', token);
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Signup failed');
     }
@@ -34,6 +39,19 @@ export default function SignUp() {
           </div>
         )}
         <form onSubmit={handleSignup} className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-[var(--color-charcoal)] mb-1">
+              Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              className="w-full border border-[var(--color-lightGray)] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-mint)]"
+            />
+          </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[var(--color-charcoal)] mb-1">
               Email

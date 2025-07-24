@@ -1,6 +1,7 @@
 // src/pages/Login.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { login } from '../services/auth';
 
 export default function Login() {
   const [email, setEmail]       = useState('');
@@ -12,10 +13,9 @@ export default function Login() {
     e.preventDefault();
     setError(null);
     try {
-      // TODO: call your login API here
-      console.log('Logging in:', { email, password });
-      // on success:
-      // navigate('/dashboard');
+      const { token } = await login({ email, password });
+      localStorage.setItem('token', token);
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Login failed');
     }

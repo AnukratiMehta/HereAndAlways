@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserTest from './pages/UserTest';
 import Dashboard from './pages/Dashboard';
@@ -6,7 +5,7 @@ import Messages from './pages/Messages';
 import Trustees from './pages/Trustees';
 import Assets from './pages/Assets';
 import Vault from './pages/Vault';
-import SignUp from './pages/SignUp';
+import SignUp from './pages/Signup';
 import Login from './pages/Login';
 
 function App() {
