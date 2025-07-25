@@ -1,6 +1,7 @@
 // src/main/java/com/hereandalways/services/AuthService.java
 package com.hereandalways.services;
 
+import com.hereandalways.exceptions.InvalidCredentialsException;
 import com.hereandalways.models.User;
 import com.hereandalways.models.enums.UserRole;
 import com.hereandalways.payload.request.UserRequest;
@@ -40,15 +41,15 @@ public class AuthService {
         return new AuthResponse(token);
     }
 
-    public AuthResponse login(UserLoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+public AuthResponse login(UserLoginRequest request) {
+    User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid credentials");
-        }
-
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
-        return new AuthResponse(token);
+    if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        throw new InvalidCredentialsException("Invalid email or password");
     }
+
+    String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+    return new AuthResponse(token);
+}
 }
