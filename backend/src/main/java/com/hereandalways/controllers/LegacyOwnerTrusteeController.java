@@ -10,10 +10,13 @@ import com.hereandalways.repositories.MessageRepository;
 import com.hereandalways.services.LegacyOwnerTrusteeService;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -24,29 +27,51 @@ public class LegacyOwnerTrusteeController {
     private final LegacyOwnerTrusteeService legacyOwnerTrusteeService;
     private final MessageRepository messageRepo;
 
-    @PostMapping("/{ownerId}")
-    public ResponseEntity<TrusteeResponse> addTrustee(
+     @PostMapping("/{ownerId}")
+    public ResponseEntity<?> addTrustee(
             @PathVariable UUID ownerId,
             @RequestBody InviteTrusteeRequest request
     ) {
-        var relationship = legacyOwnerTrusteeService.addTrustee(
-                ownerId,
-                request.getTrusteeId(),
-                request.getEmail(),
-                request.getName()
-        );
+        try {
+            // Validate request
+            if ((request.getTrusteeId() == null && request.getEmail() == null) || 
+                request.getName() == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Validation failed",
+                    "message", "Either trusteeId or email must be provided, and name is required"
+                ));
+            }
 
-        TrusteeResponse response = new TrusteeResponse(
-                relationship.getTrustee().getId(),
-                relationship.getTrustee().getName(),
-                relationship.getTrustee().getEmail(),
-                relationship.getStatus().name(),
-                relationship.getInvitedAt(),
-                List.of(),
-                List.of()
-        );
+            var relationship = legacyOwnerTrusteeService.addTrustee(
+                    ownerId,
+                    request.getTrusteeId(),
+                    request.getEmail(),
+                    request.getName()
+            );
 
-        return ResponseEntity.ok(response);
+            TrusteeResponse response = new TrusteeResponse(
+                    relationship.getTrustee().getId(),
+                    relationship.getTrustee().getName(),
+                    relationship.getTrustee().getEmail(),
+                    relationship.getStatus().name(),
+                    relationship.getInvitedAt(),
+                    List.of(),
+                    List.of()
+            );
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Invalid request",
+                "message", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                        "error", "Internal server error",
+                        "message", "Failed to process trustee invitation"
+                    ));
+        }
     }
 
     @GetMapping("/{ownerId}")

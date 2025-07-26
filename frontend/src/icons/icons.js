@@ -31,8 +31,11 @@ import {
   faHashtag,
   faCreditCard,
   faSpinner,
-  faSave
+  faSave,
+  faTimes,
+  faCheckCircle
 } from '@fortawesome/free-solid-svg-icons';
+import { FaCheckCircle } from 'react-icons/fa';
 
 const icons = {
   dashboard: faHouse,
@@ -69,7 +72,10 @@ const icons = {
   creditCard: faCreditCard,
   spinner: faSpinner,
   save: faSave,
-  envelope: faEnvelope  
+  envelope: faEnvelope,
+  times: faTimes,
+  spinner: faSpinner,
+  checkCircle: faCheckCircle  
 };
 
 export { FontAwesomeIcon, icons };

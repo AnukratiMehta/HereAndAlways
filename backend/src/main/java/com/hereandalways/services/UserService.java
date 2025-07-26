@@ -5,7 +5,7 @@ import com.hereandalways.payload.request.UserRequest;
 import com.hereandalways.payload.response.UserResponse;
 import com.hereandalways.repositories.UserRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.hereandalways.models.enums.UserRole;
 import lombok.RequiredArgsConstructor;
@@ -116,6 +116,14 @@ public void removeTrusteeFromAsset(UUID trusteeId, UUID assetId) {
             .orElseThrow(() -> new IllegalArgumentException("Asset not found"));
     asset.getTrustees().removeIf(t -> t.getId().equals(trusteeId));
     assetRepo.save(asset);
+}
+
+  @Transactional(readOnly = true)
+public Optional<User> getUserEntityByEmail(String email) {
+    if (email == null || email.isBlank()) {
+        throw new IllegalArgumentException("Email cannot be empty");
+    }
+    return userRepository.findByEmail(email);
 }
 
 }
