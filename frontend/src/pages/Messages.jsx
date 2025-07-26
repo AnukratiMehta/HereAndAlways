@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
 import RecentMessages from "../components/messages/RecentMessages";
@@ -7,11 +8,19 @@ import MessageCardList from "../components/messages/MessageCardList";
 import NewMessage from "../components/messages/NewMessage";
 
 const Messages = () => {
-  const [view, setView] = useState("home"); // 'home', 'drafts', 'scheduled', 'starred'
+  const { user } = useAuth();
+  const [view, setView] = useState("home");
   const [showModal, setShowModal] = useState(false);
 
-  // TODO: Replace with real user ID later
-  const ownerId = "1d28bf25-fce1-4e4f-9309-b3471db1d88b";
+  const ownerId = user?.id;
+
+  // Debug logs
+  useEffect(() => {
+    console.log("=== Debug: useAuth().user ===");
+    console.log(user);
+    console.log("=== Debug: localStorage.getItem('user') ===");
+    console.log(localStorage.getItem("user"));
+  }, [user]);
 
   return (
     <div className="flex min-h-screen">
@@ -40,7 +49,6 @@ const Messages = () => {
           <div>Starred messages view coming soon.</div>
         )}
 
-        {/* new message modal */}
         {showModal && (
           <NewMessage
             ownerId={ownerId}
@@ -51,7 +59,6 @@ const Messages = () => {
 
       <ProfileBar
         type="messages"
-        ownerName="John Doe"
         view={view}
         setView={setView}
         onNewItem={() => setShowModal(true)}

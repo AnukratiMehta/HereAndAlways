@@ -1,25 +1,14 @@
-// src/services/auth.js
-
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
 
-/**
- * Handles API errors consistently
- */
 async function handleApiError(response) {
   if (!response.ok) {
     let errorMessage = 'Request failed';
-    
     try {
-      // Try to parse JSON error response first
       const errorData = await response.json();
       errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
     } catch (e) {
-      // Fallback to text if JSON parsing fails
-      const text = await response.text();
-      errorMessage = text || errorMessage;
+      errorMessage = await response.text() || errorMessage;
     }
-    
-    // Create error with status code
     const error = new Error(errorMessage);
     error.status = response.status;
     throw error;
@@ -27,34 +16,32 @@ async function handleApiError(response) {
   return response;
 }
 
-/**
- * Register a new user
- */
-export async function signup({ name, email, password, role = 'LEGACY_OWNER' }) {
+export async function signup({ name, email, password }) {
   try {
     const response = await fetch(`${API_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, role })
+      body: JSON.stringify({ name, email, password, role: 'LEGACY_OWNER' })
     });
 
+    const data = await response.json();
     await handleApiError(response);
-    return await response.json();
+
+    console.log('Signup API Response:', data); // Debug log
+
+    return {
+      token: data.token,
+      id: data.id,
+      name: data.name || email.split('@')[0], // Fallback to email prefix
+      email: data.email,
+      role: data.role || 'LEGACY_OWNER' // Default role
+    };
   } catch (error) {
-    // Enhance specific error messages
-    if (error.message.includes('Email already in use')) {
-      throw new Error('This email is already registered');
-    }
-    if (error.status === 400) {
-      throw new Error('Invalid registration data');
-    }
-    throw new Error('Registration failed. Please try again later.');
+    console.error('Signup error:', error);
+    throw error;
   }
 }
 
-/**
- * Authenticate a user
- */
 export async function login({ email, password }) {
   try {
     const response = await fetch(`${API_URL}/auth/login`, {
@@ -64,31 +51,43 @@ export async function login({ email, password }) {
     });
 
     const data = await response.json();
-    
+    console.log('Login API Response:', data); // Debug log
+
     if (!response.ok) {
-      // Create error with backend's message
-      const error = new Error(data.message || 'Login failed');
-      error.status = response.status;
-      throw error;
+      throw new Error(data.message || 'Login failed');
     }
-    
-    return data;
+
+    // Fallback to JWT data if direct fields are missing
+    const jwtData = parseJwt(data.token);
+    return {
+      token: data.token,
+      id: data.id || jwtData.sub,
+      name: data.name || jwtData.name || email.split('@')[0],
+      email: data.email || jwtData.email || email,
+      role: data.role || jwtData.role || 'LEGACY_OWNER'
+    };
   } catch (error) {
     console.error('Login error:', error);
-    
-    // Handle network errors separately
-    if (error.message.includes('Failed to fetch')) {
-      throw new Error('Network error. Please check your connection.');
-    }
-    
-    // Re-throw the error with proper message
     throw error;
   }
 }
 
-/**
- * Helper to get auth headers with token
- */
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64).split('').map(c => 
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error('JWT parsing error:', e);
+    return {};
+  }
+}
+
 export function getAuthHeaders() {
   const token = localStorage.getItem('token');
   return {

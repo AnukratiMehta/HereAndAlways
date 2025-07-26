@@ -1,14 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
+import { useAuth } from "../../contexts/AuthContext";
 
-const ProfileBar = ({
-  type = "messages",
-  setView,
-  view,
-  onNewItem,
-  ownerName,
-}) => {
+const ProfileBar = ({ type = "messages", setView, view, onNewItem }) => {
+  const { user } = useAuth();
+
   const renderFilters = () => {
     if (type === "messages") {
       return (
@@ -179,18 +176,18 @@ const ProfileBar = ({
       style={{
         marginRight: "1rem",
         marginBottom: "1rem",
-        height: "calc(100vh - 6rem)"
+        height: "calc(100vh - 6rem)",
       }}
     >
       <div>
         {/* user info */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-full bg-brandRose text-white flex items-center justify-center text-lg font-bold shadow">
-            {ownerName?.[0] || "U"}
+            {user?.name?.[0] || "U"}
           </div>
           <div>
             <div className="text-xs text-brandRose-dark">Hey,</div>
-            <div className="font-semibold">{ownerName || "User"}!</div>
+            <div className="font-semibold">{user?.name || "User"}!</div>
           </div>
         </div>
 
@@ -207,11 +204,7 @@ const ProfileBar = ({
         )}
 
         {/* New item button */}
-        <Button
-          onClick={onNewItem}
-          color="primary"
-          className="w-full mb-4"
-        >
+        <Button onClick={onNewItem} color="primary" className="w-full mb-4">
           <FontAwesomeIcon icon={icons.plus} className="mr-2" />
           {type === "messages"
             ? "New Message"
