@@ -6,8 +6,9 @@ import { icons } from "../../icons/icons";
 import TrusteeEditModal from "./TrusteeEditModal";
 import TrusteeViewModal from "./TrusteeViewModal";
 
-const PendingTrustees = ({ ownerId, reloadKey, onTrusteeUpdated }) => {
+const PendingTrustees = ({ ownerId, reloadKey, onTrusteeUpdated, searchQuery }) => {
   const [trustees, setTrustees] = useState([]);
+  const [filteredTrustees, setFilteredTrustees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewingTrustee, setViewingTrustee] = useState(null);
   const [editingTrustee, setEditingTrustee] = useState(null);
@@ -25,18 +26,39 @@ const PendingTrustees = ({ ownerId, reloadKey, onTrusteeUpdated }) => {
       .finally(() => setLoading(false));
   }, [ownerId, reloadKey]);
 
+  // Apply search filter
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredTrustees(trustees);
+      return;
+    }
+    
+    const query = searchQuery.toLowerCase();
+    const filtered = trustees.filter(trustee => 
+      trustee.trusteeName?.toLowerCase().includes(query) ||
+      trustee.trusteeEmail?.toLowerCase().includes(query)
+    );
+    setFilteredTrustees(filtered);
+  }, [searchQuery, trustees]);
+
   const renderRow = (trustee) => (
     <tr key={trustee.trusteeId} className="hover:bg-gray-50">
       <td className="py-2 px-4">{trustee.trusteeName || "—"}</td>
       <td className="py-2 px-4">{trustee.trusteeEmail || "—"}</td>
       <td className="py-2 px-4">{trustee.status}</td>
       <td className="py-2 px-4">
-        <button onClick={() => setViewingTrustee(trustee)} className="text-brandRose hover:text-brandRose-dark">
+        <button 
+          onClick={() => setViewingTrustee(trustee)} 
+          className="text-brandRose hover:text-brandRose-dark"
+        >
           <FontAwesomeIcon icon={icons.eye} /> View
         </button>
-        </td>
-        <td className="py-2 px-4">
-        <button onClick={() => setEditingTrustee(trustee)} className="text-brandRose hover:text-brandRose-dark">
+      </td>
+      <td className="py-2 px-4">
+        <button 
+          onClick={() => setEditingTrustee(trustee)} 
+          className="text-brandRose hover:text-brandRose-dark"
+        >
           <FontAwesomeIcon icon={icons.pen} /> Edit
         </button>
       </td>
@@ -45,14 +67,36 @@ const PendingTrustees = ({ ownerId, reloadKey, onTrusteeUpdated }) => {
 
   return (
     <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">Pending Trustees</h2>
+      <h2 className="text-xl font-semibold mb-4">
+        Pending Trustees
+        {searchQuery && (
+          <span className="text-sm font-normal text-gray-500 ml-2">
+            (Showing {filteredTrustees.length} results)
+          </span>
+        )}
+      </h2>
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <Table columns={["Name", "Email", "Status", "", ""]} data={trustees} renderRow={renderRow} pageSize={5} />
+        <Table 
+          columns={["Name", "Email", "Status", "", ""]} 
+          data={filteredTrustees} 
+          renderRow={renderRow} 
+          pageSize={5}
+          emptyMessage={
+            searchQuery 
+              ? `No pending trustees match "${searchQuery}"`
+              : "No pending trustees found"
+          }
+        />
       )}
 
-      {viewingTrustee && <TrusteeViewModal trustee={viewingTrustee} onClose={() => setViewingTrustee(null)} />}
+      {viewingTrustee && (
+        <TrusteeViewModal 
+          trustee={viewingTrustee} 
+          onClose={() => setViewingTrustee(null)} 
+        />
+      )}
 
       {editingTrustee && (
         <TrusteeEditModal
