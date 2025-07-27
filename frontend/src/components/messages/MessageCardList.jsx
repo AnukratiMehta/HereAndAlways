@@ -3,42 +3,77 @@ import axios from "axios";
 import MessageCard from "./MessageCard";
 import MessageEditModal from "./MessageEditModal";
 
-const MessageCardList = ({ ownerId, filter }) => {
-  const [messages, setMessages] = useState([]);
+const MessageCardList = ({ ownerId, filter, searchQuery }) => {
+  const [allMessages, setAllMessages] = useState([]);
+  const [displayedMessages, setDisplayedMessages] = useState([]);
   const [editingMessage, setEditingMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 4; // cards per page
 
+  // Fetch messages based on ownerId and filter
   useEffect(() => {
     if (!ownerId) return;
-    axios
-      .get(`/api/messages/${ownerId}`)
-      .then((res) => {
+    
+    const fetchMessages = async () => {
+      try {
+        const res = await axios.get(`/api/messages/${ownerId}`);
         const filtered = res.data.filter((m) => m.deliveryStatus === filter);
-        setMessages(filtered);
-      })
-      .catch(console.error);
+        setAllMessages(filtered);
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+      }
+    };
+    
+    fetchMessages();
   }, [ownerId, filter]);
 
-  const refreshMessages = () => {
-    axios
-      .get(`/api/messages/${ownerId}`)
-      .then((res) => {
-        const filtered = res.data.filter((m) => m.deliveryStatus === filter);
-        setMessages(filtered);
-      })
-      .catch(console.error);
+  // Apply search filtering whenever searchQuery or allMessages changes
+  useEffect(() => {
+    if (!searchQuery) {
+      setDisplayedMessages(allMessages);
+      setCurrentPage(1); // Reset to first page when search is cleared
+      return;
+    }
+
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    const filtered = allMessages.filter((message) => {
+      const matchesSubject = message.subject?.toLowerCase().includes(lowerCaseQuery);
+      const matchesBody = message.body?.toLowerCase().includes(lowerCaseQuery);
+      return matchesSubject || matchesBody;
+    });
+
+    setDisplayedMessages(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
+  }, [searchQuery, allMessages]);
+
+  const refreshMessages = async () => {
+    try {
+      const res = await axios.get(`/api/messages/${ownerId}`);
+      const filtered = res.data.filter((m) => m.deliveryStatus === filter);
+      setAllMessages(filtered);
+    } catch (err) {
+      console.error("Error refreshing messages:", err);
+    }
   };
 
-  const paginatedMessages = messages.slice(
+  // Pagination logic
+  const paginatedMessages = displayedMessages.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
-  const totalPages = Math.ceil(messages.length / pageSize);
+  const totalPages = Math.ceil(displayedMessages.length / pageSize);
 
   return (
     <div className="space-y-4">
+      {/* Search status indicator */}
+      {searchQuery && (
+        <div className="text-sm text-gray-500 mb-2">
+          Showing {displayedMessages.length} {filter.toLowerCase()} messages matching "{searchQuery}"
+        </div>
+      )}
+
+      {/* Message cards */}
       {paginatedMessages.map((msg) => (
         <MessageCard
           key={msg.id}
@@ -47,8 +82,13 @@ const MessageCardList = ({ ownerId, filter }) => {
         />
       ))}
 
-      {messages.length === 0 && (
-        <div className="text-gray-500">No messages found.</div>
+      {/* Empty state */}
+      {displayedMessages.length === 0 && (
+        <div className="text-gray-500">
+          {searchQuery
+            ? `No ${filter.toLowerCase()} messages match "${searchQuery}"`
+            : `No ${filter.toLowerCase()} messages found`}
+        </div>
       )}
 
       {/* Pagination controls */}
@@ -74,6 +114,7 @@ const MessageCardList = ({ ownerId, filter }) => {
         </div>
       )}
 
+      {/* Edit modal */}
       {editingMessage && (
         <MessageEditModal
           message={editingMessage}

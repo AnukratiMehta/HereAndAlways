@@ -1,68 +1,123 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
+import Header from "../components/shared/Header";
 import RecentMessages from "../components/messages/RecentMessages";
 import ScheduledMessages from "../components/messages/ScheduledMessages";
 import MessageCardList from "../components/messages/MessageCardList";
 import NewMessage from "../components/messages/NewMessage";
+import ErrorBoundary from "../components/shared/ErrorBoundary";
 
 const Messages = () => {
   const { user } = useAuth();
   const [view, setView] = useState("home");
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [error, setError] = useState(null);
 
   const ownerId = user?.id;
 
-  // Debug logs
-  useEffect(() => {
-    console.log("=== Debug: useAuth().user ===");
-    console.log(user);
-    console.log("=== Debug: localStorage.getItem('user') ===");
-    console.log(localStorage.getItem("user"));
-  }, [user]);
+  const handleSearch = (query) => {
+    try {
+      setSearchQuery(query);
+      // No view switching here - we'll let the components handle the filtering
+    } catch (err) {
+      setError(err);
+      console.error("Search error:", err);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <div className="flex-1 p-8 flex items-center justify-center">
+          <div className="text-red-500">
+            Error loading messages: {error.message}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 p-8 relative">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Messages</h1>
+      
+      <div className="flex-1 flex flex-col">
+        <Header 
+          searchPlaceholder="Search messages by subject or content..." 
+          onSearch={handleSearch}
+        />
+        
+        <div className="flex flex-1">
+          <div className="flex-1 pt-6 pl-8 pr-8 overflow-y-auto">
+            {view === "home" ? (
+              <>
+                <ErrorBoundary fallback={<div className="mb-8 text-red-500">Error loading recent messages</div>}>
+                  <RecentMessages 
+                    ownerId={ownerId} 
+                    searchQuery={searchQuery} 
+                  />
+                </ErrorBoundary>
+                <ErrorBoundary fallback={<div className="text-red-500">Error loading scheduled messages</div>}>
+                  <ScheduledMessages 
+                    ownerId={ownerId} 
+                    searchQuery={searchQuery} 
+                  />
+                </ErrorBoundary>
+              </>
+            ) : view === "drafts" ? (
+              <ErrorBoundary fallback={<div className="text-red-500">Error loading drafts</div>}>
+                <MessageCardList 
+                  ownerId={ownerId} 
+                  filter="DRAFT" 
+                  searchQuery={searchQuery}
+                />
+              </ErrorBoundary>
+            ) : view === "scheduled" ? (
+              <ErrorBoundary fallback={<div className="text-red-500">Error loading scheduled messages</div>}>
+                <MessageCardList 
+                  ownerId={ownerId} 
+                  filter="QUEUED" 
+                  searchQuery={searchQuery}
+                />
+              </ErrorBoundary>
+            ) : view === "starred" ? (
+              <ErrorBoundary fallback={<div className="text-red-500">Error loading starred messages</div>}>
+                <MessageCardList 
+                  ownerId={ownerId} 
+                  filter="STARRED" 
+                  searchQuery={searchQuery}
+                />
+              </ErrorBoundary>
+            ) : null}
+          </div>
+
+          <div className="pt-6">
+            <ErrorBoundary fallback={<div className="w-64 p-4 text-red-500">Error loading profile bar</div>}>
+              <ProfileBar
+                type="messages"
+                view={view}
+                setView={setView}
+                onNewItem={() => setShowModal(true)}
+              />
+            </ErrorBoundary>
+          </div>
         </div>
+      </div>
 
-        {view === "home" && (
-          <>
-            <RecentMessages ownerId={ownerId} />
-            <ScheduledMessages ownerId={ownerId} />
-          </>
-        )}
-
-        {view === "drafts" && (
-          <MessageCardList ownerId={ownerId} filter="DRAFT" />
-        )}
-
-        {view === "scheduled" && (
-          <MessageCardList ownerId={ownerId} filter="QUEUED" />
-        )}
-
-        {view === "starred" && (
-          <div>Starred messages view coming soon.</div>
-        )}
-
-        {showModal && (
+      {showModal && (
+        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">Error loading message composer</div>
+        </div>}>
           <NewMessage
             ownerId={ownerId}
             onClose={() => setShowModal(false)}
           />
-        )}
-      </div>
-
-      <ProfileBar
-        type="messages"
-        view={view}
-        setView={setView}
-        onNewItem={() => setShowModal(true)}
-      />
+        </ErrorBoundary>
+      )}
     </div>
   );
 };

@@ -33,7 +33,10 @@ import {
   faSpinner,
   faSave,
   faTimes,
-  faCheckCircle
+  faCheckCircle,
+  faSearch,
+  faBell,
+  faUser
 } from '@fortawesome/free-solid-svg-icons';
 import { FaCheckCircle } from 'react-icons/fa';
 
@@ -75,7 +78,11 @@ const icons = {
   envelope: faEnvelope,
   times: faTimes,
   spinner: faSpinner,
-  checkCircle: faCheckCircle  
+  checkCircle: faCheckCircle,
+  search: faSearch,
+  bell: faBell,
+  user: faUser,
+    
 };
 
 export { FontAwesomeIcon, icons };
