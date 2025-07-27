@@ -35,11 +35,18 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
   const [trustees, setTrustees] = useState([]);
   const [selectedTrustees, setSelectedTrustees] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchTrustees = async () => {
+      if (!ownerId) return;
+      
       try {
-        const res = await axios.get(`/api/trustees/${ownerId}`);
+        const res = await axios.get(`/api/trustees/${ownerId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         const options = res.data.map((t) => ({
           value: t.trusteeId,
           label: t.trusteeName || t.trusteeEmail || "Unnamed",
@@ -54,6 +61,7 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
         }
       } catch (err) {
         console.error("Failed to load trustees", err);
+        setError("Failed to load trustees. Please try again.");
       }
     };
 
@@ -67,60 +75,75 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!ownerId) return;
+    
     setLoading(true);
+    setError(null);
 
     try {
-      let updatedPasswordUrl = credential.passwordOrPin;
-      let updatedKey = credential.encryptedKey;
+      let updatePayload = {
+        title: formData.title,
+        usernameOrCardNumber: formData.usernameOrCardNumber,
+        category: formData.category.value,
+        notes: formData.notes,
+        trusteeIds: selectedTrustees.map((t) => t.value),
+      };
 
-      // If password was edited
+      // Only update password if a new one was provided
       if (formData.passwordOrPin.trim()) {
         const key = await generateAESKey();
-        updatedKey = await exportKeyAsBase64(key);
-        const encrypted = await encryptText(formData.passwordOrPin, key);
+        const encryptedKey = await exportKeyAsBase64(key);
+        const encryptedPassword = await encryptText(formData.passwordOrPin, key);
 
         const safeName = formData.title.replace(/\s+/g, "_").toLowerCase();
         const fileName = `${crypto.randomUUID()}_${safeName}.txt`;
 
         const { error: uploadError } = await supabase.storage
           .from("vault")
-          .upload(fileName, encrypted, {
+          .upload(fileName, encryptedPassword, {
             upsert: false,
             contentType: "text/plain",
             cacheControl: "3600",
           });
 
-        if (uploadError) throw new Error(uploadError.message);
+        if (uploadError) throw new Error(`Supabase upload failed: ${uploadError.message}`);
 
         const { data: urlData, error: urlError } = await supabase.storage
           .from("vault")
-          .createSignedUrl(fileName, 7 * 24 * 60 * 60); // 7 days
+          .createSignedUrl(fileName, 7 * 24 * 60 * 60);
 
-        if (urlError || !urlData?.signedUrl) throw new Error("Failed to create signed URL");
+        if (urlError || !urlData?.signedUrl) {
+          throw new Error("Failed to create signed URL");
+        }
 
-        updatedPasswordUrl = urlData.signedUrl;
+        updatePayload = {
+          ...updatePayload,
+          passwordOrPin: urlData.signedUrl,
+          encryptedKey
+        };
       }
 
-      const payload = {
-        title: formData.title,
-        usernameOrCardNumber: formData.usernameOrCardNumber,
-        passwordOrPin: updatedPasswordUrl,
-        encryptedKey: updatedKey,
-        category: formData.category.value,
-        notes: formData.notes,
-        trusteeIds: selectedTrustees.map((t) => t.value),
-      };
-
       const response = await axios.put(
-        `/api/credentials/${credential.id}?ownerId=${ownerId}`,
-        payload
+        `/api/credentials/${credential.id}`,
+        updatePayload,
+        {
+          params: { ownerId },
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
-      onUpdate(response.data); // updated credential
+      onUpdate(response.data);
       onClose();
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Failed to update credential.");
+      const errorMessage = err.response?.data?.message || 
+                         err.response?.data?.error || 
+                         err.message || 
+                         "Failed to update credential. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -133,12 +156,20 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
           onClick={onClose}
           className="absolute top-3 right-3 text-brandRose hover:text-brandRose-dark text-2xl font-bold"
           aria-label="Close"
+          disabled={loading}
         >
           &times;
         </button>
+        
         <h2 className="text-2xl font-bold text-brandRose-dark mb-6">
           Edit Credential
         </h2>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5 text-sm text-gray-700">
           <div>
@@ -149,6 +180,7 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
+              disabled={loading}
             />
           </div>
           <div>
@@ -159,6 +191,7 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
+              disabled={loading}
             />
           </div>
           <div>
@@ -170,6 +203,7 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
               onChange={handleChange}
               placeholder="Leave empty to keep existing"
               className="w-full border border-gray-300 rounded px-3 py-2"
+              disabled={loading}
             />
           </div>
           <div>
@@ -181,6 +215,7 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
                 setFormData((prev) => ({ ...prev, category: option }))
               }
               isSearchable
+              isDisabled={loading}
             />
           </div>
           <div>
@@ -191,6 +226,7 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
               onChange={handleChange}
               rows={3}
               className="w-full border border-gray-300 rounded px-3 py-2"
+              disabled={loading}
             />
           </div>
           <div>
@@ -201,10 +237,16 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
               value={selectedTrustees}
               onChange={(selected) => setSelectedTrustees(selected || [])}
               placeholder="Select trustees..."
+              isDisabled={loading}
             />
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button 
+              type="button" 
+              variant="secondary" 
+              onClick={onClose}
+              disabled={loading}
+            >
               Cancel
             </Button>
             <Button
