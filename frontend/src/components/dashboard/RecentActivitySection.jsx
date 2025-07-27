@@ -9,13 +9,28 @@ const RecentActivitySection = ({
   onItemClick,
   getItemTitle = (item) => item.title || item.name || "Untitled",
   getItemSubtitle = (item) => "",
-  dateField = "createdAt"
+  dateField = "createdAt",
+  searchQuery = ""
 }) => {
   const handleClick = (e, item) => {
     e.preventDefault();
     if (onItemClick) {
       onItemClick(item);
     }
+  };
+
+  // Highlight search matches in text
+  const highlightMatch = (text) => {
+    if (!searchQuery || !text) return text;
+    
+    const regex = new RegExp(`(${searchQuery})`, 'gi');
+    return text.split(regex).map((part, i) => 
+      part.toLowerCase() === searchQuery.toLowerCase() ? (
+        <span key={i} className="bg-yellow-100">{part}</span>
+      ) : (
+        part
+      )
+    );
   };
 
   return (
@@ -42,11 +57,11 @@ const RecentActivitySection = ({
               >
                 <div className="flex-1 min-w-0">
                   <p className="truncate font-medium text-gray-900">
-                    {getItemTitle(item)}
+                    {highlightMatch(getItemTitle(item))}
                   </p>
                   {getItemSubtitle(item) && (
                     <p className="truncate text-sm text-gray-500">
-                      {getItemSubtitle(item)}
+                      {highlightMatch(getItemSubtitle(item))}
                     </p>
                   )}
                 </div>

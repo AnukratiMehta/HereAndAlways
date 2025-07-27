@@ -9,6 +9,8 @@ import MessageEditModal from "../components/messages/MessageEditModal";
 import EditAssetModal from "../components/assets/EditAssetModal";
 import CredentialEditModal from "../components/vault/CredentialEditModal";
 import { icons } from "../icons/icons";
+import Header from "../components/shared/Header";
+import ErrorBoundary from "../components/shared/ErrorBoundary";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -25,6 +27,11 @@ const Dashboard = () => {
     type: null, 
     data: null 
   });
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   useEffect(() => {
     if (!user?.id) return;
@@ -91,6 +98,15 @@ const Dashboard = () => {
     }
   };
 
+  // Filter items based on search query
+  const filterItems = (items, getTitleFn) => {
+    if (!searchQuery) return items;
+    const query = searchQuery.toLowerCase();
+    return items.filter(item => 
+      getTitleFn(item).toLowerCase().includes(query)
+    );
+  };
+
   if (loading || !dashboardData.stats) {
     return (
       <div className="flex min-h-screen">
@@ -107,124 +123,155 @@ const Dashboard = () => {
     <div className="flex min-h-screen">
       <Sidebar />
       
-      <div className="flex-1 p-8 relative">
-        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <div className="flex-1 flex flex-col">
+        <Header 
+          searchPlaceholder="Search across dashboard..." 
+          onSearch={handleSearch}
+        />
+        
+        <div className="flex flex-1">
+          <div className="flex-1 p-8 overflow-y-auto">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <StatCard 
+                icon={icons.messages} 
+                title="Messages" 
+                value={dashboardData.stats.messages} 
+                link="/messages"
+              />
+              <StatCard 
+                icon={icons.assets} 
+                title="Memories" 
+                value={dashboardData.stats.assets} 
+                link="/assets"
+                color="bg-purple-100 text-purple-600"
+              />
+              <StatCard 
+                icon={icons.vault} 
+                title="Credentials" 
+                value={dashboardData.stats.credentials} 
+                link="/vault"
+                color="bg-green-100 text-green-600"
+              />
+              <StatCard 
+                icon={icons.trustees} 
+                title="Trustees" 
+                value={dashboardData.stats.trustees} 
+                link="/trustees"
+                color="bg-orange-100 text-orange-600"
+              />
+            </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            icon={icons.messages} 
-            title="Messages" 
-            value={dashboardData.stats.messages} 
-            link="/messages"
-          />
-          <StatCard 
-            icon={icons.assets} 
-            title="Memories" 
-            value={dashboardData.stats.assets} 
-            link="/assets"
-            color="bg-purple-100 text-purple-600"
-          />
-          <StatCard 
-            icon={icons.vault} 
-            title="Credentials" 
-            value={dashboardData.stats.credentials} 
-            link="/vault"
-            color="bg-green-100 text-green-600"
-          />
-          <StatCard 
-            icon={icons.trustees} 
-            title="Trustees" 
-            value={dashboardData.stats.trustees} 
-            link="/trustees"
-            color="bg-orange-100 text-orange-600"
-          />
+            {/* Recent Activity Sections */}
+            <div className="space-y-8">
+              {/* First row with 2 sections */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent messages</div>}>
+                  <RecentActivitySection 
+                    title="Recent Messages"
+                    icon={icons.messages}
+                    items={filterItems(dashboardData.recentMessages, (item) => item.subject || "Untitled message")}
+                    emptyMessage={searchQuery ? "No matching messages" : "No recent messages"}
+                    link="/messages"
+                    onItemClick={(item) => handleItemClick('message', item)}
+                    getItemTitle={(item) => item.subject || "Untitled message"}
+                    getItemSubtitle={(item) => item.deliveryStatus}
+                  />
+                </ErrorBoundary>
+                <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent memories</div>}>
+                  <RecentActivitySection 
+                    title="Recent Memories"
+                    icon={icons.assets}
+                    items={filterItems(dashboardData.recentAssets, (item) => item.name || "Unnamed asset")}
+                    emptyMessage={searchQuery ? "No matching memories" : "No recent memories"}
+                    link="/assets"
+                    onItemClick={(item) => handleItemClick('asset', item)}
+                    getItemTitle={(item) => item.name || "Unnamed asset"}
+                    getItemSubtitle={(item) => item.assetType}
+                  />
+                </ErrorBoundary>
+              </div>
+
+              {/* Second row with 2 sections */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent credentials</div>}>
+                  <RecentActivitySection 
+                    title="Recent Credentials"
+                    icon={icons.vault}
+                    items={filterItems(dashboardData.recentCredentials, (item) => item.title || "Unnamed credential")}
+                    emptyMessage={searchQuery ? "No matching credentials" : "No recent credentials"}
+                    link="/vault"
+                    onItemClick={(item) => handleItemClick('credential', item)}
+                    getItemTitle={(item) => item.title || "Unnamed credential"}
+                    getItemSubtitle={(item) => item.category}
+                  />
+                </ErrorBoundary>
+                <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent trustees</div>}>
+                  <RecentActivitySection 
+                    title="Recent Trustees"
+                    icon={icons.trustees}
+                    items={filterItems(dashboardData.recentTrustees, (item) => item.trusteeName || item.trusteeEmail || "Unnamed trustee")}
+                    emptyMessage={searchQuery ? "No matching trustees" : "No recent trustees"}
+                    link="/trustees"
+                    getItemTitle={(item) => item.trusteeName || item.trusteeEmail || "Unnamed trustee"}
+                    getItemSubtitle={(item) => item.status}
+                  />
+                </ErrorBoundary>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-6">
+            <ErrorBoundary fallback={<div className="w-64 p-4 text-red-500">Error loading profile bar</div>}>
+              <ProfileBar 
+                type="dashboard" 
+                view={view} 
+                setView={setView} 
+                onNewItem={() => {}} 
+              />
+            </ErrorBoundary>
+          </div>
         </div>
-
-        {/* Recent Activity Sections */}
-<div className="space-y-8">
-  {/* First row with 2 sections */}
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <RecentActivitySection 
-      title="Recent Messages"
-      icon={icons.messages}
-      items={dashboardData.recentMessages}
-      emptyMessage="No recent messages"
-      link="/messages"
-      onItemClick={(item) => handleItemClick('message', item)}
-      getItemTitle={(item) => item.subject || "Untitled message"}
-      getItemSubtitle={(item) => item.deliveryStatus}
-    />
-    <RecentActivitySection 
-      title="Recent Memories"
-      icon={icons.assets}
-      items={dashboardData.recentAssets}
-      emptyMessage="No recent memories"
-      link="/assets"
-      onItemClick={(item) => handleItemClick('asset', item)}
-      getItemTitle={(item) => item.name || "Unnamed asset"}
-      getItemSubtitle={(item) => item.assetType}
-    />
-  </div>
-
-  {/* Second row with 2 sections */}
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <RecentActivitySection 
-      title="Recent Credentials"
-      icon={icons.vault}
-      items={dashboardData.recentCredentials}
-      emptyMessage="No recent credentials"
-      link="/vault"
-      onItemClick={(item) => handleItemClick('credential', item)}
-      getItemTitle={(item) => item.title || "Unnamed credential"}
-      getItemSubtitle={(item) => item.category}
-    />
-    <RecentActivitySection 
-      title="Recent Trustees"
-      icon={icons.trustees}
-      items={dashboardData.recentTrustees}
-      emptyMessage="No recent trustees"
-      link="/trustees"
-      getItemTitle={(item) => item.trusteeName || item.trusteeEmail || "Unnamed trustee"}
-      getItemSubtitle={(item) => item.status}
-    />
-  </div>
-</div>
       </div>
-
-      <ProfileBar 
-        type="dashboard" 
-        view={view} 
-        setView={setView} 
-        onNewItem={() => {}} 
-      />
 
       {/* Edit Modals */}
       {editingItem.type === 'message' && (
-        <MessageEditModal
-          message={editingItem.data}
-          ownerId={user?.id}
-          onClose={handleModalClose}
-          onSave={handleModalClose}
-        />
+        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">Error loading message editor</div>
+        </div>}>
+          <MessageEditModal
+            message={editingItem.data}
+            ownerId={user?.id}
+            onClose={handleModalClose}
+            onSave={handleModalClose}
+          />
+        </ErrorBoundary>
       )}
 
       {editingItem.type === 'asset' && (
-        <EditAssetModal
-          asset={editingItem.data}
-          ownerId={user?.id}
-          onClose={handleModalClose}
-          onSave={handleModalClose}
-        />
+        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">Error loading asset editor</div>
+        </div>}>
+          <EditAssetModal
+            asset={editingItem.data}
+            ownerId={user?.id}
+            onClose={handleModalClose}
+            onSave={handleModalClose}
+          />
+        </ErrorBoundary>
       )}
 
       {editingItem.type === 'credential' && (
-        <CredentialEditModal
-          credential={editingItem.data}
-          ownerId={user?.id}
-          onClose={handleModalClose}
-          onUpdate={handleModalClose}
-        />
+        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">Error loading credential editor</div>
+        </div>}>
+          <CredentialEditModal
+            credential={editingItem.data}
+            ownerId={user?.id}
+            onClose={handleModalClose}
+            onUpdate={handleModalClose}
+          />
+        </ErrorBoundary>
       )}
     </div>
   );
