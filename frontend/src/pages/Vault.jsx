@@ -7,9 +7,11 @@ import CredentialUploadForm from "../components/vault/CredentialUploadForm";
 import CredentialEditModal from "../components/vault/CredentialEditModal";
 import CredentialViewModal from "../components/vault/CredentialViewModal";
 import VaultCard from "../components/vault/VaultCard";
+import Header from "../components/shared/Header";
+import ErrorBoundary from "../components/shared/ErrorBoundary";
 
 const Vault = () => {
-  const { user } = useAuth(); // Get authenticated user from context
+  const { user } = useAuth();
   const [view, setView] = useState("home");
   const [credentials, setCredentials] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -17,12 +19,17 @@ const Vault = () => {
   const [viewingCredential, setViewingCredential] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const ownerId = user?.id; // Use dynamic ownerId from auth
+  const ownerId = user?.id;
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   useEffect(() => {
     const fetchCredentials = async () => {
-      if (!ownerId) return; // Don't fetch if no user is logged in
+      if (!ownerId) return;
       
       setIsLoading(true);
       setError(null);
@@ -100,16 +107,33 @@ const Vault = () => {
   };
 
   const getFilteredCredentials = () => {
+    let filtered = credentials;
+    
+    // Apply view filter
     switch (view) {
       case "social":
-        return credentials.filter((c) => c.category === "SOCIAL");
+        filtered = filtered.filter((c) => c.category === "SOCIAL");
+        break;
       case "bank":
-        return credentials.filter((c) => c.category === "BANK");
+        filtered = filtered.filter((c) => c.category === "BANK");
+        break;
       case "all":
       case "home":
       default:
-        return credentials;
+        break;
     }
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(cred => 
+        cred.serviceName?.toLowerCase().includes(query) ||
+        cred.username?.toLowerCase().includes(query) ||
+        cred.description?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
   };
 
   const filteredCredentials = getFilteredCredentials();
@@ -118,77 +142,98 @@ const Vault = () => {
     <div className="flex min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 p-8 relative">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Secure Vault</h1>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-            {error}
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="text-center py-8">Loading credentials...</div>
-        ) : (
-          <>
-            {filteredCredentials.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {filteredCredentials.map((cred) => (
-                  <VaultCard
-                    key={cred.id}
-                    credential={cred}
-                    onView={(c) => setViewingCredential(c)}
-                    onEdit={handleEditClick}
-                    onDelete={handleDelete}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-gray-500 py-8 text-center">
-                {credentials.length === 0 
-                  ? "No credentials saved yet" 
-                  : `No credentials match the ${view} filter`}
+      <div className="flex-1 flex flex-col">
+        <Header 
+          searchPlaceholder="Search credentials by service, username..." 
+          onSearch={handleSearch}
+        />
+        
+        <div className="flex flex-1">
+          <div className="flex-1 p-8 overflow-y-auto">
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+                {error}
               </div>
             )}
-          </>
-        )}
+
+            {isLoading ? (
+              <div className="text-center py-8">Loading credentials...</div>
+            ) : (
+              <>
+                {filteredCredentials.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {filteredCredentials.map((cred) => (
+                      <ErrorBoundary key={cred.id} fallback={<div className="border border-lightGray rounded-xl p-4 text-red-500">Error displaying credential</div>}>
+                        <VaultCard
+                          credential={cred}
+                          onView={(c) => setViewingCredential(c)}
+                          onEdit={handleEditClick}
+                          onDelete={handleDelete}
+                        />
+                      </ErrorBoundary>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-500 py-8 text-center">
+                    {credentials.length === 0 
+                      ? "No credentials saved yet" 
+                      : searchQuery
+                        ? `No credentials match "${searchQuery}"`
+                        : `No credentials match the ${view} filter`}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="pt-6">
+            <ErrorBoundary fallback={<div className="w-64 p-4 text-red-500">Error loading profile bar</div>}>
+              <ProfileBar
+                type="vault"
+                view={view}
+                setView={setView}
+                onNewItem={() => setShowModal(true)}
+              />
+            </ErrorBoundary>
+          </div>
+        </div>
       </div>
 
-      <ProfileBar
-        type="vault"
-        ownerName={user?.name || "Your"} // Dynamic owner name
-        view={view}
-        setView={setView}
-        onNewItem={() => setShowModal(true)}
-      />
-
-      {/* Upload form modal */}
+      {/* Modals */}
       {showModal && ownerId && (
-        <CredentialUploadForm
-          ownerId={ownerId}
-          onUploadComplete={handleUploadComplete}
-          onCancel={() => setShowModal(false)}
-        />
+        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">Error loading upload form</div>
+        </div>}>
+          <CredentialUploadForm
+            ownerId={ownerId}
+            onUploadComplete={handleUploadComplete}
+            onCancel={() => setShowModal(false)}
+          />
+        </ErrorBoundary>
       )}
 
-      {/* Edit modal */}
       {editingCredential && (
-        <CredentialEditModal
-          credential={editingCredential}
-          ownerId={ownerId}
-          onClose={() => setEditingCredential(null)}
-          onUpdate={handleUpdate}
-        />
+        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">Error loading edit form</div>
+        </div>}>
+          <CredentialEditModal
+            credential={editingCredential}
+            ownerId={ownerId}
+            onClose={() => setEditingCredential(null)}
+            onUpdate={handleUpdate}
+          />
+        </ErrorBoundary>
       )}
 
-      {/* View modal */}
       {viewingCredential && (
-        <CredentialViewModal
-          credential={viewingCredential}
-          onClose={() => setViewingCredential(null)}
-        />
+        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg">Error loading credential view</div>
+        </div>}>
+          <CredentialViewModal
+            credential={viewingCredential}
+            onClose={() => setViewingCredential(null)}
+          />
+        </ErrorBoundary>
       )}
     </div>
   );
