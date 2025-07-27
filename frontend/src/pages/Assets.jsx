@@ -6,6 +6,8 @@ import ProfileBar from "../components/shared/ProfileBar";
 import AssetUploadForm from "../components/assets/AssetUploadForm";
 import AssetCard from "../components/assets/AssetCard";
 import EditAssetModal from "../components/assets/EditAssetModal";
+import Header from "../components/shared/Header";
+import ErrorBoundary from "../components/shared/ErrorBoundary";
 
 const Assets = () => {
   const { user } = useAuth();
@@ -15,6 +17,11 @@ const Assets = () => {
   const [editingAsset, setEditingAsset] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
 
   const handleDelete = async (deletedId) => {
     try {
@@ -71,16 +78,32 @@ const Assets = () => {
   };
 
   const getFilteredAssets = () => {
+    let filtered = assets;
+    
+    // Apply view filter
     switch (view) {
       case "messages":
-        return assets.filter(a => a.linkedMessages?.length > 0);
+        filtered = filtered.filter(a => a.linkedMessages?.length > 0);
+        break;
       case "trustees":
-        return assets.filter(a => a.trustees?.length > 0);
+        filtered = filtered.filter(a => a.trustees?.length > 0);
+        break;
       case "all":
       case "home":
       default:
-        return assets;
+        break;
     }
+    
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(asset => 
+        asset.name.toLowerCase().includes(query) ||
+        (asset.description && asset.description.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
   };
 
   const filteredAssets = getFilteredAssets();
@@ -89,66 +112,85 @@ const Assets = () => {
     <div className="flex min-h-screen">
       <Sidebar />
 
-      <div className="flex-1 p-8 relative">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Assets</h1>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-            {error}
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="text-center py-8">Loading assets...</div>
-        ) : (
-          <>
-            {showModal && (
-              <AssetUploadForm
-                ownerId={user?.id}
-                onUploadComplete={handleUploadComplete}
-                onCancel={() => setShowModal(false)}
-              />
-            )}
-
-            {editingAsset && (
-              <EditAssetModal
-                asset={editingAsset}
-                onClose={() => setEditingAsset(null)}
-                onSave={handleUpdate}
-              />
-            )}
-
-            {filteredAssets.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {filteredAssets.map(asset => (
-                  <AssetCard
-                    key={asset.id}
-                    asset={asset}
-                    onDelete={handleDelete}
-                    onEdit={handleEditClick}
-                  />
-                ))}
+      <div className="flex-1 flex flex-col">
+        <Header 
+          searchPlaceholder="Search assets by name or description..." 
+          onSearch={handleSearch}
+        />
+        
+        <div className="flex flex-1">
+          <div className="flex-1 p-8 overflow-y-auto">
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+                {error}
               </div>
+            )}
+
+            {isLoading ? (
+              <div className="text-center py-8">Loading assets...</div>
             ) : (
-              <div className="text-gray-500 py-8 text-center">
-                {assets.length === 0 
-                  ? "No assets uploaded yet" 
-                  : `No assets match the ${view} filter`}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              <>
+                {showModal && (
+                  <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-8 rounded-lg">Error loading upload form</div>
+                  </div>}>
+                    <AssetUploadForm
+                      ownerId={user?.id}
+                      onUploadComplete={handleUploadComplete}
+                      onCancel={() => setShowModal(false)}
+                    />
+                  </ErrorBoundary>
+                )}
 
-      <ProfileBar
-        type="assets"
-        ownerName={user?.name || "Your"}
-        view={view}
-        setView={setView}
-        onNewItem={() => setShowModal(true)}
-      />
+                {editingAsset && (
+                  <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-8 rounded-lg">Error loading edit form</div>
+                  </div>}>
+                    <EditAssetModal
+                      asset={editingAsset}
+                      onClose={() => setEditingAsset(null)}
+                      onSave={handleUpdate}
+                    />
+                  </ErrorBoundary>
+                )}
+
+                {filteredAssets.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {filteredAssets.map(asset => (
+                      <ErrorBoundary key={asset.id} fallback={<div className="border border-lightGray rounded-xl p-4 text-red-500">Error displaying asset</div>}>
+                        <AssetCard
+                          asset={asset}
+                          onDelete={handleDelete}
+                          onEdit={handleEditClick}
+                        />
+                      </ErrorBoundary>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-500 py-8 text-center">
+                    {assets.length === 0 
+                      ? "No assets uploaded yet" 
+                      : searchQuery
+                        ? `No assets match "${searchQuery}"`
+                        : `No assets match the ${view} filter`}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="pt-6">
+            <ErrorBoundary fallback={<div className="w-64 p-4 text-red-500">Error loading profile bar</div>}>
+              <ProfileBar
+                type="assets"
+                view={view}
+                setView={setView}
+                onNewItem={() => setShowModal(true)}
+              />
+            </ErrorBoundary>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
