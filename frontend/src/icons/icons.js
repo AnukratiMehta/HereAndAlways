@@ -40,7 +40,9 @@ import {
   faCamera,
   faArrowRight,
   faChevronUp,
-  faChevronDown
+  faChevronDown,
+  faCalendar,
+  faCircleInfo
 } from '@fortawesome/free-solid-svg-icons';
 import { FaCheckCircle } from 'react-icons/fa';
 
@@ -89,7 +91,9 @@ const icons = {
   camera: faCamera,
   arrowRight: faArrowRight,
   chevronUp: faChevronUp,
-  chevronDown: faChevronDown
+  chevronDown: faChevronDown,
+  calendar: faCalendar,
+  circleInfo: faCircleInfo,
     
 };
 
