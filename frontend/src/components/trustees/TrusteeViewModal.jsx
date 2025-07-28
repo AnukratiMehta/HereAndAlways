@@ -47,7 +47,7 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
 
             <div className="space-y-2">
               <div className="flex items-start">
-                <FontAwesomeIcon icon={icons.status} className="mt-1 mr-2 text-gray-500 w-4" />
+                <FontAwesomeIcon icon={icons.circleInfo} className="mt-1 mr-2 text-gray-500 w-4" />
                 <div>
                   <p className="text-sm font-medium text-gray-500">Status</p>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -65,7 +65,7 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
           {/* Linked Messages Section */}
           <div className="border-t border-gray-200 pt-4">
             <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
-              <FontAwesomeIcon icon={icons.message} className="mr-2 text-brandRose" />
+              <FontAwesomeIcon icon={icons.messages} className="mr-2 text-brandRose" />
               Linked Messages
             </h3>
             {trustee.messages && trustee.messages.length > 0 ? (
@@ -87,7 +87,7 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
           {/* Linked Assets Section */}
           <div className="border-t border-gray-200 pt-4">
             <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
-              <FontAwesomeIcon icon={icons.box} className="mr-2 text-brandRose" />
+              <FontAwesomeIcon icon={icons.assets} className="mr-2 text-brandRose" />
               Linked Assets
             </h3>
             {trustee.assets && trustee.assets.length > 0 ? (
