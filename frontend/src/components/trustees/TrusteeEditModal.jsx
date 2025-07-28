@@ -18,30 +18,47 @@ const TrusteeEditModal = ({ trustee, onClose, onTrusteeUpdated }) => {
     setAssets(assets.filter((a) => a.id !== id));
   };
 
-  const handleSave = async () => {
-    const originalMessageIds = (trustee.messages || []).map((m) => m.id);
-    const originalAssetIds = (trustee.assets || []).map((a) => a.id);
+const handleSave = async () => {
+  // Calculate which messages/assets to remove by comparing original and current state
+  const originalMessageIds = (trustee.messages || []).map((m) => m.id);
+  const currentMessageIds = messages.map((m) => m.id);
+  const messageIdsToRemove = originalMessageIds.filter(
+    (id) => !currentMessageIds.includes(id)
+  );
 
-    const currentMessageIds = messages.map((m) => m.id);
-    const currentAssetIds = assets.map((a) => a.id);
+  const originalAssetIds = (trustee.assets || []).map((a) => a.id);
+  const currentAssetIds = assets.map((a) => a.id);
+  const assetIdsToRemove = originalAssetIds.filter(
+    (id) => !currentAssetIds.includes(id)
+  );
 
-    const messageIdsToRemove = originalMessageIds.filter((id) => !currentMessageIds.includes(id));
-    const assetIdsToRemove = originalAssetIds.filter((id) => !currentAssetIds.includes(id));
-
-    try {
-      await axios.patch(`/api/trustees/update/${trustee.trusteeId}`, {
+  try {
+    await axios.patch(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:8081'}/api/trustees/update/${trustee.trusteeId}`,
+      {
         name,
         email,
         messageIdsToRemove,
         assetIdsToRemove,
-      });
-      onTrusteeUpdated(); // trigger reload in parent
-      onClose();          // close modal
-    } catch (error) {
-      console.error("Failed to update trustee:", error);
-      alert("Something went wrong while saving changes.");
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    );
+    onTrusteeUpdated();
+    onClose();
+  } catch (error) {
+    console.error("Failed to update trustee:", error);
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      console.error("Response status:", error.response.status);
     }
-  };
+    alert(error.response?.data?.message || "Something went wrong while saving changes.");
+  }
+};
 
   return (
     <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-sm">

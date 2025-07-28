@@ -1,74 +1,88 @@
+import axios from 'axios';  // Add this import at the top
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081/api';
 
-async function handleApiError(response) {
-  if (!response.ok) {
-    let errorMessage = 'Request failed';
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
-    } catch (e) {
-      errorMessage = await response.text() || errorMessage;
-    }
-    const error = new Error(errorMessage);
-    error.status = response.status;
-    throw error;
+// Configure default axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // Essential for CORS with credentials
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   }
-  return response;
+});
+
+// Rest of your file remains the same...
+async function handleApiError(error) {
+  let errorMessage = 'Request failed';
+  let status = 500;
+  
+  if (error.response) {
+    // Server responded with non-2xx status
+    status = error.response.status;
+    try {
+      errorMessage = error.response.data?.message || 
+                    error.response.data?.error || 
+                    JSON.stringify(error.response.data);
+    } catch (e) {
+      errorMessage = error.response.statusText || errorMessage;
+    }
+  } else if (error.request) {
+    // Request was made but no response received
+    errorMessage = 'No response from server';
+  } else {
+    // Something happened in setting up the request
+    errorMessage = error.message || errorMessage;
+  }
+
+  const apiError = new Error(errorMessage);
+  apiError.status = status;
+  throw apiError;
 }
 
 export async function signup({ name, email, password }) {
   try {
-    const response = await fetch(`${API_URL}/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, role: 'LEGACY_OWNER' })
+    const response = await api.post('/auth/signup', {
+      name,
+      email,
+      password,
+      role: 'LEGACY_OWNER'
     });
 
-    const data = await response.json();
-    await handleApiError(response);
-
-    console.log('Signup API Response:', data); // Debug log
+    console.log('Signup API Response:', response.data);
 
     return {
-      token: data.token,
-      id: data.id,
-      name: data.name || email.split('@')[0], // Fallback to email prefix
-      email: data.email,
-      role: data.role || 'LEGACY_OWNER' // Default role
+      token: response.data.token,
+      id: response.data.id,
+      name: response.data.name || email.split('@')[0],
+      email: response.data.email,
+      role: response.data.role || 'LEGACY_OWNER'
     };
   } catch (error) {
-    console.error('Signup error:', error);
-    throw error;
+    return handleApiError(error);
   }
 }
 
 export async function login({ email, password }) {
   try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+    const response = await api.post('/auth/login', {
+      email,
+      password
     });
 
-    const data = await response.json();
-    console.log('Login API Response:', data); // Debug log
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Login failed');
-    }
+    console.log('Login API Response:', response.data);
 
     // Fallback to JWT data if direct fields are missing
-    const jwtData = parseJwt(data.token);
+    const jwtData = parseJwt(response.data.token);
     return {
-      token: data.token,
-      id: data.id || jwtData.sub,
-      name: data.name || jwtData.name || email.split('@')[0],
-      email: data.email || jwtData.email || email,
-      role: data.role || jwtData.role || 'LEGACY_OWNER'
+      token: response.data.token,
+      id: response.data.id || jwtData.sub,
+      name: response.data.name || jwtData.name || email.split('@')[0],
+      email: response.data.email || jwtData.email || email,
+      role: response.data.role || jwtData.role || 'LEGACY_OWNER'
     };
   } catch (error) {
-    console.error('Login error:', error);
-    throw error;
+    return handleApiError(error);
   }
 }
 
@@ -95,3 +109,6 @@ export function getAuthHeaders() {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
 }
+
+// Export the configured axios instance
+export default api;

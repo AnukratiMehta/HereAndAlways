@@ -48,7 +48,7 @@ const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated, searchQuery }) =
       <td className="py-2 px-4">
         <button 
           onClick={() => setViewingTrustee(trustee)} 
-          className="text-brandRose hover:text-brandRose-dark"
+          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
         >
           <FontAwesomeIcon icon={icons.eye} /> View
         </button>
@@ -56,7 +56,7 @@ const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated, searchQuery }) =
       <td className="py-2 px-4">
         <button 
           onClick={() => setEditingTrustee(trustee)} 
-          className="text-brandRose hover:text-brandRose-dark"
+          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
         >
           <FontAwesomeIcon icon={icons.pen} /> Edit
         </button>
