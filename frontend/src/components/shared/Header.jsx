@@ -2,8 +2,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import UserAvatar from "../shared/UserAvatar";
-import NotificationsDropdown from "../shared/NotificationsDropdown";
+import UserAvatar from "./UserAvatar";
+import NotificationsDropdown from "./NotificationsDropdown";
+import { Link } from "react-router-dom";
 
 const Header = ({ 
   showSearch = true, 
@@ -49,9 +50,20 @@ const Header = ({
 
         {/* Right side controls */}
         <div className={`flex items-center gap-4 ${showSearch ? 'min-w-[200px]' : ''} justify-end`}>
-          <NotificationsDropdown />
+          {/* Mobile notifications icon (links to notifications page) */}
+          <Link 
+            to="/notifications" 
+            className="md:hidden p-2 text-gray-600 hover:text-brandRose transition-colors"
+          >
+            <FontAwesomeIcon icon={icons.bell} size="lg" />
+          </Link>
           
-          {/* Divider - only shown when notifications are present */}
+          {/* Desktop notifications dropdown */}
+          <div className="hidden md:block">
+            <NotificationsDropdown />
+          </div>
+          
+          {/* Divider - only shown when there are controls before the avatar */}
           <div className="h-8 w-px bg-lightGray"></div>
           
           <UserAvatar />

@@ -9,6 +9,8 @@ import SignUp from './pages/Signup';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Notifications from './pages/Activities';
+import Activities from './pages/Activities';
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
         <Route path="/assets" element={<Assets />} />
         <Route path="/vault" element={<Vault />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/activities" element={<Activities />} />
 
 
       </Routes>
