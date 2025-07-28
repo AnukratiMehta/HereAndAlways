@@ -78,7 +78,7 @@ const handleLogin = async (e) => {
         <div className="mt-8 text-center text-sm text-[var(--color-gray)]">
           <p>
             Don't have an account?{' '}
-            <Link to="/signup" className="font-medium text-[var(--color-brandRose)] hover:underline">Sign up</Link>
+            <Link to="/" className="font-medium text-[var(--color-brandRose)] hover:underline">Sign up</Link>
           </p>
         </div>
       </div>

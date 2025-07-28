@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import UserTest from './pages/UserTest';
 import Dashboard from './pages/Dashboard';
 import Messages from './pages/Messages';
 import Trustees from './pages/Trustees';
@@ -9,7 +8,6 @@ import SignUp from './pages/Signup';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-import Notifications from './pages/Activities';
 import Activities from './pages/Activities';
 
 function App() {
