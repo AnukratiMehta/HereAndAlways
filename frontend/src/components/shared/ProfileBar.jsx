@@ -3,15 +3,15 @@ import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLocation } from "react-router-dom";
+import PropTypes from 'prop-types';
+import ErrorBoundary from "../shared/ErrorBoundary";
 
 const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Determine if we're on the dashboard
   const isDashboard = location.pathname === "/dashboard";
 
-  // Configuration for each page type
   const pageConfigs = {
     dashboard: {
       filters: [
@@ -28,7 +28,7 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
           view: "activity"
         }
       ],
-      newItemButton: null // No new item button on dashboard
+      newItemButton: null
     },
     messages: {
       filters: [
@@ -136,73 +136,103 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
     }
   };
 
-  const config = pageConfigs[type] || pageConfigs.dashboard;
+  // Safely get config with multiple fallbacks
+  const config = pageConfigs[type] || pageConfigs.dashboard || { 
+    filters: [], 
+    newItemButton: null 
+  };
 
   return (
-    <aside className="sticky top-20 flex flex-col justify-between w-64 px-4 py-6 rounded-2xl shadow border border-lightGray text-charcoal"
-      style={{
-        marginRight: "1rem",
-        marginBottom: "1rem",
-        height: "calc(100vh - 6rem)",
-      }}
-    >
-      <div>
-        {/* User info */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-brandRose text-white flex items-center justify-center text-lg font-bold shadow">
-            {user?.name?.[0] || "U"}
+    <ErrorBoundary fallback={<div className="p-4 text-red-500">Profile panel temporarily unavailable</div>}>
+      <aside 
+        className="sticky top-20 flex flex-col justify-between w-64 px-4 py-6 rounded-2xl shadow border border-lightGray bg-white"
+        style={{
+          marginRight: "1rem",
+          marginBottom: "1rem",
+          height: "calc(100vh - 6rem)",
+        }}
+      >
+        <div>
+          {/* User Profile Section */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-full bg-brandRose text-white flex items-center justify-center text-lg font-bold shadow">
+              {user?.name?.[0]?.toUpperCase() || "U"}
+            </div>
+            <div>
+              <div className="text-xs text-brandRose-dark">Hey,</div>
+              <div className="font-semibold">{user?.name || "User"}!</div>
+            </div>
           </div>
-          <div>
-            <div className="text-xs text-brandRose-dark">Hey,</div>
-            <div className="font-semibold">{user?.name || "User"}!</div>
+
+          {/* Action Buttons Section */}
+          <div className="space-y-3 mb-6 border-b border-lightGray pb-4">
+            {view !== "home" && !isDashboard && (
+  <Button
+    onClick={() => setView("home")}
+    variant="tertiary"
+    className="w-full transition-all shadow-xs"
+  >
+    <FontAwesomeIcon 
+      icon={icons.arrowLeft} 
+      className="mr-2 transition-transform group-hover:-translate-x-0.5" 
+    />
+    Back to Home
+  </Button>
+)}
+
+            {config.newItemButton && (
+              <Button 
+                onClick={onNewItem} 
+                color="primary" 
+                className="w-full shadow-sm hover:shadow-md transition-all"
+              >
+                <FontAwesomeIcon icon={config.newItemButton.icon} className="mr-2" />
+                {config.newItemButton.label}
+              </Button>
+            )}
+          </div>
+
+          {/* Filters Section */}
+          <div className="mb-4">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">
+              View Options
+            </h3>
+            <div className="space-y-2">
+              {config.filters.map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setView(filter.view)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all cursor-pointer ${
+                    view === filter.view
+                      ? "bg-brandRose text-white shadow-inner"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <FontAwesomeIcon 
+                    icon={filter.icon} 
+                    className={`text-sm ${view === filter.view ? 'text-white' : 'text-brandRose'}`}
+                  />
+                  <span>{filter.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Back button for non-home views */}
-        {view !== "home" && !isDashboard && (
-          <Button
-            onClick={() => setView("home")}
-            color="primary"
-            className="w-full mb-4"
-          >
-            <FontAwesomeIcon icon={icons.arrowLeft} className="mr-2" />
-            Back to Home
-          </Button>
-        )}
-
-        {/* New item button */}
-        {config.newItemButton && (
-          <Button onClick={onNewItem} color="primary" className="w-full mb-4">
-            <FontAwesomeIcon icon={config.newItemButton.icon} className="mr-2" />
-            {config.newItemButton.label}
-          </Button>
-        )}
-
-        {/* Filters */}
-        <div className="space-y-2 text-sm font-medium">
-          {config.filters.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={() => setView(filter.view)}
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded transition ${
-                view === filter.view
-                  ? "bg-brandRose text-white"
-                  : "hover:bg-brandRose hover:text-white text-brandRose-dark"
-              }`}
-            >
-              <FontAwesomeIcon icon={filter.icon} />
-              {filter.label}
-            </button>
-          ))}
+        {/* Footer */}
+        <div className="text-xs text-brandRose-dark text-center mt-6">
+          Here & Always
         </div>
-      </div>
-
-      {/* Bottom brand */}
-      <div className="text-xs text-brandRose-dark text-center mt-6">
-        Here & Always
-      </div>
-    </aside>
+      </aside>
+    </ErrorBoundary>
   );
+};
+
+ProfileBar.propTypes = {
+  type: PropTypes.oneOf(['dashboard', 'messages', 'assets', 'vault', 'trustees']),
+  view: PropTypes.string,
+  setView: PropTypes.func.isRequired,
+  onNewItem: PropTypes.func
 };
 
 export default ProfileBar;

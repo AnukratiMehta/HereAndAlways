@@ -10,7 +10,8 @@ const RecentActivitySection = ({
   getItemTitle = (item) => item.title || item.name || "Untitled",
   getItemSubtitle = (item) => "",
   dateField = "createdAt",
-  searchQuery = ""
+  searchQuery = "",
+  maxItems = 3 // Add a new prop with default value of 3
 }) => {
   const handleClick = (e, item) => {
     e.preventDefault();
@@ -33,6 +34,9 @@ const RecentActivitySection = ({
     );
   };
 
+  // Get the first maxItems items
+  const displayedItems = items?.slice(0, maxItems) || [];
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-lightGray w-full">
       <div className="flex items-center justify-between mb-4">
@@ -47,9 +51,9 @@ const RecentActivitySection = ({
         )}
       </div>
 
-      {items?.length > 0 ? (
+      {displayedItems.length > 0 ? (
         <ul className="space-y-3">
-          {items.map((item) => (
+          {displayedItems.map((item) => (
             <li key={item.id} className="py-2 border-b border-lightGray last:border-0">
               <div 
                 onClick={(e) => handleClick(e, item)}

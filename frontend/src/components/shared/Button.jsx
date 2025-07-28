@@ -1,10 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { icons } from "../../icons/icons";
 
 /**
  * Shared button component
  *
- * @param {string} variant - primary | secondary | danger
+ * @param {string} variant - primary | secondary | danger | tertiary
  * @param {string} type - button | submit
  * @param {boolean} disabled
  * @param {string} label
@@ -23,7 +22,7 @@ const Button = ({
   className = "",
   children,
 }) => {
-  let baseClasses =
+  const baseClasses =
     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
 
   let variantClasses = "";
@@ -41,6 +40,11 @@ const Button = ({
     case "danger":
       variantClasses =
         "bg-red-600 text-white hover:bg-red-700";
+      break;
+    case "tertiary":
+      variantClasses = disabled
+        ? "bg-white text-brandRose border border-brandRose opacity-50 cursor-not-allowed"
+        : "bg-white text-brandRose border border-brandRose hover:bg-brandRose-dark hover:text-white cursor-pointer";
       break;
     default:
       variantClasses = "bg-gray-300 text-black";

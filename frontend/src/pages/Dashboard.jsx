@@ -221,7 +221,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="pt-6">
+          {/* <div className="pt-6">
             <ErrorBoundary fallback={<div className="w-64 p-4 text-red-500">Error loading profile bar</div>}>
               <ProfileBar 
                 type="dashboard" 
@@ -230,7 +230,7 @@ const Dashboard = () => {
                 onNewItem={() => {}} 
               />
             </ErrorBoundary>
-          </div>
+          </div> */}
         </div>
       </div>
 
