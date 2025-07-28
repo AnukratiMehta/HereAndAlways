@@ -28,18 +28,24 @@ const handleSignup = async (e) => {
 
   setIsLoading(true);
   try {
-    const { token, name, email, role, id } = await signup({ name, email, password }); 
-    console.log('API Response:', { token, name, email, role, id });
-    auth.login({ token, name, email, role, id }); 
+    const response = await signup({ name, email, password });
+    
+    // Check if response contains error (from handleApiError)
+    if (response instanceof Error) {
+      throw response;
+    }
+
+    auth.login({ 
+      token: response.token,
+      id: response.id,
+      name: response.name,
+      email: response.email,
+      role: response.role
+    });
     navigate('/dashboard');
   } catch (err) {
-    if (err.message.includes('Email already in use')) {
-      setError('This email is already registered');
-    } else if (err.message.includes('Invalid email')) {
-      setError('Please enter a valid email address');
-    } else {
-      setError('Registration failed. Please try again.');
-    }
+    console.error('Signup error:', err);
+    setError(err.message || 'Registration failed. Please try again.');
   } finally {
     setIsLoading(false);
   }

@@ -1,4 +1,3 @@
-// src/main/java/com/hereandalways/controllers/AuthController.java
 package com.hereandalways.controllers;
 
 import com.hereandalways.exceptions.InvalidCredentialsException;
@@ -6,62 +5,66 @@ import com.hereandalways.payload.request.UserLoginRequest;
 import com.hereandalways.payload.request.UserRequest;
 import com.hereandalways.payload.response.AuthResponse;
 import com.hereandalways.services.AuthService;
-
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
+import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.HashMap;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> register(@RequestBody UserRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody UserRequest request) {
         try {
             AuthResponse response = authService.register(request);
+            log.info("Registration successful for email: {}", request.getEmail());
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
-            logger.error("Registration error for email: {}", request.getEmail(), ex);
+            log.error("Registration failed for email: {}", request.getEmail(), ex);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of(
+                        "status", "error",
                         "error", "RegistrationError",
-                        "message", ex.getMessage()
+                        "message", ex.getMessage(),
+                        "timestamp", LocalDateTime.now()
                     ));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequest request) {
         try {
             AuthResponse response = authService.login(request);
-            logger.info("Successful login for email: {}", request.getEmail());
+            log.info("Login successful for email: {}", request.getEmail());
             return ResponseEntity.ok(response);
         } catch (InvalidCredentialsException ex) {
-            logger.warn("Invalid login attempt for email: {}", request.getEmail());
+            log.warn("Invalid login attempt for email: {}", request.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new HashMap<>() {{
-                        put("status", "error");
-                        put("error", "InvalidCredentials");
-                        put("message", "Invalid email or password");
-                    }});
+                    .body(Map.of(
+                        "status", "error",
+                        "error", "InvalidCredentials",
+                        "message", "Invalid email or password",
+                        "timestamp", LocalDateTime.now()
+                    ));
         } catch (Exception ex) {
-            logger.error("Login error for email: {}", request.getEmail(), ex);
+            log.error("Login error for email: {}", request.getEmail(), ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new HashMap<>() {{
-                        put("status", "error");
-                        put("error", "InternalError");
-                        put("message", "An unexpected error occurred");
-                    }});
+                    .body(Map.of(
+                        "status", "error",
+                        "error", "InternalError",
+                        "message", "An unexpected error occurred",
+                        "timestamp", LocalDateTime.now()
+                    ));
         }
     }
 }
