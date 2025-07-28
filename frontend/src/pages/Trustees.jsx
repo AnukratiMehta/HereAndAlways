@@ -8,7 +8,10 @@ import InviteTrusteeModal from "../components/trustees/InviteTrusteeModal";
 import Header from "../components/shared/Header";
 import ErrorBoundary from "../components/shared/ErrorBoundary";
 import TrusteeCard from "../components/trustees/TrusteeCard";
+import GroupTrustees from "../components/trustees/GroupTrustees";
+import CreateGroupModal from "../components/trustees/CreateGroupModal";
 import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
 
 const Trustees = () => {
   const { user } = useAuth();
@@ -18,30 +21,53 @@ const Trustees = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [trustees, setTrustees] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [groups, setGroups] = useState(() => {
+    const saved = localStorage.getItem('trusteeGroups');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
   const ownerId = user?.id;
 
   const handleSearch = (query) => {
     setSearchQuery(query);
   };
 
-  const fetchTrustees = async () => {
-    if (!ownerId) return;
-    setLoading(true);
-    try {
-      const response = await axios.get(`/api/trustees/${ownerId}`);
-      setTrustees(response.data);
-    } catch (error) {
-      console.error("Failed to fetch trustees:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchTrustees = async () => {
+  if (!ownerId) return;
+  setLoading(true);
+  try {
+    const response = await axios.get(`/api/trustees/${ownerId}`);
+    
+    const formatted = response.data.map(trustee => ({
+      id: trustee.trusteeId,
+      trusteeId: trustee.trusteeId,
+      trusteeName: trustee.trusteeName,
+      trusteeEmail: trustee.trusteeEmail,
+      status: trustee.status,
+      invitedAt: trustee.invitedAt,
+      messages: trustee.messages || [],
+      assets: trustee.assets || []
+    }));
+
+    setTrustees(formatted);
+  } catch (error) {
+    console.error("Failed to fetch trustees:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
-    if (view === "individual" || view === "external") {
-      fetchTrustees();
-    }
-  }, [view, ownerId, reloadKey]);
+  if ((view === "individual" || view === "external" || view === "group") && ownerId && trustees.length === 0) {
+    fetchTrustees();
+  }
+}, [view, ownerId, reloadKey]);
+
+
+  useEffect(() => {
+    localStorage.setItem('trusteeGroups', JSON.stringify(groups));
+  }, [groups]);
 
   const handleUpdateTrustee = () => {
     setReloadKey(prev => prev + 1);
@@ -54,6 +80,21 @@ const Trustees = () => {
     } catch (error) {
       console.error("Failed to remove trustee:", error);
     }
+  };
+
+  const handleCreateGroup = (groupName, selectedTrustees) => {
+    const newGroup = {
+      id: uuidv4(),
+      name: groupName,
+      trusteeIds: selectedTrustees.map(t => t.id),
+      createdAt: new Date().toISOString()
+    };
+    setGroups([...groups, newGroup]);
+    setShowCreateGroupModal(false);
+  };
+
+  const handleDeleteGroup = (groupId) => {
+    setGroups(groups.filter(group => group.id !== groupId));
   };
 
   const filteredTrustees = trustees.filter(trustee => {
@@ -138,10 +179,20 @@ const Trustees = () => {
             )}
 
             {view === "group" && (
-              <div className="text-center py-8 text-gray-500">
-                Group Trustees view coming soon
-              </div>
-            )}
+  <>
+    {/* Temporary debug */}
+    <div className="hidden">
+      Groups: {JSON.stringify(groups)}<br />
+      Trustees: {JSON.stringify(trustees)}
+    </div>
+    <GroupTrustees 
+      groups={groups} 
+      trustees={trustees}
+      onCreateGroup={() => setShowCreateGroupModal(true)}
+      onDeleteGroup={handleDeleteGroup}
+    />
+  </>
+)}
           </div>
 
           <div className="pt-6">
@@ -170,6 +221,14 @@ const Trustees = () => {
             }}
           />
         </ErrorBoundary>
+      )}
+
+      {showCreateGroupModal && (
+        <CreateGroupModal
+          trustees={trustees}
+          onCreate={handleCreateGroup}
+          onClose={() => setShowCreateGroupModal(false)}
+        />
       )}
     </div>
   );

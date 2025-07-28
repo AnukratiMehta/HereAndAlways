@@ -38,7 +38,9 @@ import {
   faBell,
   faUser,
   faCamera,
-  faArrowRight
+  faArrowRight,
+  faChevronUp,
+  faChevronDown
 } from '@fortawesome/free-solid-svg-icons';
 import { FaCheckCircle } from 'react-icons/fa';
 
@@ -85,7 +87,9 @@ const icons = {
   bell: faBell,
   user: faUser,
   camera: faCamera,
-  arrowRight: faArrowRight
+  arrowRight: faArrowRight,
+  chevronUp: faChevronUp,
+  chevronDown: faChevronDown
     
 };
 
