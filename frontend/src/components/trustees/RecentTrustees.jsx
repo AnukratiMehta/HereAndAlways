@@ -41,41 +41,65 @@ const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated, searchQuery }) =
   }, [searchQuery, trustees]);
 
   const renderRow = (trustee) => (
-    <tr key={trustee.trusteeId} className="hover:bg-gray-50">
-      <td className="py-2 px-4">{trustee.trusteeName || "—"}</td>
-      <td className="py-2 px-4">{trustee.trusteeEmail || "—"}</td>
-      <td className="py-2 px-4 capitalize">{trustee.status || "—"}</td>
-      <td className="py-2 px-4">
+    <tr key={trustee.trusteeId} className="hover:bg-gray-50 transition-colors">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {trustee.trusteeName || "—"}
+      </td>
+      <td className="px-6 py-4 text-sm text-gray-500">
+        {trustee.trusteeEmail || "—"}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
+          trustee.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+          trustee.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+          'bg-gray-100 text-gray-800'
+        }`}>
+          {trustee.status || "—"}
+        </span>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button 
           onClick={() => setViewingTrustee(trustee)} 
           className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+          title="View trustee"
         >
-          <FontAwesomeIcon icon={icons.eye} /> View
+          <FontAwesomeIcon icon={icons.eye} />
         </button>
       </td>
-      <td className="py-2 px-4">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button 
           onClick={() => setEditingTrustee(trustee)} 
           className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+          title="Edit trustee"
         >
-          <FontAwesomeIcon icon={icons.pen} /> Edit
+          <FontAwesomeIcon icon={icons.pen} />
         </button>
       </td>
     </tr>
   );
 
   return (
-    <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">
-        Recent Trustees
-        {searchQuery && (
-          <span className="text-sm font-normal text-gray-500 ml-2">
-            (Showing {filteredTrustees.length} results)
+    <div className="mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Recent Trustees
+          {searchQuery && (
+            <span className="ml-2 text-sm font-normal text-gray-500">
+              (Showing {filteredTrustees.length} results)
+            </span>
+          )}
+        </h2>
+        {!loading && filteredTrustees.length > 0 && (
+          <span className="text-sm text-gray-500 mt-1 sm:mt-0">
+            {filteredTrustees.length} trustee{filteredTrustees.length !== 1 ? 's' : ''}
           </span>
         )}
-      </h2>
+      </div>
+
       {loading ? (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brandRose"></div>
+        </div>
       ) : (
         <Table 
           columns={["Name", "Email", "Status", "", ""]} 
@@ -84,7 +108,7 @@ const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated, searchQuery }) =
           pageSize={5}
           emptyMessage={
             searchQuery 
-              ? `No recent trustees match "${searchQuery}"`
+              ? `No trustees match "${searchQuery}"`
               : "No recent trustees found"
           }
         />

@@ -15,17 +15,21 @@ const ScheduledMessages = ({ ownerId, searchQuery }) => {
 
   useEffect(() => {
     if (!ownerId) return;
-    axios
-      .get(`/api/messages/${ownerId}`)
-      .then((res) => {
-        const scheduled = res.data.filter(msg => msg.deliveryStatus === "QUEUED");
+    
+    const fetchMessages = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`/api/messages/${ownerId}`);
+        const scheduled = response.data.filter(msg => msg.deliveryStatus === "QUEUED");
         setMessages(scheduled);
+      } catch (err) {
+        console.error("Failed to fetch scheduled messages:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchMessages();
   }, [ownerId]);
 
   // Apply search filtering
@@ -44,49 +48,67 @@ const ScheduledMessages = ({ ownerId, searchQuery }) => {
   }, [searchQuery, messages]);
 
   const renderRow = (msg) => (
-    <tr key={msg.id} className="hover:bg-gray-50">
-      <td className="py-2 px-4">{msg.subject || "Untitled"}</td>
-      <td className="py-2 px-4 truncate max-w-xs">
-        {msg.body ? msg.body.slice(0, 50) + "..." : "—"}
+    <tr key={msg.id} className="hover:bg-gray-50 transition-colors">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {msg.subject || <span className="text-gray-400">Untitled</span>}
       </td>
-      <td className="py-2 px-4">
-        {msg.trusteeNames?.join(", ") || "Unassigned"}
+      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
+        <div className="line-clamp-2">
+          {msg.body || <span className="text-gray-400">—</span>}
+        </div>
       </td>
-      <td className="py-2 px-4">{new Date(msg.createdAt).toLocaleDateString()}</td>
-      <td className="py-2 px-4">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {msg.trusteeNames?.join(", ") || <span className="text-gray-400">Unassigned</span>}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {new Date(msg.createdAt).toLocaleDateString()}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button
-          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
           onClick={() => setViewingMessage(msg)}
+          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+          title="View message"
         >
-          <FontAwesomeIcon icon={icons.eye} /> View
+          <FontAwesomeIcon icon={icons.eye} />
         </button>
       </td>
-      <td className="py-2 px-4">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button
-          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
           onClick={() => setEditingMessage(msg)}
+          className="text-brandRose hover:text-brandRose-dark cursor-pointer"
+          title="Edit message"
         >
-          <FontAwesomeIcon icon={icons.pen} /> Edit
+          <FontAwesomeIcon icon={icons.pen} />
         </button>
       </td>
     </tr>
   );
 
   return (
-    <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">
-        Scheduled Messages
-        {searchQuery && (
-          <span className="text-sm font-normal text-gray-500 ml-2">
-            (Showing {filteredMessages.length} results)
+    <div className="mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Scheduled Messages
+          {searchQuery && (
+            <span className="ml-2 text-sm font-normal text-gray-500">
+              (Showing {filteredMessages.length} results)
+            </span>
+          )}
+        </h2>
+        {!loading && filteredMessages.length > 0 && (
+          <span className="text-sm text-gray-500 mt-1 sm:mt-0">
+            {filteredMessages.length} message{filteredMessages.length !== 1 ? 's' : ''}
           </span>
         )}
-      </h2>
+      </div>
+
       {loading ? (
-        <div>Loading...</div>
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brandRose"></div>
+        </div>
       ) : (
         <Table
-          columns={["Subject", "Body", "Trustees", "Created On", "", ""]}
+          columns={["Subject", "Preview", "Trustees", "Created", "", ""]}
           data={filteredMessages}
           renderRow={renderRow}
           pageSize={5}
@@ -98,7 +120,7 @@ const ScheduledMessages = ({ ownerId, searchQuery }) => {
         />
       )}
 
-      {/* Modals remain exactly the same */}
+      {/* Modals */}
       {viewingMessage && (
         <MessageViewModal
           message={viewingMessage}
