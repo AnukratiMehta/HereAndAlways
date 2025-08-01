@@ -160,7 +160,7 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
             </div>
             <div>
               <div className="text-xs text-brandRose-dark">Hey,</div>
-              <div className="font-semibold">{user?.name || "User"}!</div>
+              <div className="font-semibold">  {(user?.name?.split(" ")[0] || "User")}!</div>
             </div>
           </div>
 

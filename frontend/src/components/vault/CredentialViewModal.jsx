@@ -44,13 +44,6 @@ const handleReveal = async () => {
   return (
     <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg relative border border-lightGray">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-brandRose hover:text-brandRose-dark text-2xl font-bold"
-          aria-label="Close"
-        >
-          &times;
-        </button>
 
         <h2 className="text-2xl font-bold text-brandRose-dark mb-6">View Credential</h2>
 
@@ -73,7 +66,7 @@ const handleReveal = async () => {
             )}
             <button
               onClick={handleReveal}
-              className="ml-3 text-xs text-brandRose hover:underline"
+              className="ml-3 text-xs text-brandRose hover:underline cursor-pointer"
               disabled={loading}
             >
               {loading ? "Decrypting..." : showPassword ? "Hide" : "Reveal"}
@@ -99,7 +92,13 @@ const handleReveal = async () => {
         </div>
 
         <div className="flex justify-end mt-6">
-          <Button onClick={onClose} label="Close" variant="secondary" />
+          <Button 
+            onClick={onClose} 
+            color="secondary"
+            className="px-4 py-2"
+          >
+            Close
+          </Button>
         </div>
       </div>
     </div>

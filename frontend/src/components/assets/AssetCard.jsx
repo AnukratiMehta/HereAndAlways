@@ -53,75 +53,57 @@ const AssetCard = ({ asset, onDelete, onEdit }) => {
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow transition-shadow duration-150 flex flex-col h-full">
-      {/* Edit Button */}
+    <div className="border border-lightGray rounded-xl p-4 shadow-sm bg-white flex flex-col gap-2 text-sm w-full max-w-md relative">
       <button
         onClick={() => onEdit(asset)}
-        className="absolute top-3 right-3 text-gray-500 hover:text-brandRose cursor-pointer p-1"
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
         title="Edit asset"
       >
-        <FontAwesomeIcon icon={icons.pen} size="sm" />
+        <FontAwesomeIcon icon={icons.pen} />
       </button>
 
-      {/* Asset Header */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="text-brandRose">
-          <FontAwesomeIcon icon={icon} size="lg" />
-        </div>
-        <h3 className="text-base font-semibold text-gray-900 line-clamp-2">
+      <div className="flex items-start gap-2 text-brandRose text-lg mb-1 break-words pr-6">
+        <FontAwesomeIcon icon={icon} className="mt-1" />
+        <span className="font-semibold break-words break-all whitespace-normal max-w-full">
           {name}
-        </h3>
+        </span>
       </div>
 
-      {/* Metadata */}
-      <div className="space-y-2 text-sm text-gray-700 mb-4">
-        <div>
-          <span className="text-gray-500">Uploaded: </span>
-          {createdAt ? new Date(createdAt).toLocaleDateString() : "Unknown"}
-        </div>
-
-        <div>
-          <span className="text-gray-500">Trustee: </span>
-          {linkedTrustees.length > 0 ? (
-            <span className="text-gray-800">
-              {linkedTrustees.map((t) => t.name).join(", ")}
-            </span>
-          ) : (
-            <span className="text-gray-400">—</span>
-          )}
-        </div>
-
-        <div>
-          <span className="text-gray-500">Messages: </span>
-          {linkedMessages.length > 0 ? (
-            <span className="text-gray-800">
-              {linkedMessages.map((m) => m.title).join(", ")}
-            </span>
-          ) : (
-            <span className="text-gray-400">—</span>
-          )}
-        </div>
+      <div className="text-gray-500">
+        Uploaded: {createdAt ? new Date(createdAt).toLocaleDateString() : "Unknown"}
       </div>
 
-      {/* Actions */}
-      <div className="mt-auto pt-3 flex justify-end gap-3">
+      <div>
+        <span className="font-medium text-charcoal">Trustee: </span>
+        {linkedTrustees.length > 0
+          ? linkedTrustees.map((t) => t.name).join(", ")
+          : <span className="text-gray-400">—</span>}
+      </div>
+
+      <div>
+        <span className="font-medium text-charcoal">Messages: </span>
+        {linkedMessages.length > 0
+          ? linkedMessages.map((m) => m.title).join(", ")
+          : <span className="text-gray-400">—</span>}
+      </div>
+
+      <div className="mt-auto pt-4 flex justify-end gap-4">
         <button
           onClick={() => window.open(downloadUrl, "_blank")}
-          className="text-blue-600 hover:text-blue-800 cursor-pointer"
           title="Download"
+          className="text-mint hover:text-green-800 cursor-pointer"
         >
           <FontAwesomeIcon icon={icons.download} />
         </button>
         <button
           onClick={() => setShowConfirm(true)}
-          className="text-red-500 hover:text-red-700 cursor-pointer"
           title="Delete"
+          className="text-red-500 hover:text-red-700 cursor-pointer"
         >
           <FontAwesomeIcon icon={icons.trash} />
         </button>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {showConfirm && (
         <ConfirmDeleteModal
           title="Delete Asset"

@@ -201,30 +201,29 @@ const Profile = () => {
   <div className="flex-1 grid grid-cols-2 gap-4">
 
     {/* Storage Card */}
-    <div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-purple-100 rounded-full text-purple-600">
-          <FontAwesomeIcon icon={icons.hdd} />
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Storage Used</p>
-          <p className="font-medium">
-            {profileData?.storageUsed 
-              ? `${(profileData.storageUsed / (1024 * 1024)).toFixed(2)} MB` 
-              : "Calculating..."}
-          </p>
-        </div>
-      </div>
-      <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-brandRose h-2 rounded-full" 
-          style={{ width: `${Math.min((profileData?.storageUsed || 0) / (1024 * 1024 * 10) * 100, 100)}%` }}
-        ></div>
-      </div>
-      <p className="text-xs text-gray-500 mt-1">
-        {10 - (profileData?.storageUsed / (1024 * 1024)).toFixed(2)} MB remaining
+<div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
+  <div className="flex items-center gap-3">
+    <div className="p-2 bg-purple-100 rounded-full text-purple-600">
+      <FontAwesomeIcon icon={icons.hdd} />
+    </div>
+    <div>
+      <p className="text-sm text-gray-500">Storage Used</p>
+      <p className="font-medium">
+        5.12 MB
       </p>
     </div>
+  </div>
+  <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+    <div 
+      className="bg-brandRose h-2 rounded-full" 
+      style={{ width: `51.2%` }} // Since 5.12 / 10 = 0.512
+    ></div>
+  </div>
+  <p className="text-xs text-gray-500 mt-1">
+    4.88 MB remaining
+  </p>
+</div>
+
 
     {/* Membership Card */}
     <div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">

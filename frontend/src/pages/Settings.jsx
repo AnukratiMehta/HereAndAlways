@@ -97,19 +97,19 @@ const Settings = () => {
             {/* Settings Tabs */}
             <div className="flex border-b border-lightGray mb-6">
               <button
-                className={`px-4 py-2 font-medium ${activeTab === "notifications" ? "text-brandRose border-b-2 border-brandRose" : "text-gray-500"}`}
+                className={`cursor-pointer px-4 py-2 font-medium ${activeTab === "notifications" ? "text-brandRose border-b-2 border-brandRose" : "text-gray-500"}`}
                 onClick={() => setActiveTab("notifications")}
               >
                 Notifications
               </button>
               <button
-                className={`px-4 py-2 font-medium ${activeTab === "account" ? "text-brandRose border-b-2 border-brandRose" : "text-gray-500"}`}
+                className={`cursor-pointer px-4 py-2 font-medium ${activeTab === "account" ? "text-brandRose border-b-2 border-brandRose" : "text-gray-500"}`}
                 onClick={() => setActiveTab("account")}
               >
                 Account
               </button>
               <button
-                className={`px-4 py-2 font-medium ${activeTab === "inactivity" ? "text-brandRose border-b-2 border-brandRose" : "text-gray-500"}`}
+                className={`cursor-pointer px-4 py-2 font-medium ${activeTab === "inactivity" ? "text-brandRose border-b-2 border-brandRose" : "text-gray-500"}`}
                 onClick={() => setActiveTab("inactivity")}
               >
                 Inactivity Settings
