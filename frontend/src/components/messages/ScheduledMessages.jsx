@@ -6,21 +6,30 @@ import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
 import MessageEditModal from "./MessageEditModal";
 
-const ScheduledMessages = ({ ownerId, searchQuery }) => {
+const ScheduledMessages = ({ ownerId, searchQuery, newMessage, refreshTrigger, onRefresh
+
+ }) => {
   const [messages, setMessages] = useState([]);
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewingMessage, setViewingMessage] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
 
-  useEffect(() => {
+useEffect(() => {
     if (!ownerId) return;
     
     const fetchMessages = async () => {
       try {
         setLoading(true);
         const response = await axios.get(`/api/messages/${ownerId}`);
-        const scheduled = response.data.filter(msg => msg.deliveryStatus === "QUEUED");
+        const scheduled = response.data
+          .filter(msg => msg.deliveryStatus === "QUEUED")
+          .sort((a, b) => {
+            // Messages without scheduled date go to end
+            if (!a.scheduledDelivery) return 1;
+            if (!b.scheduledDelivery) return -1;
+            return new Date(a.scheduledDelivery) - new Date(b.scheduledDelivery);
+          });
         setMessages(scheduled);
       } catch (err) {
         console.error("Failed to fetch scheduled messages:", err);
@@ -30,7 +39,14 @@ const ScheduledMessages = ({ ownerId, searchQuery }) => {
     };
 
     fetchMessages();
-  }, [ownerId]);
+  }, [ownerId, refreshTrigger]);
+
+  // Handle new scheduled messages
+  useEffect(() => {
+    if (newMessage && newMessage.deliveryStatus === "QUEUED") {
+      setMessages(prev => [newMessage, ...prev]);
+    }
+  }, [newMessage]);
 
   // Apply search filtering
   useEffect(() => {
@@ -61,7 +77,9 @@ const ScheduledMessages = ({ ownerId, searchQuery }) => {
         {msg.trusteeNames?.join(", ") || <span className="text-gray-400">Unassigned</span>}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {new Date(msg.createdAt).toLocaleDateString()}
+        {msg.scheduledDelivery ? 
+          new Date(msg.scheduledDelivery).toLocaleDateString() : 
+          <span className="text-gray-400">Not scheduled</span>}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button
@@ -108,7 +126,7 @@ const ScheduledMessages = ({ ownerId, searchQuery }) => {
         </div>
       ) : (
         <Table
-          columns={["Subject", "Preview", "Trustees", "Created", "", ""]}
+          columns={["Subject", "Preview", "Trustees", "Scheduled Date", "", ""]}
           data={filteredMessages}
           renderRow={renderRow}
           pageSize={5}
@@ -134,14 +152,8 @@ const ScheduledMessages = ({ ownerId, searchQuery }) => {
           ownerId={ownerId}
           onClose={() => setEditingMessage(null)}
           onSave={() => {
-            axios
-              .get(`/api/messages/${ownerId}`)
-              .then((res) => {
-                const scheduled = res.data.filter(msg => msg.deliveryStatus === "QUEUED");
-                setMessages(scheduled);
-              })
-              .catch(console.error)
-              .finally(() => setEditingMessage(null));
+            if (onRefresh) onRefresh(); // Use the passed refresh handler
+            setEditingMessage(null);
           }}
         />
       )}

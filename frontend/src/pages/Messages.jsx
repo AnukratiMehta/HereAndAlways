@@ -19,6 +19,11 @@ const Messages = () => {
   const [error, setError] = useState(null);
   const [messages, setMessages] = useState([]);
   const [latestMessage, setLatestMessage] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+
+   const handleRefresh = () => {
+    setRefreshTrigger(prev => !prev);
+  };
 
   const ownerId = user?.id;
 
@@ -79,6 +84,10 @@ useEffect(() => {
                     ownerId={ownerId} 
                     searchQuery={searchQuery} 
           newMessage={latestMessage}
+                  refreshTrigger={handleRefresh}
+                          onRefresh={handleRefresh} // Pass the refresh handler
+
+
 
                   />
                 </ErrorBoundary>
@@ -86,6 +95,12 @@ useEffect(() => {
                   <ScheduledMessages 
                     ownerId={ownerId} 
                     searchQuery={searchQuery} 
+                      newMessage={latestMessage}
+                              refreshTrigger={handleRefresh}
+                                      onRefresh={handleRefresh} // Pass the refresh handler
+
+
+
                   />
                 </ErrorBoundary>
               </>
@@ -95,6 +110,8 @@ useEffect(() => {
                   ownerId={ownerId} 
                   filter="DRAFT" 
                   searchQuery={searchQuery}
+                   refreshTrigger={refreshTrigger}
+  onRefresh={handleRefresh}
                 />
               </ErrorBoundary>
             ) : view === "scheduled" ? (
@@ -103,6 +120,8 @@ useEffect(() => {
                   ownerId={ownerId} 
                   filter="QUEUED" 
                   searchQuery={searchQuery}
+                   refreshTrigger={refreshTrigger}
+  onRefresh={handleRefresh}
                 />
               </ErrorBoundary>
             ) : view === "starred" ? (
@@ -111,6 +130,8 @@ useEffect(() => {
                   ownerId={ownerId} 
                   filter="STARRED" 
                   searchQuery={searchQuery}
+                   refreshTrigger={refreshTrigger}
+  onRefresh={handleRefresh}
                 />
               </ErrorBoundary>
             ) : null}

@@ -56,36 +56,25 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
   }, [ownerId]);
 
 const handleSave = async () => {
-  try {
-    const payload = {
-      subject,
-      body,
-      scheduledDelivery: scheduledDelivery || null,
-      trusteeIds: selectedTrustees.map((t) => t.value),
-      deliveryStatus
-    };
+    try {
+      const payload = {
+        subject,
+        body,
+        scheduledDelivery: scheduledDelivery || null,
+        trusteeIds: selectedTrustees.map((t) => t.value),
+        deliveryStatus
+      };
 
-    console.log("Sending payload:", payload);
-
-    const response = await axios.patch(`/api/messages/${message.id}`, payload);
-    console.log("Received response:", response.data);
-
-    // Verify the status in response matches what we sent
-    if (response.data.deliveryStatus !== deliveryStatus) {
-      console.warn("Status mismatch! Sent:", deliveryStatus, "Received:", response.data.deliveryStatus);
+      const response = await axios.patch(`/api/messages/${message.id}`, payload);
+      
+      // Call onSave without any arguments since the parent handles the refresh
+      onSave(); 
+      onClose();
+    } catch (err) {
+      console.error("Update error:", err);
+      alert(`Update failed: ${err.response?.data?.message || err.message}`);
     }
-
-    // Force a complete refresh of parent component's data
-    onSave(true); // Pass true to indicate hard refresh needed
-    onClose();
-  } catch (err) {
-    console.error("Update error:", {
-      error: err,
-      response: err.response?.data
-    });
-    alert(`Update failed: ${err.response?.data?.message || err.message}`);
-  }
-};
+  };
 
   if (!message) return null;
 

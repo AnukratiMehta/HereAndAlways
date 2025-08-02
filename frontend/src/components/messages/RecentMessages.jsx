@@ -6,7 +6,7 @@ import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
 import MessageEditModal from "./MessageEditModal";
 
-const RecentMessages = ({ ownerId, searchQuery, newMessage }) => {
+const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTrigger }) => {
   const [messages, setMessages] = useState([]);
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage }) => {
 
   useEffect(() => {
     if (ownerId) fetchMessages();
-  }, [ownerId]);
+  }, [ownerId, refreshTrigger]);
 
   // Handle new messages from parent
   useEffect(() => {
@@ -74,7 +74,9 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage }) => {
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {new Date(msg.lastAccessedAt).toLocaleString()}
+        {msg.lastAccessedAt ? 
+    new Date(msg.lastAccessedAt).toLocaleDateString() : 
+    new Date(msg.createdAt).toLocaleDateString()}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button
@@ -147,7 +149,7 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage }) => {
           ownerId={ownerId}
           onClose={() => setEditingMessage(null)}
           onSave={() => {
-            fetchMessages(); // Refresh the list after edit
+            if (onRefresh) onRefresh(); // Use the passed refresh handler
             setEditingMessage(null);
           }}
         />

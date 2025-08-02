@@ -3,35 +3,51 @@ import axios from "axios";
 import MessageCard from "./MessageCard";
 import MessageEditModal from "./MessageEditModal";
 
-const MessageCardList = ({ ownerId, filter, searchQuery }) => {
+const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefresh }) => {
   const [allMessages, setAllMessages] = useState([]);
   const [displayedMessages, setDisplayedMessages] = useState([]);
   const [editingMessage, setEditingMessage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 4; // cards per page
+  const pageSize = 4;
 
-  // Fetch messages based on ownerId and filter
-  useEffect(() => {
+  const fetchMessages = async () => {
     if (!ownerId) return;
     
-    const fetchMessages = async () => {
-      try {
-        const res = await axios.get(`/api/messages/${ownerId}`);
-        const filtered = res.data.filter((m) => m.deliveryStatus === filter);
-        setAllMessages(filtered);
-      } catch (err) {
-        console.error("Error fetching messages:", err);
-      }
-    };
-    
-    fetchMessages();
-  }, [ownerId, filter]);
+    try {
+      const res = await axios.get(`/api/messages/${ownerId}`);
+      let filtered = res.data.filter((m) => m.deliveryStatus === filter);
+      
+      // Apply sorting based on filter type
+      filtered = filtered.sort((a, b) => {
+        if (filter === "QUEUED") {
+          // For scheduled messages: sort by scheduled date (soonest first)
+          // Messages without dates go to end
+          if (!a.scheduledDelivery) return 1;
+          if (!b.scheduledDelivery) return -1;
+          return new Date(a.scheduledDelivery) - new Date(b.scheduledDelivery);
+        } else {
+          // For drafts/other: sort by last accessed (newest first)
+          const dateA = a.lastAccessedAt || a.createdAt;
+          const dateB = b.lastAccessedAt || b.createdAt;
+          return new Date(dateB) - new Date(dateA);
+        }
+      });
+      
+      setAllMessages(filtered);
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    }
+  };
 
-  // Apply search filtering whenever searchQuery or allMessages changes
+  useEffect(() => {
+    fetchMessages();
+  }, [ownerId, filter, refreshTrigger]);
+
+  // Apply search filtering
   useEffect(() => {
     if (!searchQuery) {
       setDisplayedMessages(allMessages);
-      setCurrentPage(1); // Reset to first page when search is cleared
+      setCurrentPage(1);
       return;
     }
 
@@ -43,7 +59,7 @@ const MessageCardList = ({ ownerId, filter, searchQuery }) => {
     });
 
     setDisplayedMessages(filtered);
-    setCurrentPage(1); // Reset to first page when search changes
+    setCurrentPage(1);
   }, [searchQuery, allMessages]);
 
   const refreshMessages = async () => {
