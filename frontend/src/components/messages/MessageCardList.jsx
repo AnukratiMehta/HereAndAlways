@@ -142,7 +142,7 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
             refreshMessages();
             setEditingMessage(null);
           }}
-                    onDelete={() => onDeleteMessage(msg)} // Pass the delete handler
+onDelete={() => onDeleteMessage(editingMessage)}
 
         />
       )}

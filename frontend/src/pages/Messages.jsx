@@ -23,24 +23,32 @@ const Messages = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(false);
     const [deletingMessage, setDeletingMessage] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [viewingMessage, setViewingMessage] = useState(null);
+const [editingMessage, setEditingMessage] = useState(null);
 
-  const handleDelete = async () => {
-    if (!deletingMessage) return;
+// In Messages.jsx
+const handleDelete = async () => {
+  if (!deletingMessage) return;
+  
+  setDeleteLoading(true);
+  try {
+    await axios.delete(`/api/messages/${deletingMessage.id}`);
+    // Update local state
+    setMessages(prev => prev.filter(msg => msg.id !== deletingMessage.id));
+    setLatestMessage(null);
     
-    setDeleteLoading(true);
-    try {
-      await axios.delete(`/api/messages/${deletingMessage.id}`);
-      // Update local state by removing the deleted message
-      setMessages(prev => prev.filter(msg => msg.id !== deletingMessage.id));
-      setLatestMessage(null); // Clear latest message if it was the deleted one
-      setDeletingMessage(null);
-      handleRefresh(); // Trigger a refresh
-    } catch (err) {
-      console.error("Failed to delete message:", err);
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
+    // Close any open modals that might be showing this message
+    setViewingMessage(null);
+    setEditingMessage(null);
+    setDeletingMessage(null);
+    
+    handleRefresh(); // Trigger a refresh
+  } catch (err) {
+    console.error("Failed to delete message:", err);
+  } finally {
+    setDeleteLoading(false);
+  }
+};
 
 
    const handleRefresh = () => {
@@ -109,7 +117,10 @@ useEffect(() => {
                   refreshTrigger={handleRefresh}
                           onRefresh={handleRefresh} // Pass the refresh handler
   onDeleteMessage={setDeletingMessage} // Pass the setter
-
+  viewingMessage={viewingMessage}
+  setViewingMessage={setViewingMessage}
+  editingMessage={editingMessage}
+  setEditingMessage={setEditingMessage}
 
 
                   />
@@ -122,7 +133,10 @@ useEffect(() => {
                               refreshTrigger={handleRefresh}
                                       onRefresh={handleRefresh} // Pass the refresh handler
   onDeleteMessage={setDeletingMessage}
-
+  viewingMessage={viewingMessage}
+  setViewingMessage={setViewingMessage}
+  editingMessage={editingMessage}
+  setEditingMessage={setEditingMessage}
 
 
                   />

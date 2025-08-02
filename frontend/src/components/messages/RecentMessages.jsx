@@ -6,12 +6,22 @@ import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
 import MessageEditModal from "./MessageEditModal";
 
-const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTrigger, onDeleteMessage }) => {
+const RecentMessages = ({ 
+  ownerId, 
+  searchQuery, 
+  newMessage, 
+  onRefresh, 
+  refreshTrigger, 
+  onDeleteMessage,
+  // Parent-controlled modal states
+  viewingMessage,
+  setViewingMessage,
+  editingMessage,
+  setEditingMessage
+}) => {
   const [messages, setMessages] = useState([]);
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewingMessage, setViewingMessage] = useState(null);
-  const [editingMessage, setEditingMessage] = useState(null);
 
   // Fetch and sort messages by lastAccessedAt
   const fetchMessages = async () => {
@@ -75,8 +85,8 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTr
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {msg.lastAccessedAt ? 
-    new Date(msg.lastAccessedAt).toLocaleDateString() : 
-    new Date(msg.createdAt).toLocaleDateString()}
+          new Date(msg.lastAccessedAt).toLocaleDateString() : 
+          new Date(msg.createdAt).toLocaleDateString()}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button
@@ -98,7 +108,7 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTr
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button
-          onClick={() => onDeleteMessage(msg)} // Use the prop
+          onClick={() => onDeleteMessage(msg)}
           className="text-red-500 hover:text-red-700 cursor-pointer"
           title="Delete message"
         >
@@ -144,11 +154,12 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTr
         />
       )}
 
-      {/* Modals */}
+      {/* Modals using parent-controlled state */}
       {viewingMessage && (
         <MessageViewModal
           message={viewingMessage}
           onClose={() => setViewingMessage(null)}
+          onDelete={onDeleteMessage}
         />
       )}
 
@@ -158,9 +169,10 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTr
           ownerId={ownerId}
           onClose={() => setEditingMessage(null)}
           onSave={() => {
-            if (onRefresh) onRefresh(); // Use the passed refresh handler
+            if (onRefresh) onRefresh();
             setEditingMessage(null);
           }}
+          onDelete={onDeleteMessage}
         />
       )}
     </div>

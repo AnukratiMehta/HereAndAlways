@@ -6,16 +6,25 @@ import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
 import MessageEditModal from "./MessageEditModal";
 
-const ScheduledMessages = ({ ownerId, searchQuery, newMessage, refreshTrigger, onRefresh, onDeleteMessage
-
- }) => {
+const ScheduledMessages = ({ 
+  ownerId, 
+  searchQuery, 
+  newMessage, 
+  refreshTrigger, 
+  onRefresh, 
+  onDeleteMessage,
+  // These props come from parent component
+  viewingMessage,
+  setViewingMessage,
+  editingMessage,
+  setEditingMessage
+}) => {
   const [messages, setMessages] = useState([]);
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewingMessage, setViewingMessage] = useState(null);
-  const [editingMessage, setEditingMessage] = useState(null);
 
-useEffect(() => {
+  // Fetch messages
+  useEffect(() => {
     if (!ownerId) return;
     
     const fetchMessages = async () => {
@@ -25,7 +34,6 @@ useEffect(() => {
         const scheduled = response.data
           .filter(msg => msg.deliveryStatus === "QUEUED")
           .sort((a, b) => {
-            // Messages without scheduled date go to end
             if (!a.scheduledDelivery) return 1;
             if (!b.scheduledDelivery) return -1;
             return new Date(a.scheduledDelivery) - new Date(b.scheduledDelivery);
@@ -41,7 +49,7 @@ useEffect(() => {
     fetchMessages();
   }, [ownerId, refreshTrigger]);
 
-  // Handle new scheduled messages
+  // Handle new messages
   useEffect(() => {
     if (newMessage && newMessage.deliveryStatus === "QUEUED") {
       setMessages(prev => [newMessage, ...prev]);
@@ -101,7 +109,7 @@ useEffect(() => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
         <button
-          onClick={() => onDeleteMessage(msg)} // Use the prop
+          onClick={() => onDeleteMessage(msg)}
           className="text-red-500 hover:text-red-700 cursor-pointer"
           title="Delete message"
         >
@@ -147,11 +155,12 @@ useEffect(() => {
         />
       )}
 
-      {/* Modals */}
+      {/* Modals - now using parent-controlled state */}
       {viewingMessage && (
         <MessageViewModal
           message={viewingMessage}
           onClose={() => setViewingMessage(null)}
+          onDelete={onDeleteMessage}
         />
       )}
 
@@ -161,9 +170,10 @@ useEffect(() => {
           ownerId={ownerId}
           onClose={() => setEditingMessage(null)}
           onSave={() => {
-            if (onRefresh) onRefresh(); // Use the passed refresh handler
+            if (onRefresh) onRefresh();
             setEditingMessage(null);
           }}
+          onDelete={onDeleteMessage}
         />
       )}
     </div>

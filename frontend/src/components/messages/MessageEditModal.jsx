@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
 
-const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
+const MessageEditModal = ({ message, ownerId, onClose, onSave, onDelete }) => {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [scheduledDelivery, setScheduledDelivery] = useState("");
@@ -156,22 +156,32 @@ const handleSave = async () => {
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between">
           <Button 
-            onClick={onClose} 
-            color="secondary"
+            onClick={() => onDelete(message)} 
+            color="danger"
             className="px-4 py-2"
+            icon={icons.trash}
           >
-            Cancel
+            Delete
           </Button>
-          <Button 
-            onClick={handleSave} 
-            color="primary"
-            className="px-4 py-2"
-          >
-            <FontAwesomeIcon icon={icons.save} className="mr-2" />
-            Save Changes
-          </Button>
+          <div className="flex space-x-3">
+            <Button 
+              onClick={onClose} 
+              color="secondary"
+              className="px-4 py-2"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSave} 
+              color="primary"
+              className="px-4 py-2"
+            >
+              <FontAwesomeIcon icon={icons.save} className="mr-2" />
+              Save Changes
+            </Button>
+          </div>
         </div>
       </div>
     </div>
