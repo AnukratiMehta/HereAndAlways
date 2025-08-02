@@ -18,6 +18,7 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [latestMessage, setLatestMessage] = useState(null);
 
   const ownerId = user?.id;
 
@@ -77,7 +78,7 @@ useEffect(() => {
                   <RecentMessages 
                     ownerId={ownerId} 
                     searchQuery={searchQuery} 
-                    onMessagesUpdate={setMessages}
+          newMessage={latestMessage}
 
                   />
                 </ErrorBoundary>
@@ -129,18 +130,20 @@ useEffect(() => {
       </div>
 
       {showModal && (
-        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg">Error loading message composer</div>
-        </div>}>
-          <NewMessage
-            ownerId={ownerId}
-            onClose={() => setShowModal(false)}
-            onSave={(newMessage) => {
-            setMessages(prev => [...prev, newMessage]); 
-    }}
-          />
-        </ErrorBoundary>
-      )}
+  <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="bg-white p-8 rounded-lg">Error loading message composer</div>
+  </div>}>
+    <NewMessage
+      ownerId={ownerId}
+      onClose={() => setShowModal(false)}
+      onSave={(newMessage) => {
+        setLatestMessage(newMessage);
+        setMessages(prev => [newMessage, ...prev]); // Update both states
+        setShowModal(false);
+      }}
+    />
+  </ErrorBoundary>
+)}
     </div>
   );
 };

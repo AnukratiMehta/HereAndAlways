@@ -6,7 +6,7 @@ import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
 import ErrorBoundary from "../shared/ErrorBoundary";
 
-const NewMessage = ({ ownerId, onClose }) => {
+const NewMessage = ({ ownerId, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     subject: "",
     body: "",
@@ -47,19 +47,39 @@ const NewMessage = ({ ownerId, onClose }) => {
 const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
+  setError(null);
+  setSuccess(null);
   
   try {
-    const response = await axios.post(`/api/messages/${ownerId}`, {
-      ...formData,
+    const payload = {
+      subject: formData.subject,
+      body: formData.body,
+      scheduledDelivery: formData.scheduledDelivery || null,
       trusteeIds: selectedTrustees.map(t => t.value),
       deliveryStatus: formData.status
+    };
+
+    const response = await axios.post(`/api/messages/${ownerId}`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
     });
-    
-    onSave(response.data);
-    setSuccess("Message created successfully!");
-    setTimeout(() => onClose(), 1500);
+
+    if (response.status >= 200 && response.status < 300) {
+      onSave(response.data);
+      setSuccess("Message created successfully!");
+      setTimeout(() => onClose(), 1500);
+    } else {
+      throw new Error(response.data?.message || "Failed to create message");
+    }
   } catch (err) {
-    setError(err.response?.data?.message || "Failed to create message");
+    console.error("Create message error:", err);
+    const errorMessage = err.response?.data?.message || 
+                        err.response?.data?.error || 
+                        err.message || 
+                        "Failed to create message";
+    setError(errorMessage);
   } finally {
     setLoading(false);
   }
