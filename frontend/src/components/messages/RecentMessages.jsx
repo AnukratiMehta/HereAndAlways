@@ -6,7 +6,7 @@ import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
 import MessageEditModal from "./MessageEditModal";
 
-const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTrigger }) => {
+const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTrigger, onDeleteMessage }) => {
   const [messages, setMessages] = useState([]);
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -96,6 +96,15 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTr
           <FontAwesomeIcon icon={icons.pen} />
         </button>
       </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
+        <button
+          onClick={() => onDeleteMessage(msg)} // Use the prop
+          className="text-red-500 hover:text-red-700 cursor-pointer"
+          title="Delete message"
+        >
+          <FontAwesomeIcon icon={icons.trash} />
+        </button>
+      </td>
     </tr>
   );
 
@@ -123,7 +132,7 @@ const RecentMessages = ({ ownerId, searchQuery, newMessage, onRefresh, refreshTr
         </div>
       ) : (
         <Table
-          columns={["Subject", "Preview", "Status", "Last Accessed", "", ""]}
+          columns={["Subject", "Preview", "Status", "Last Accessed", "", "", ""]}
           data={filteredMessages}
           renderRow={renderRow}
           pageSize={5}

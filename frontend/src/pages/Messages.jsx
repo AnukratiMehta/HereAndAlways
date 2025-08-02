@@ -9,6 +9,7 @@ import MessageCardList from "../components/messages/MessageCardList";
 import NewMessage from "../components/messages/NewMessage";
 import ErrorBoundary from "../components/shared/ErrorBoundary";
 import axios from "axios";
+import ConfirmDeleteModal from '../components/shared/ConfirmDeleteModal'
 
 
 const Messages = () => {
@@ -20,6 +21,27 @@ const Messages = () => {
   const [messages, setMessages] = useState([]);
   const [latestMessage, setLatestMessage] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+    const [deletingMessage, setDeletingMessage] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deletingMessage) return;
+    
+    setDeleteLoading(true);
+    try {
+      await axios.delete(`/api/messages/${deletingMessage.id}`);
+      // Update local state by removing the deleted message
+      setMessages(prev => prev.filter(msg => msg.id !== deletingMessage.id));
+      setLatestMessage(null); // Clear latest message if it was the deleted one
+      setDeletingMessage(null);
+      handleRefresh(); // Trigger a refresh
+    } catch (err) {
+      console.error("Failed to delete message:", err);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
 
    const handleRefresh = () => {
     setRefreshTrigger(prev => !prev);
@@ -86,6 +108,7 @@ useEffect(() => {
           newMessage={latestMessage}
                   refreshTrigger={handleRefresh}
                           onRefresh={handleRefresh} // Pass the refresh handler
+  onDeleteMessage={setDeletingMessage} // Pass the setter
 
 
 
@@ -165,6 +188,16 @@ useEffect(() => {
     />
   </ErrorBoundary>
 )}
+
+{deletingMessage && (
+        <ConfirmDeleteModal
+          title="Delete Message"
+          itemName={deletingMessage.subject || "Untitled Message"}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingMessage(null)}
+          loading={deleteLoading}
+        />
+      )}
     </div>
   );
 };
