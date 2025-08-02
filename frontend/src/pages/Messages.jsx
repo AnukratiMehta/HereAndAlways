@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Sidebar from "../components/shared/Sidebar";
 import ProfileBar from "../components/shared/ProfileBar";
@@ -8,6 +8,8 @@ import ScheduledMessages from "../components/messages/ScheduledMessages";
 import MessageCardList from "../components/messages/MessageCardList";
 import NewMessage from "../components/messages/NewMessage";
 import ErrorBoundary from "../components/shared/ErrorBoundary";
+import axios from "axios";
+
 
 const Messages = () => {
   const { user } = useAuth();
@@ -15,8 +17,24 @@ const Messages = () => {
   const [showModal, setShowModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState(null);
+  const [messages, setMessages] = useState([]);
 
   const ownerId = user?.id;
+
+useEffect(() => {
+  if (!ownerId) return;
+  
+  const fetchMessages = async () => {
+    try {
+      const response = await axios.get(`/api/messages/${ownerId}`);
+      setMessages(response.data);
+    } catch (err) {
+      console.error("Failed to fetch messages:", err);
+    }
+  };
+  
+  fetchMessages();
+}, [ownerId]);
 
   const handleSearch = (query) => {
     try {
@@ -59,6 +77,8 @@ const Messages = () => {
                   <RecentMessages 
                     ownerId={ownerId} 
                     searchQuery={searchQuery} 
+                    onMessagesUpdate={setMessages}
+
                   />
                 </ErrorBoundary>
                 <ErrorBoundary fallback={<div className="text-red-500">Error loading scheduled messages</div>}>
@@ -115,6 +135,9 @@ const Messages = () => {
           <NewMessage
             ownerId={ownerId}
             onClose={() => setShowModal(false)}
+            onSave={(newMessage) => {
+            setMessages(prev => [...prev, newMessage]); 
+    }}
           />
         </ErrorBoundary>
       )}

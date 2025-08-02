@@ -8,13 +8,20 @@ import com.hereandalways.payload.request.UpdateMessageRequest;
 import com.hereandalways.payload.response.MessageResponse;
 import com.hereandalways.services.MessageService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import lombok.extern.slf4j.Slf4j;
+
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+
+@Slf4j
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
@@ -69,31 +76,58 @@ public class MessageController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{messageId}/status")
-    public ResponseEntity<MessageResponse> updateStatus(
-            @PathVariable UUID messageId,
-            @RequestParam String status
-    ) {
-        Message updated = messageService.updateStatus(messageId, DeliveryStatus.valueOf(status));
-        return ResponseEntity.ok(toResponse(updated));
-    }
+//     @PatchMapping("/{messageId}/status")
+//     public ResponseEntity<MessageResponse> updateStatus(
+//             @PathVariable UUID messageId,
+//             @RequestParam String status
+//     ) {
+//         Message updated = messageService.updateStatus(messageId, DeliveryStatus.valueOf(status));
+//         return ResponseEntity.ok(toResponse(updated));
+//     }
 
     @PatchMapping("/{messageId}")
-public ResponseEntity<MessageResponse> updateMessage(
-        @PathVariable UUID messageId,
-        @RequestBody UpdateMessageRequest request
-) {
-    Message updated = messageService.updateMessage(
-            messageId,
-            request.getSubject(),
-            request.getBody(),
-            request.getScheduledDelivery(),
-            request.getTrusteeIds()
-    );
+    public ResponseEntity<MessageResponse> updateMessage(
+            @PathVariable UUID messageId,
+            @RequestBody UpdateMessageRequest request
+    ) {
+        log.info("⏩ Received PATCH request for message {} with data: {}", messageId, request);
+        
+        try {
+            // Validate and convert status
+            DeliveryStatus status = null;
+            if (request.getDeliveryStatus() != null) {
+                try {
+                    status = DeliveryStatus.valueOf(request.getDeliveryStatus().toUpperCase());
+                    log.debug("✅ Converted deliveryStatus '{}' to enum {}", request.getDeliveryStatus(), status);
+                } catch (IllegalArgumentException e) {
+                    log.error("❌ Invalid delivery status value: {}", request.getDeliveryStatus());
+                    throw new IllegalArgumentException("Invalid delivery status: " + request.getDeliveryStatus());
+                }
+            }
 
-    return ResponseEntity.ok(toResponse(updated));
-}
+            log.info("🔄 Calling service to update message {}", messageId);
+            Message updated = messageService.updateMessage(
+                    messageId,
+                    request.getSubject(),
+                    request.getBody(),
+                    request.getScheduledDelivery(),
+                    request.getTrusteeIds(),
+                    status
+            );
 
+            // Verify the status was actually updated
+            if (status != null && !updated.getDeliveryStatus().equals(status)) {
+                log.error("❌ Status mismatch! Requested: {}, Actual: {}", status, updated.getDeliveryStatus());
+                throw new IllegalStateException("Status update failed");
+            }
+
+            log.info("✅ Successfully updated message {}", messageId);
+            return ResponseEntity.ok(toResponse(updated));
+        } catch (Exception e) {
+            log.error("❌ Failed to update message {}: {}", messageId, e.getMessage());
+            throw e;
+        }
+    }
 
     /**
      * Converts a Message entity to the DTO

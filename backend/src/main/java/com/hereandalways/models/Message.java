@@ -35,8 +35,8 @@ private String body;
 
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DeliveryStatus deliveryStatus = DeliveryStatus.DRAFT;
+@Column(nullable = false, columnDefinition = "VARCHAR(20)")
+private DeliveryStatus deliveryStatus; 
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

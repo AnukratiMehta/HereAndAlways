@@ -44,34 +44,26 @@ const NewMessage = ({ ownerId, onClose }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const payload = {
-        ...formData,
-        trusteeIds: selectedTrustees.map(t => t.value),
-        deliveryStatus: formData.status,
-      };
-
-      await axios.post(`/api/messages/${ownerId}`, payload, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      setSuccess("Message created successfully!");
-      setTimeout(() => onClose(), 1500);
-    } catch (err) {
-      console.error("Failed to create message:", err);
-      setError(err.response?.data?.message || "Failed to create message. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  
+  try {
+    const response = await axios.post(`/api/messages/${ownerId}`, {
+      ...formData,
+      trusteeIds: selectedTrustees.map(t => t.value),
+      deliveryStatus: formData.status
+    });
+    
+    onSave(response.data);
+    setSuccess("Message created successfully!");
+    setTimeout(() => onClose(), 1500);
+  } catch (err) {
+    setError(err.response?.data?.message || "Failed to create message");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
 <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm overflow-y-auto p-4">

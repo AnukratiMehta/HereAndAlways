@@ -55,22 +55,37 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
       .catch((err) => console.error(err));
   }, [ownerId]);
 
-  const handleSave = async () => {
-    try {
-      await axios.patch(`/api/messages/${message.id}`, {
-        subject,
-        body,
-        scheduledDelivery: scheduledDelivery || null,
-        trusteeIds: selectedTrustees.map((t) => t.value),
-        deliveryStatus,
-      });
-      onSave();
-      onClose();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save changes.");
+const handleSave = async () => {
+  try {
+    const payload = {
+      subject,
+      body,
+      scheduledDelivery: scheduledDelivery || null,
+      trusteeIds: selectedTrustees.map((t) => t.value),
+      deliveryStatus
+    };
+
+    console.log("Sending payload:", payload);
+
+    const response = await axios.patch(`/api/messages/${message.id}`, payload);
+    console.log("Received response:", response.data);
+
+    // Verify the status in response matches what we sent
+    if (response.data.deliveryStatus !== deliveryStatus) {
+      console.warn("Status mismatch! Sent:", deliveryStatus, "Received:", response.data.deliveryStatus);
     }
-  };
+
+    // Force a complete refresh of parent component's data
+    onSave(true); // Pass true to indicate hard refresh needed
+    onClose();
+  } catch (err) {
+    console.error("Update error:", {
+      error: err,
+      response: err.response?.data
+    });
+    alert(`Update failed: ${err.response?.data?.message || err.message}`);
+  }
+};
 
   if (!message) return null;
 
@@ -80,7 +95,7 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave }) => {
         {/* Modal Header */}
         <div className="px-6 py-4 bg-brandRose-light border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-900 flex items-center">
-            <FontAwesomeIcon icon={icons.edit} className="mr-2 text-brandRose" />
+            <FontAwesomeIcon icon={icons.pen} className="mr-2 text-brandRose" />
             Edit Message
           </h2>
           
