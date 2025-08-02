@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
 
-const MessageCard = ({ message, onEdit }) => {
+const MessageCard = ({ message, onEdit, onDelete }) => {
   const getStatusBadge = (status) => {
     const base = "px-2 py-0.5 rounded-full text-xs font-semibold inline-block";
     switch (status) {
@@ -46,9 +46,21 @@ const MessageCard = ({ message, onEdit }) => {
         </p>
       </div>
 
-      <div className="pt-2 text-right">
-        <Button color="secondary" size="sm" onClick={() => onEdit(message)}>
-          <FontAwesomeIcon icon={icons.pen} className="mr-2" />
+      <div className="pt-2 flex justify-between">
+        <Button 
+          color="danger" 
+          size="sm" 
+          onClick={() => onDelete(message)}
+          icon={icons.trash}
+        >
+          Delete
+        </Button>
+        <Button 
+          color="secondary" 
+          size="sm" 
+          onClick={() => onEdit(message)}
+          icon={icons.pen}
+        >
           Edit
         </Button>
       </div>

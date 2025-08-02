@@ -6,7 +6,7 @@ import { icons } from "../../icons/icons";
 import MessageViewModal from "./MessageViewModal";
 import MessageEditModal from "./MessageEditModal";
 
-const ScheduledMessages = ({ ownerId, searchQuery, newMessage, refreshTrigger, onRefresh
+const ScheduledMessages = ({ ownerId, searchQuery, newMessage, refreshTrigger, onRefresh, onDeleteMessage
 
  }) => {
   const [messages, setMessages] = useState([]);
@@ -99,6 +99,15 @@ useEffect(() => {
           <FontAwesomeIcon icon={icons.pen} />
         </button>
       </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-center font-medium">
+        <button
+          onClick={() => onDeleteMessage(msg)} // Use the prop
+          className="text-red-500 hover:text-red-700 cursor-pointer"
+          title="Delete message"
+        >
+          <FontAwesomeIcon icon={icons.trash} />
+        </button>
+      </td>
     </tr>
   );
 
@@ -126,7 +135,7 @@ useEffect(() => {
         </div>
       ) : (
         <Table
-          columns={["Subject", "Preview", "Trustees", "Scheduled Date", "", ""]}
+          columns={["Subject", "Preview", "Trustees", "Scheduled Date", "", "", ""]}
           data={filteredMessages}
           renderRow={renderRow}
           pageSize={5}

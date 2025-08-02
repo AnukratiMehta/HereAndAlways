@@ -121,6 +121,7 @@ useEffect(() => {
                       newMessage={latestMessage}
                               refreshTrigger={handleRefresh}
                                       onRefresh={handleRefresh} // Pass the refresh handler
+  onDeleteMessage={setDeletingMessage}
 
 
 
@@ -135,6 +136,8 @@ useEffect(() => {
                   searchQuery={searchQuery}
                    refreshTrigger={refreshTrigger}
   onRefresh={handleRefresh}
+    onDeleteMessage={setDeletingMessage}
+
                 />
               </ErrorBoundary>
             ) : view === "scheduled" ? (
@@ -145,6 +148,8 @@ useEffect(() => {
                   searchQuery={searchQuery}
                    refreshTrigger={refreshTrigger}
   onRefresh={handleRefresh}
+    onDeleteMessage={setDeletingMessage}
+
                 />
               </ErrorBoundary>
             ) : view === "starred" ? (
@@ -155,6 +160,8 @@ useEffect(() => {
                   searchQuery={searchQuery}
                    refreshTrigger={refreshTrigger}
   onRefresh={handleRefresh}
+    onDeleteMessage={setDeletingMessage}
+
                 />
               </ErrorBoundary>
             ) : null}

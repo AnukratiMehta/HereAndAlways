@@ -3,7 +3,7 @@ import axios from "axios";
 import MessageCard from "./MessageCard";
 import MessageEditModal from "./MessageEditModal";
 
-const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefresh }) => {
+const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefresh, onDeleteMessage }) => {
   const [allMessages, setAllMessages] = useState([]);
   const [displayedMessages, setDisplayedMessages] = useState([]);
   const [editingMessage, setEditingMessage] = useState(null);
@@ -95,6 +95,8 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
           key={msg.id}
           message={msg}
           onEdit={() => setEditingMessage(msg)}
+                    onDelete={() => onDeleteMessage(msg)} // Pass the delete handler
+
         />
       ))}
 
@@ -140,6 +142,8 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
             refreshMessages();
             setEditingMessage(null);
           }}
+                    onDelete={() => onDeleteMessage(msg)} // Pass the delete handler
+
         />
       )}
     </div>
