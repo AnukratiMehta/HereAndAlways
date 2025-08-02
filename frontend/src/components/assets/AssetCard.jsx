@@ -4,6 +4,7 @@ import { icons } from "../../icons/icons";
 import { supabase } from "../../utils/supabaseClient";
 import axios from "axios";
 import ConfirmDeleteModal from "../shared/ConfirmDeleteModal";
+import { useAuth } from "../../contexts/AuthContext";
 
 const assetTypeIcons = {
   PASSWORD: icons.key,
@@ -16,6 +17,7 @@ const assetTypeIcons = {
 };
 
 const AssetCard = ({ asset, onDelete, onEdit }) => {
+  const { token } = useAuth();
   const {
     id,
     name,
@@ -29,23 +31,100 @@ const AssetCard = ({ asset, onDelete, onEdit }) => {
   const icon = assetTypeIcons[assetType] || assetTypeIcons.DEFAULT;
   const [showConfirm, setShowConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState(null);
 
-  const filePath = downloadUrl?.replace(/^\/?assets\//, "");
+const handleDownload = async () => {
+  if (!downloadUrl) {
+    setDownloadError("No download URL available");
+    return;
+  }
+
+  setDownloading(true);
+  setDownloadError(null);
+
+  try {
+    const filePath = downloadUrl.replace(/^\/?assets\//, "");
+    
+    // Method 1: Try to get public URL first (if bucket is public)
+    try {
+      const { data: { publicUrl } } = supabase.storage
+        .from('assets')
+        .getPublicUrl(filePath);
+      
+      // Open in new tab (works for images, PDFs, etc.)
+      window.open(publicUrl, '_blank');
+      return;
+    } catch (publicUrlError) {
+      console.log("Public URL not available, trying authenticated methods");
+    }
+
+    // Method 2: Create and use signed URL
+    try {
+      const { data: { signedUrl }, error } = await supabase.storage
+        .from('assets')
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      
+      if (!error && signedUrl) {
+        window.open(signedUrl, '_blank');
+        return;
+      }
+    } catch (signedUrlError) {
+      console.log("Signed URL failed:", signedUrlError);
+    }
+
+    // Method 3: Direct download via API
+    try {
+      const { data, error } = await supabase.storage
+        .from('assets')
+        .download(filePath);
+      
+      if (!error && data) {
+        const url = URL.createObjectURL(data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name || `asset-${id.substring(0, 8)}`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
+        return;
+      }
+    } catch (downloadError) {
+      console.log("Direct download failed:", downloadError);
+    }
+
+    // Final fallback
+    setDownloadError("Could not access file. Please check permissions.");
+    
+  } catch (err) {
+    console.error("Download error:", err);
+    setDownloadError(err.message || "Download failed");
+  } finally {
+    setDownloading(false);
+  }
+};
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const { error: storageError } = await supabase.storage
-        .from("assets")
-        .remove([filePath]);
+      const filePath = downloadUrl?.replace(/^\/?assets\//, "");
 
-      if (storageError) throw new Error(`Storage delete failed: ${storageError.message}`);
+      if (filePath) {
+        const { error: storageError } = await supabase.storage
+          .from("assets")
+          .remove([filePath]);
+
+        if (storageError) throw storageError;
+      }
 
       await axios.delete(`/api/assets/${id}`);
       onDelete(id);
     } catch (err) {
       console.error("Deletion error:", err);
-      alert("Failed to delete asset. Check console for details.");
+      setDownloadError("Failed to delete asset");
     } finally {
       setDeleting(false);
       setShowConfirm(false);
@@ -89,11 +168,16 @@ const AssetCard = ({ asset, onDelete, onEdit }) => {
 
       <div className="mt-auto pt-4 flex justify-end gap-4">
         <button
-          onClick={() => window.open(downloadUrl, "_blank")}
-          title="Download"
-          className="text-mint hover:text-green-800 cursor-pointer"
+          onClick={handleDownload}
+          disabled={downloading || !downloadUrl}
+          title={downloadUrl ? "Download" : "No file available"}
+          className={`${downloadUrl ? "text-brandRose hover:text-brandRose-dark cursor-pointer" : "text-gray-400 cursor-not-allowed"}`}
         >
-          <FontAwesomeIcon icon={icons.download} />
+          {downloading ? (
+            <FontAwesomeIcon icon={icons.spinner} spin />
+          ) : (
+            <FontAwesomeIcon icon={icons.eye} />
+          )}
         </button>
         <button
           onClick={() => setShowConfirm(true)}
@@ -103,6 +187,23 @@ const AssetCard = ({ asset, onDelete, onEdit }) => {
           <FontAwesomeIcon icon={icons.trash} />
         </button>
       </div>
+
+      {downloadError && (
+        <div className="text-red-500 text-xs mt-2">
+          {downloadError}
+          {downloadUrl && (
+            <>
+              <br />
+              <button
+                className="text-blue-500 underline text-xs"
+                onClick={() => window.open(downloadUrl, "_blank")}
+              >
+                Try direct download
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {showConfirm && (
         <ConfirmDeleteModal
