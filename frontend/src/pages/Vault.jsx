@@ -60,46 +60,53 @@ const Vault = () => {
     };
   }, [showModal, editingCredential, viewingCredential]);
 
-  const handleDelete = async (deletedId) => {
-    try {
-      await axios.delete(`/api/credentials/${deletedId}`, {
+// In Vault.jsx, update the handleUpdate function:
+const handleUpdate = async (updatedCredential) => {
+  try {
+    const response = await axios.put(
+      `/api/credentials/${updatedCredential.id}`,
+      updatedCredential,
+      {
+        params: { ownerId }, // Add ownerId as query param
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
         }
-      });
-      setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
-    } catch (err) {
-      console.error("Failed to delete credential", err);
-      setError("Failed to delete credential. Please try again.");
-    }
-  };
+      }
+    );
+    setCredentials((prev) =>
+      prev.map((item) =>
+        item.id === updatedCredential.id ? response.data : item
+      )
+    );
+    setEditingCredential(null);
+  } catch (err) {
+    console.error("Failed to update credential", err);
+    setError(err.response?.data?.message || "Failed to update credential. Please try again.");
+  }
+};
+
+// Update handleDelete:
+const handleDelete = async (deletedId) => {
+  try {
+    await axios.delete(`/api/credentials/${deletedId}`, {
+      params: { ownerId }, // Add ownerId as query param
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
+  } catch (err) {
+    console.error("Failed to delete credential", err);
+    setError(err.response?.data?.message || "Failed to delete credential. Please try again.");
+  }
+};
 
   const handleEditClick = (credential) => {
     setEditingCredential(credential);
   };
 
-  const handleUpdate = async (updatedCredential) => {
-    try {
-      const response = await axios.put(
-        `/api/credentials/${updatedCredential.id}`,
-        updatedCredential,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
-      setCredentials((prev) =>
-        prev.map((item) =>
-          item.id === updatedCredential.id ? response.data : item
-        )
-      );
-      setEditingCredential(null);
-    } catch (err) {
-      console.error("Failed to update credential", err);
-      setError("Failed to update credential. Please try again.");
-    }
-  };
+
 
   const handleUploadComplete = (newCredential) => {
     setCredentials((prev) => [...prev, newCredential]);
