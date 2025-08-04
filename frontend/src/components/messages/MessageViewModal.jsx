@@ -1,8 +1,23 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
 
 const MessageViewModal = ({ message, onClose, onDelete }) => {
+  const [linkedAssets, setLinkedAssets] = useState([]);
+  const [loadingAssets, setLoadingAssets] = useState(false);
+
+  useEffect(() => {
+    if (message?.id) {
+      setLoadingAssets(true);
+      axios.get(`/api/assets?messageId=${message.id}`)
+        .then(res => setLinkedAssets(res.data))
+        .catch(console.error)
+        .finally(() => setLoadingAssets(false));
+    }
+  }, [message?.id]);
+
   if (!message) return null;
 
   return (
@@ -24,20 +39,20 @@ const MessageViewModal = ({ message, onClose, onDelete }) => {
 
         <div className="space-y-3 text-sm mb-6">
           <div className="flex items-start">
-  <span className="w-32 font-medium text-gray-500 flex items-center gap-2">
-    <FontAwesomeIcon icon={icons.circleInfo} className="w-4" />
-    Status:
-  </span>
-  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-    message.deliveryStatus === 'DRAFT' ? 'bg-yellow-100 text-yellow-800' :
-    message.deliveryStatus === 'QUEUED' ? 'bg-green-100 text-green-800' :
-    message.deliveryStatus === 'SENT' ? 'bg-blue-100 text-blue-800' :
-    message.deliveryStatus === 'FAILED' ? 'bg-red-100 text-red-800' :
-    'bg-purple-100 text-purple-800'
-  }`}>
-    {message.deliveryStatus}
-  </span>
-</div>
+            <span className="w-32 font-medium text-gray-500 flex items-center gap-2">
+              <FontAwesomeIcon icon={icons.circleInfo} className="w-4" />
+              Status:
+            </span>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              message.deliveryStatus === 'DRAFT' ? 'bg-yellow-100 text-yellow-800' :
+              message.deliveryStatus === 'QUEUED' ? 'bg-green-100 text-green-800' :
+              message.deliveryStatus === 'SENT' ? 'bg-blue-100 text-blue-800' :
+              message.deliveryStatus === 'FAILED' ? 'bg-red-100 text-red-800' :
+              'bg-purple-100 text-purple-800'
+            }`}>
+              {message.deliveryStatus}
+            </span>
+          </div>
 
           <div className="flex items-start">
             <span className="w-32 font-medium text-gray-500 flex items-center gap-2">
@@ -71,6 +86,41 @@ const MessageViewModal = ({ message, onClose, onDelete }) => {
                 ? message.trusteeNames.join(", ")
                 : <span className="text-gray-400">Unassigned</span>}
             </span>
+          </div>
+
+          <div className="flex items-start">
+            <span className="w-32 font-medium text-gray-500 flex items-center gap-2">
+              <FontAwesomeIcon icon={icons.link} className="w-4" />
+              Linked Assets:
+            </span>
+            <div className="flex-1">
+              {loadingAssets ? (
+                <span className="text-gray-500">Loading...</span>
+              ) : linkedAssets.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {linkedAssets.map(asset => (
+                    <span 
+                      key={asset.id} 
+                      className="bg-gray-100 px-2 py-1 rounded text-xs flex items-center gap-1"
+                      title={asset.name}
+                    >
+                      <FontAwesomeIcon 
+                        icon={
+                          asset.assetType === 'IMAGE' ? icons.image :
+                          asset.assetType === 'VIDEO' ? icons.video :
+                          asset.assetType === 'DOCUMENT' ? icons.fileAlt :
+                          icons.file
+                        } 
+                        className="text-gray-500"
+                      />
+                      {asset.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-gray-400">None</span>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1,5 +1,6 @@
 package com.hereandalways.controllers;
 
+import com.hereandalways.models.DigitalAsset;
 import com.hereandalways.models.Message;
 import com.hereandalways.models.User;
 import com.hereandalways.models.enums.DeliveryStatus;
@@ -76,58 +77,50 @@ public class MessageController {
         return ResponseEntity.noContent().build();
     }
 
-//     @PatchMapping("/{messageId}/status")
-//     public ResponseEntity<MessageResponse> updateStatus(
-//             @PathVariable UUID messageId,
-//             @RequestParam String status
-//     ) {
-//         Message updated = messageService.updateStatus(messageId, DeliveryStatus.valueOf(status));
-//         return ResponseEntity.ok(toResponse(updated));
-//     }
-
-    @PatchMapping("/{messageId}")
-    public ResponseEntity<MessageResponse> updateMessage(
-            @PathVariable UUID messageId,
-            @RequestBody UpdateMessageRequest request
-    ) {
-        log.info("⏩ Received PATCH request for message {} with data: {}", messageId, request);
-        
-        try {
-            // Validate and convert status
-            DeliveryStatus status = null;
-            if (request.getDeliveryStatus() != null) {
-                try {
-                    status = DeliveryStatus.valueOf(request.getDeliveryStatus().toUpperCase());
-                    log.debug("✅ Converted deliveryStatus '{}' to enum {}", request.getDeliveryStatus(), status);
-                } catch (IllegalArgumentException e) {
-                    log.error("❌ Invalid delivery status value: {}", request.getDeliveryStatus());
-                    throw new IllegalArgumentException("Invalid delivery status: " + request.getDeliveryStatus());
-                }
+@PatchMapping("/{messageId}")
+public ResponseEntity<MessageResponse> updateMessage(
+        @PathVariable UUID messageId,
+        @RequestBody UpdateMessageRequest request
+) {
+    log.info("⏩ Received PATCH request for message {} with data: {}", messageId, request);
+    
+    try {
+        // Validate and convert status
+        DeliveryStatus status = null;
+        if (request.getDeliveryStatus() != null) {
+            try {
+                status = DeliveryStatus.valueOf(request.getDeliveryStatus().toUpperCase());
+                log.debug("✅ Converted deliveryStatus '{}' to enum {}", request.getDeliveryStatus(), status);
+            } catch (IllegalArgumentException e) {
+                log.error("❌ Invalid delivery status value: {}", request.getDeliveryStatus());
+                throw new IllegalArgumentException("Invalid delivery status: " + request.getDeliveryStatus());
             }
-
-            log.info("🔄 Calling service to update message {}", messageId);
-            Message updated = messageService.updateMessage(
-                    messageId,
-                    request.getSubject(),
-                    request.getBody(),
-                    request.getScheduledDelivery(),
-                    request.getTrusteeIds(),
-                    status
-            );
-
-            // Verify the status was actually updated
-            if (status != null && !updated.getDeliveryStatus().equals(status)) {
-                log.error("❌ Status mismatch! Requested: {}, Actual: {}", status, updated.getDeliveryStatus());
-                throw new IllegalStateException("Status update failed");
-            }
-
-            log.info("✅ Successfully updated message {}", messageId);
-            return ResponseEntity.ok(toResponse(updated));
-        } catch (Exception e) {
-            log.error("❌ Failed to update message {}: {}", messageId, e.getMessage());
-            throw e;
         }
+
+        log.info("🔄 Calling service to update message {}", messageId);
+        Message updated = messageService.updateMessage(
+                messageId,
+                request.getSubject(),
+                request.getBody(),
+                request.getScheduledDelivery(),
+                request.getTrusteeIds(),
+                request.getAssetIds(), // Add this line
+                status
+        );
+
+        // Verify the status was actually updated
+        if (status != null && !updated.getDeliveryStatus().equals(status)) {
+            log.error("❌ Status mismatch! Requested: {}, Actual: {}", status, updated.getDeliveryStatus());
+            throw new IllegalStateException("Status update failed");
+        }
+
+        log.info("✅ Successfully updated message {}", messageId);
+        return ResponseEntity.ok(toResponse(updated));
+    } catch (Exception e) {
+        log.error("❌ Failed to update message {}: {}", messageId, e.getMessage());
+        throw e;
     }
+}
 
     /**
      * Converts a Message entity to the DTO
@@ -135,6 +128,7 @@ public class MessageController {
   private MessageResponse toResponse(Message message) {
     List<String> trusteeNames = List.of();
     List<UUID> trusteeIds = List.of();
+    List<UUID> assetIds = List.of();
 
     if (message.getTrustees() != null && !message.getTrustees().isEmpty()) {
         trusteeNames = message.getTrustees().stream()
@@ -147,6 +141,13 @@ public class MessageController {
                 .toList();
     }
 
+    if (message.getLinkedAssets() != null && !message.getLinkedAssets().isEmpty()) {
+        assetIds = message.getLinkedAssets().stream()
+                .filter(java.util.Objects::nonNull)
+                .map(DigitalAsset::getId)
+                .toList();
+    }
+
     return new MessageResponse(
             message.getId(),
             message.getSubject(),
@@ -155,7 +156,8 @@ public class MessageController {
             message.getScheduledDelivery(),
             message.getCreatedAt(),
             trusteeNames,
-            trusteeIds
+            trusteeIds,
+            assetIds // Add this to the constructor
     );
 }
 

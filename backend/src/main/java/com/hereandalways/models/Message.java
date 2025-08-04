@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hereandalways.models.enums.DeliveryStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -58,6 +60,21 @@ private DeliveryStatus deliveryStatus;
         inverseJoinColumns = @JoinColumn(name = "trustee_id")
     )
     private List<User> trustees;
+
+    // Message.java
+@ManyToMany(mappedBy = "linkedMessages")
+private Set<DigitalAsset> linkedAssets = new HashSet<>();
+
+// Helper methods for bidirectional sync
+public void addAsset(DigitalAsset asset) {
+    this.linkedAssets.add(asset);
+    asset.getLinkedMessages().add(this);
+}
+
+public void removeAsset(DigitalAsset asset) {
+    this.linkedAssets.remove(asset);
+    asset.getLinkedMessages().remove(this);
+}
 
     @PrePersist
     protected void onCreate() {

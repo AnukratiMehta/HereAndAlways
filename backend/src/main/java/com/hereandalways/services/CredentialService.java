@@ -7,7 +7,7 @@ import com.hereandalways.models.User;
 import com.hereandalways.models.enums.VaultCategory;
 import com.hereandalways.repositories.CredentialRepository;
 import com.hereandalways.repositories.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

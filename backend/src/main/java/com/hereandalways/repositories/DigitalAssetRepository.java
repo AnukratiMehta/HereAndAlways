@@ -14,4 +14,8 @@ public interface DigitalAssetRepository extends JpaRepository<DigitalAsset, UUID
 
   @EntityGraph(attributePaths = {"linkedMessages", "trustees"})
   List<DigitalAsset> findByTrustees_Id(UUID trusteeId);
+
+  // DigitalAssetRepository.java
+@EntityGraph(attributePaths = {"linkedMessages", "trustees"})
+List<DigitalAsset> findByLinkedMessages_Id(UUID messageId);
 }

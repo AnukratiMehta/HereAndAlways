@@ -19,59 +19,65 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DigitalAssetController {
 
-  private final DigitalAssetService assetService;
-  private final UserService userService;
+    private final DigitalAssetService assetService;
+    private final UserService userService;
 
-@PostMapping
-public ResponseEntity<DigitalAssetResponse> createAsset(
-    @RequestBody DigitalAssetRequest request,
-    @RequestParam UUID ownerId
-) {
-    DigitalAssetResponse response = assetService.createAsset(request, ownerId);
-    return ResponseEntity.ok(response);
-}
+    @PostMapping
+    public ResponseEntity<DigitalAssetResponse> createAsset(
+            @RequestBody DigitalAssetRequest request,
+            @RequestParam UUID ownerId
+    ) {
+        DigitalAssetResponse response = assetService.createAsset(request, ownerId);
+        return ResponseEntity.ok(response);
+    }
 
-
- @PatchMapping("/{id}")
-public ResponseEntity<DigitalAssetResponse> updateAssetMetadata(
-    @PathVariable UUID id,
-    @RequestBody Map<String, String> updates
-) {
-  Optional<DigitalAsset> updated = assetService.updateAssetMetadata(id, updates);
-  return updated.map(DigitalAssetResponse::fromEntity)
+    @PatchMapping("/{id}")
+    public ResponseEntity<DigitalAssetResponse> updateAssetMetadata(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> updates
+    ) {
+        Optional<DigitalAsset> updated = assetService.updateAssetMetadata(id, updates);
+        return updated.map(DigitalAssetResponse::fromEntity)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-}
+    }
 
-@GetMapping
-public ResponseEntity<List<DigitalAssetResponse>> getAssetsByOwner(@RequestParam UUID ownerId) {
-  List<DigitalAssetResponse> assets = assetService.getAssetsByOwner(ownerId).stream()
-      .map(DigitalAssetResponse::fromEntity)
-      .toList();
-  return ResponseEntity.ok(assets);
-}
+    @GetMapping
+    public ResponseEntity<List<DigitalAssetResponse>> getAssets(
+            @RequestParam(required = false) UUID ownerId,
+            @RequestParam(required = false) UUID messageId,
+            @RequestParam(required = false) UUID trusteeId) {
+        
+        List<DigitalAsset> assets;
+        if (messageId != null) {
+            assets = assetService.getAssetsByMessage(messageId);
+        } else if (trusteeId != null) {
+            assets = assetService.getAssetsByTrustee(trusteeId);
+        } else if (ownerId != null) {
+            assets = assetService.getAssetsByOwner(ownerId);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        List<DigitalAssetResponse> responses = assets.stream()
+                .map(DigitalAssetResponse::fromEntity)
+                .toList();
+        return ResponseEntity.ok(responses);
+    }
 
-@GetMapping("/trustee/{trusteeId}")
-public ResponseEntity<List<DigitalAssetResponse>> getAssetsByTrustee(@PathVariable UUID trusteeId) {
-  List<DigitalAssetResponse> assets = assetService.getAssetsByTrustee(trusteeId).stream()
-      .map(DigitalAssetResponse::fromEntity)
-      .toList();
-  return ResponseEntity.ok(assets);
-}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAsset(@PathVariable UUID id) {
+        assetService.deleteAsset(id);
+        return ResponseEntity.noContent().build();
+    }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteAsset(@PathVariable UUID id) {
-    assetService.deleteAsset(id);
-    return ResponseEntity.noContent().build();
-  }
-
-  @PutMapping("/{id}")
-public ResponseEntity<DigitalAssetResponse> updateAsset(
-    @PathVariable UUID id,
-    @RequestBody DigitalAssetRequest request
-) {
-    Optional<DigitalAssetResponse> updated = assetService.updateAsset(id, request);
-    return updated.map(ResponseEntity::ok)
-                  .orElseGet(() -> ResponseEntity.notFound().build());
-}
+    @PutMapping("/{id}")
+    public ResponseEntity<DigitalAssetResponse> updateAsset(
+            @PathVariable UUID id,
+            @RequestBody DigitalAssetRequest request
+    ) {
+        Optional<DigitalAssetResponse> updated = assetService.updateAsset(id, request);
+        return updated.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }

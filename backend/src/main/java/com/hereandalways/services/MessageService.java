@@ -1,5 +1,6 @@
 package com.hereandalways.services;
 
+import com.hereandalways.models.DigitalAsset;
 import com.hereandalways.models.Message;
 import com.hereandalways.models.User;
 import com.hereandalways.models.enums.DeliveryStatus;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import com.hereandalways.repositories.DigitalAssetRepository;
 
 
 import java.time.LocalDateTime;
@@ -24,6 +26,8 @@ public class MessageService {
 
     private final MessageRepository messageRepo;
     private final UserRepository userRepo;
+    private final DigitalAssetRepository assetRepo;
+
 
     @Transactional
     public Message createMessage(
@@ -94,62 +98,78 @@ public class MessageService {
     }
 
  @Transactional
-    public Message updateMessage(
-        UUID messageId,
-        String subject,
-        String body,
-        LocalDateTime scheduledDelivery,
-        List<UUID> trusteeIds,
-        DeliveryStatus status
-    ) {
-        log.info("🔍 Looking for message {}", messageId);
-        Message message = messageRepo.findById(messageId)
-                .orElseThrow(() -> {
-                    log.error("❌ Message not found: {}", messageId);
-                    return new RuntimeException("Message not found");
-                });
+public Message updateMessage(
+    UUID messageId,
+    String subject,
+    String body,
+    LocalDateTime scheduledDelivery,
+    List<UUID> trusteeIds,
+    List<UUID> assetIds,
+    DeliveryStatus status
+) {
+    log.info("🔍 Looking for message {}", messageId);
+    Message message = messageRepo.findById(messageId)
+            .orElseThrow(() -> {
+                log.error("❌ Message not found: {}", messageId);
+                return new RuntimeException("Message not found");
+            });
 
-        log.info("📝 Current message state - Status: {}, Subject: '{}'", 
-            message.getDeliveryStatus(), message.getSubject());
+    log.info("📝 Current message state - Status: {}, Subject: '{}'", 
+        message.getDeliveryStatus(), message.getSubject());
 
-        // Apply updates
-        if (subject != null) {
-            log.info("🔄 Updating subject from '{}' to '{}'", message.getSubject(), subject);
-            message.setSubject(subject);
-        }
-
-        if (body != null) {
-            log.info("🔄 Updating body content");
-            message.setBody(body);
-        }
-
-        if (scheduledDelivery != null) {
-            log.info("🔄 Updating scheduled delivery from {} to {}", 
-                message.getScheduledDelivery(), scheduledDelivery);
-            message.setScheduledDelivery(scheduledDelivery);
-        }
-
-        if (trusteeIds != null) {
-            log.info("🔄 Updating trustees to: {}", trusteeIds);
-            List<User> trustees = userRepo.findAllById(trusteeIds);
-            message.setTrustees(trustees);
-        }
-
-        // Force status update if provided
-        if (status != null) {
-            log.info("🔄 Updating status from {} to {}", 
-                message.getDeliveryStatus(), status);
-            message.setDeliveryStatus(status);
-        }
-
-        log.info("💾 Saving updated message...");
-        Message saved = messageRepo.saveAndFlush(message); // Using saveAndFlush to ensure immediate write
-        
-        // Verify the save
-        Message freshFromDb = messageRepo.findById(messageId).orElseThrow();
-        log.info("💾 Fresh from DB - Status: {}, Subject: '{}'", 
-            freshFromDb.getDeliveryStatus(), freshFromDb.getSubject());
-        
-        return saved;
+    // Apply updates
+    if (subject != null) {
+        log.info("🔄 Updating subject from '{}' to '{}'", message.getSubject(), subject);
+        message.setSubject(subject);
     }
+
+    if (body != null) {
+        log.info("🔄 Updating body content");
+        message.setBody(body);
+    }
+
+    if (scheduledDelivery != null) {
+        log.info("🔄 Updating scheduled delivery from {} to {}", 
+            message.getScheduledDelivery(), scheduledDelivery);
+        message.setScheduledDelivery(scheduledDelivery);
+    }
+
+    if (trusteeIds != null) {
+        log.info("🔄 Updating trustees to: {}", trusteeIds);
+        List<User> trustees = userRepo.findAllById(trusteeIds);
+        message.setTrustees(trustees);
+    }
+
+    if (assetIds != null) {
+        log.info("🔄 Updating linked assets to: {}", assetIds);
+        List<DigitalAsset> assets = assetRepo.findAllById(assetIds);
+        
+        // Clear existing assets and establish new relationships
+        message.getLinkedAssets().forEach(asset -> 
+            asset.getLinkedMessages().remove(message));
+        message.getLinkedAssets().clear();
+        
+        assets.forEach(asset -> {
+            message.getLinkedAssets().add(asset);
+            asset.getLinkedMessages().add(message);
+        });
+    }
+
+    // Force status update if provided
+    if (status != null) {
+        log.info("🔄 Updating status from {} to {}", 
+            message.getDeliveryStatus(), status);
+        message.setDeliveryStatus(status);
+    }
+
+    log.info("💾 Saving updated message...");
+    Message saved = messageRepo.saveAndFlush(message); // Using saveAndFlush to ensure immediate write
+    
+    // Verify the save
+    Message freshFromDb = messageRepo.findById(messageId).orElseThrow();
+    log.info("💾 Fresh from DB - Status: {}, Subject: '{}'", 
+        freshFromDb.getDeliveryStatus(), freshFromDb.getSubject());
+    
+    return saved;
+}
 }
