@@ -5,48 +5,94 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import axios from "axios";
 
-const EditAssetModal = ({ asset, ownerId, onClose, onSave }) => {
+const EditAssetModal = ({ asset, onClose, onSave }) => {
   const [name, setName] = useState(asset.name || "");
-  const [trusteeIds, setTrusteeIds] = useState(
-    asset.linkedTrustees?.map((t) => ({ value: t.id, label: t.name })) || []
-  );
-  const [messageIds, setMessageIds] = useState(
-    asset.linkedMessages?.map((m) => ({ value: m.id, label: m.title })) || []
-  );
+  const [description, setDescription] = useState(asset.description || "");
   const [trustees, setTrustees] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [selectedTrustees, setSelectedTrustees] = useState([]);
+  const [selectedMessages, setSelectedMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Get ownerId from the asset
+  const ownerId = asset?.legacyOwnerId;
 
   useEffect(() => {
-    if (!ownerId) return;
-
     const fetchData = async () => {
+      if (!ownerId) return;
+      
+      setIsLoading(true);
+      setError(null);
       try {
         const [trusteeRes, messageRes] = await Promise.all([
-          axios.get(`/api/trustees/${ownerId}`),
-          axios.get(`/api/messages/${ownerId}`),
+          axios.get(`/api/trustees/${ownerId}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }),
+          axios.get(`/api/messages/${ownerId}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }),
         ]);
+
         setTrustees(trusteeRes.data);
         setMessages(messageRes.data);
+
+        // Set initially selected trustees
+        if (asset.linkedTrustees) {
+          setSelectedTrustees(
+            asset.linkedTrustees.map(t => ({
+              value: t.id,
+              label: t.name || "Unnamed"
+            }))
+          );
+        }
+
+        // Set initially linked messages
+        if (asset.linkedMessages) {
+          setSelectedMessages(
+            asset.linkedMessages.map(m => ({
+              value: m.id,
+              label: m.title || "Untitled"
+            }))
+          );
+        }
+
       } catch (err) {
-        console.error("Failed to load trustees/messages:", err);
+        console.error("Failed to fetch data:", err);
+        setError("Failed to load trustees/messages. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [ownerId]);
+  }, [ownerId, asset]);
 
   const handleSubmit = async () => {
     try {
+      setIsLoading(true);
       const res = await axios.put(`/api/assets/${asset.id}`, {
         name,
-        trusteeIds: trusteeIds.map((t) => t.value),
-        messageIds: messageIds.map((m) => m.value),
+        description,
+        trusteeIds: selectedTrustees.map(t => t.value),
+        messageIds: selectedMessages.map(m => m.value),
+      }, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
-      onSave(res.data); // ✅ pass updated asset to parent
+      
+      onSave(res.data);
       onClose();
     } catch (err) {
       console.error("Failed to update asset:", err);
-      alert("Something went wrong.");
+      setError(err.response?.data?.message || "Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,6 +107,12 @@ const EditAssetModal = ({ asset, ownerId, onClose, onSave }) => {
         </button>
         <h2 className="text-xl font-bold mb-4">Edit Asset</h2>
 
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded text-sm">
+            {error}
+          </div>
+        )}
+
         <div className="mb-4">
           <label className="block font-semibold text-gray-700 mb-1">Name</label>
           <input
@@ -71,37 +123,57 @@ const EditAssetModal = ({ asset, ownerId, onClose, onSave }) => {
         </div>
 
         <div className="mb-4">
-          <label className="block font-semibold text-gray-700 mb-1">Trustees</label>
-          <Select
-            isMulti
-            value={trusteeIds}
-            onChange={(selected) => setTrusteeIds(selected || [])}
-            options={trustees.map((t) => ({
-              value: t.trusteeId,
-              label: t.trusteeName || t.trusteeEmail || "Unnamed",
-            }))}
-            placeholder="Choose trustees..."
+          <label className="block font-semibold text-gray-700 mb-1">Description</label>
+          <textarea
+            className="border rounded w-full p-2"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
           />
         </div>
 
         <div className="mb-4">
-          <label className="block font-semibold text-gray-700 mb-1">Messages</label>
+          <label className="block font-semibold text-gray-700 mb-1">Trustees</label>
           <Select
             isMulti
-            value={messageIds}
-            onChange={(selected) => setMessageIds(selected || [])}
-            options={messages.map((m) => ({
-              value: m.id,
-              label: m.subject,
+            options={trustees.map(t => ({
+              value: t.trusteeId,
+              label: t.trusteeName || t.trusteeEmail || "Unnamed",
             }))}
+            value={selectedTrustees}
+            onChange={(selected) => setSelectedTrustees(selected || [])}
+            placeholder="Choose trustees..."
+            isLoading={isLoading}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block font-semibold text-gray-700 mb-1">Linked Messages</label>
+          <Select
+            isMulti
+            options={messages.map(m => ({
+              value: m.id,
+              label: m.subject || "Untitled",
+            }))}
+            value={selectedMessages}
+            onChange={(selected) => setSelectedMessages(selected || [])}
             placeholder="Choose messages..."
+            isLoading={isLoading}
           />
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <Button onClick={onClose}>Cancel</Button>
-          <Button color="primary" onClick={handleSubmit}>
-            <FontAwesomeIcon icon={icons.save} className="mr-2" /> Save Changes
+          <Button onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button 
+            color="primary" 
+            onClick={handleSubmit}
+            disabled={isLoading}
+            icon={isLoading ? icons.spinner : icons.save}
+            spin={isLoading}
+          >
+            {isLoading ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </div>
