@@ -77,34 +77,35 @@ const Assets = () => {
     setShowModal(false);
   };
 
-  const getFilteredAssets = () => {
-    let filtered = assets;
-    
-    // Apply view filter
-    switch (view) {
-      case "messages":
-        filtered = filtered.filter(a => a.linkedMessages?.length > 0);
-        break;
-      case "trustees":
-        filtered = filtered.filter(a => a.trustees?.length > 0);
-        break;
-      case "all":
-      case "home":
-      default:
-        break;
-    }
-    
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(asset => 
-        asset.name.toLowerCase().includes(query) ||
-        (asset.description && asset.description.toLowerCase().includes(query))
-      );
-    }
-    
-    return filtered;
-  };
+  // Assets.jsx
+const getFilteredAssets = () => {
+  let filtered = assets;
+  
+  // Apply view filter
+  switch (view) {
+    case "messages":
+      filtered = filtered.filter(a => a.linkedMessages?.length > 0);
+      break;
+    case "trustees":
+      filtered = filtered.filter(a => a.linkedTrustees?.length > 0);
+      break;
+    case "all":
+    case "home":
+    default:
+      break;
+  }
+  
+  // Apply search filter
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase();
+    filtered = filtered.filter(asset => 
+      asset.name.toLowerCase().includes(query) ||
+      (asset.description && asset.description.toLowerCase().includes(query))
+    );
+  }
+  
+  return filtered;
+};
 
   const filteredAssets = getFilteredAssets();
 
