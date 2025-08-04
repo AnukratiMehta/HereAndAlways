@@ -1,8 +1,31 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
 
+const assetTypeIcons = {
+  IMAGE: icons.image,
+  VIDEO: icons.video,
+  DOCUMENT: icons.fileAlt,
+  MUSIC: icons.music,
+  DEFAULT: icons.file,
+};
+
 const MessageCard = ({ message, onEdit, onDelete }) => {
+  const [linkedAssets, setLinkedAssets] = useState([]);
+  const [loadingAssets, setLoadingAssets] = useState(false);
+
+  useEffect(() => {
+    if (message?.id) {
+      setLoadingAssets(true);
+      axios.get(`/api/assets?messageId=${message.id}`)
+        .then(res => setLinkedAssets(res.data))
+        .catch(console.error)
+        .finally(() => setLoadingAssets(false));
+    }
+  }, [message?.id]);
+
   const getStatusBadge = (status) => {
     const base = "px-2 py-0.5 rounded-full text-xs font-semibold inline-block";
     switch (status) {
@@ -42,8 +65,36 @@ const MessageCard = ({ message, onEdit, onDelete }) => {
         </p>
         <p>
           <FontAwesomeIcon icon={icons.userShield} className="mr-1 text-xs" />
-          <strong>Trustee:</strong> {message.trusteeName || "Unassigned"}
+          <strong>Trustees:</strong> {message.trusteeNames?.join(", ") || "None"}
         </p>
+        
+        <div className="flex items-start">
+          <span className="flex items-center mr-1">
+            <FontAwesomeIcon icon={icons.link} className="mr-1 text-xs" />
+            <strong>Assets:</strong>
+          </span>
+          <div className="flex flex-wrap gap-1">
+            {loadingAssets ? (
+              <span className="text-gray-400 text-xs">Loading assets...</span>
+            ) : linkedAssets.length > 0 ? (
+              linkedAssets.map(asset => (
+                <span 
+                  key={asset.id} 
+                  className="flex items-center bg-gray-100 px-2 py-0.5 rounded text-xs"
+                  title={asset.name}
+                >
+                  <FontAwesomeIcon 
+                    icon={assetTypeIcons[asset.assetType] || assetTypeIcons.DEFAULT} 
+                    className="mr-1 text-gray-500 text-xs" 
+                  />
+                  {asset.name}
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 text-xs">None</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="pt-2 flex justify-between">
