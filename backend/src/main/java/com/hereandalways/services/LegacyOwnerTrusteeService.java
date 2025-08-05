@@ -93,29 +93,51 @@ public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
     User trustee = userService.getUserEntityById(trusteeId)
             .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
 
-    // Update name/email if changed
+    // Update name/email
     trustee.setName(request.getName());
     trustee.setEmail(request.getEmail());
-    userService.saveUserEntity(trustee); // Persist changes
+    userService.saveUserEntity(trustee);
 
-    // Remove selected messages
+    // Remove
     if (request.getMessageIdsToRemove() != null) {
         for (UUID messageId : request.getMessageIdsToRemove()) {
             userService.removeTrusteeFromMessage(trusteeId, messageId);
         }
     }
-
-    // Remove selected assets
     if (request.getAssetIdsToRemove() != null) {
-    for (UUID assetId : request.getAssetIdsToRemove()) {
-        userService.removeTrusteeFromAsset(trusteeId, assetId);
+        for (UUID assetId : request.getAssetIdsToRemove()) {
+            userService.removeTrusteeFromAsset(trusteeId, assetId);
+        }
+    }
+    if (request.getCredentialIdsToRemove() != null) {
+        for (UUID credentialId : request.getCredentialIdsToRemove()) {
+            userService.removeTrusteeFromCredential(trusteeId, credentialId);
+        }
+    }
+
+    // Add
+    if (request.getMessageIdsToAdd() != null) {
+        for (UUID messageId : request.getMessageIdsToAdd()) {
+            userService.addTrusteeToMessage(trusteeId, messageId);
+        }
+    }
+    if (request.getAssetIdsToAdd() != null) {
+        for (UUID assetId : request.getAssetIdsToAdd()) {
+            userService.addTrusteeToAsset(trusteeId, assetId);
+        }
+    }
+    if (request.getCredentialIdsToAdd() != null) {
+        for (UUID credentialId : request.getCredentialIdsToAdd()) {
+            userService.addTrusteeToCredential(trusteeId, credentialId);
+        }
     }
 }
 
 
 
-}
-
-
 
 }
+
+
+
+

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.hereandalways.repositories.MessageRepository;
 import com.hereandalways.repositories.DigitalAssetRepository;
+import com.hereandalways.repositories.CredentialRepository;
 
 
 import java.util.List;
@@ -28,6 +29,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final MessageRepository messageRepo;
     private final DigitalAssetRepository assetRepo;
+    private final CredentialRepository credentialRepo;
+
 
 
 
@@ -125,5 +128,44 @@ public Optional<User> getUserEntityByEmail(String email) {
     }
     return userRepository.findByEmail(email);
 }
+
+@Transactional
+public void addTrusteeToMessage(UUID trusteeId, UUID messageId) {
+    var trustee = getUserEntityById(trusteeId)
+            .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
+    var message = messageRepo.findById(messageId)
+            .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+    message.getTrustees().add(trustee);
+    messageRepo.save(message);
+}
+
+@Transactional
+public void addTrusteeToAsset(UUID trusteeId, UUID assetId) {
+    var trustee = getUserEntityById(trusteeId)
+            .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
+    var asset = assetRepo.findById(assetId)
+            .orElseThrow(() -> new IllegalArgumentException("Asset not found"));
+    asset.getTrustees().add(trustee);
+    assetRepo.save(asset);
+}
+
+@Transactional
+public void addTrusteeToCredential(UUID trusteeId, UUID credentialId) {
+    var trustee = getUserEntityById(trusteeId)
+            .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
+    var credential = credentialRepo.findById(credentialId)
+            .orElseThrow(() -> new IllegalArgumentException("Credential not found"));
+    credential.getLinkedTrustees().add(trustee);
+    credentialRepo.save(credential);
+}
+
+@Transactional
+public void removeTrusteeFromCredential(UUID trusteeId, UUID credentialId) {
+    var credential = credentialRepo.findById(credentialId)
+            .orElseThrow(() -> new IllegalArgumentException("Credential not found"));
+    credential.getLinkedTrustees().removeIf(t -> t.getId().equals(trusteeId));
+    credentialRepo.save(credential);
+}
+
 
 }
