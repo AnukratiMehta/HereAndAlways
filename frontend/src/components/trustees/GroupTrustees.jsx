@@ -1,171 +1,120 @@
-import { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { icons } from "../../icons/icons";
-import Button from "../shared/Button";
-import { formatDistanceToNow } from "date-fns";
-import { getTrusteesInGroup } from "../../utils/trusteeUtils"
+import PropTypes from "prop-types";
 
 const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
-  const [expandedGroup, setExpandedGroup] = useState(null);
-
-  const toggleExpand = (groupId) => {
-    setExpandedGroup(expandedGroup === groupId ? null : groupId);
-  };
-
-  if (groups.length === 0) {
+  if (!groups || groups.length === 0) {
     return (
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Trustee Groups</h2>
-          <Button onClick={onCreateGroup} color="primary">
-            <FontAwesomeIcon icon={icons.plus} className="mr-2" />
+      <div className="text-center text-gray-500 italic py-12">
+        No trustee groups created yet
+        <div className="mt-4">
+          <button
+            onClick={onCreateGroup}
+            className="bg-brandRose text-white px-4 py-2 rounded shadow hover:bg-brandRose-dark"
+          >
             Create Group
-          </Button>
-        </div>
-        <div className="text-center py-8 text-gray-500">
-          No trustee groups created yet
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
+    <div className="space-y-8">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Trustee Groups</h2>
-        <Button onClick={onCreateGroup} color="primary">
-          <FontAwesomeIcon icon={icons.plus} className="mr-2" />
-          Create Group
-        </Button>
+        <button
+          onClick={onCreateGroup}
+          className="bg-brandRose text-white px-4 py-2 rounded shadow hover:bg-brandRose-dark"
+        >
+          Create New Group
+        </button>
       </div>
 
-      <div className="space-y-4">
-        {groups.map(group => {
-          const groupTrustees = getTrusteesInGroup(group.id, groups, trustees);
-          return (
-            <div 
-              key={group.id}
-              className="bg-white rounded-lg border border-lightGray shadow-sm overflow-hidden"
-            >
-              <div 
-                className="p-4 border-b border-lightGray cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => toggleExpand(group.id)}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-md font-semibold text-charcoal">
-                      {group.name}
-                    </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Created {formatDistanceToNow(new Date(group.createdAt))} ago • 
-                      {groupTrustees.length} members
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteGroup(group.id);
-                      }}
-                      className="text-red-500 hover:text-red-700 p-1"
-                      title="Delete Group"
-                    >
-                      <FontAwesomeIcon icon={icons.trash} />
-                    </button>
-                    <FontAwesomeIcon 
-                      icon={expandedGroup === group.id ? icons.chevronUp : icons.chevronDown} 
-                      className="text-gray-400"
-                    />
-                  </div>
-                </div>
+      {groups.map((group) => {
+        const fullTrustees = group.trusteeIds
+          .map((id) => trustees.find((t) => t.id === id))
+          .filter(Boolean);
+
+        console.log("Debug: Group", group.name);
+        console.log("Debug: Trustee IDs", group.trusteeIds);
+        console.log("Debug: Matched Trustees", fullTrustees);
+
+        // Determine intersection of linked items
+        const sharedMessages = fullTrustees.reduce((acc, trustee) => {
+          const ids = trustee.messages?.map((m) => m.id) || [];
+          return acc === null ? new Set(ids) : new Set(ids.filter((id) => acc.has(id)));
+        }, null);
+
+        const sharedAssets = fullTrustees.reduce((acc, trustee) => {
+          const ids = trustee.assets?.map((a) => a.id) || [];
+          return acc === null ? new Set(ids) : new Set(ids.filter((id) => acc.has(id)));
+        }, null);
+
+        const sharedCredentials = fullTrustees.reduce((acc, trustee) => {
+          const ids = trustee.credentials?.map((c) => c.id) || [];
+          return acc === null ? new Set(ids) : new Set(ids.filter((id) => acc.has(id)));
+        }, null);
+
+        return (
+          <div
+            key={group.id}
+            className="border border-gray-200 rounded-lg p-6 shadow-sm bg-white"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">{group.name}</h3>
+                <p className="text-sm text-gray-500">
+                  Created on {new Date(group.createdAt).toLocaleDateString()}
+                </p>
               </div>
-
-              {expandedGroup === group.id && (
-                <div className="p-4 space-y-4">
-                  <div>
-                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                      <FontAwesomeIcon icon={icons.users} className="mr-2 text-brandRose" />
-                      Group Members
-                    </h4>
-                    <div className="space-y-2 pl-6">
-                      {groupTrustees.map(trustee => (
-                        <div key={trustee.id} className="flex items-center">
-                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs mr-2">
-                            {trustee.trusteeName?.[0]?.toUpperCase() || "T"}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">
-                              {trustee.trusteeName}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {trustee.trusteeEmail}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              Status: {trustee.status}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                      <FontAwesomeIcon icon={icons.assets} className="mr-2 text-brandRose" />
-                      Linked Assets
-                    </h4>
-                    <div className="pl-6">
-                      {groupTrustees.some(t => t.assets?.length > 0) ? (
-                        <ul className="list-disc pl-5 space-y-1">
-                          {groupTrustees.flatMap(t => 
-                            t.assets?.map(asset => ({
-                              ...asset,
-                              trusteeName: t.trusteeName
-                            })) || []
-                          ).map((asset, index) => (
-                            <li key={index} className="text-sm">
-                              {asset.name} (from {asset.trusteeName || "unknown"})
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-500">No assets linked to group members</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-700 mb-2 flex items-center">
-                      <FontAwesomeIcon icon={icons.messages} className="mr-2 text-brandRose" />
-                      Linked Messages
-                    </h4>
-                    <div className="pl-6">
-                      {groupTrustees.some(t => t.messages?.length > 0) ? (
-                        <ul className="list-disc pl-5 space-y-1">
-                          {groupTrustees.flatMap(t => 
-                            t.messages?.map(message => ({
-                              ...message,
-                              trusteeName: t.trusteeName
-                            })) || []
-                          ).map((message, index) => (
-                            <li key={index} className="text-sm">
-                              {message.subject} (from {message.trusteeName || "unknown"})
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-gray-500">No messages linked to group members</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              <button
+                onClick={() => onDeleteGroup(group.id)}
+                className="text-red-500 text-sm hover:underline"
+              >
+                Delete Group
+              </button>
             </div>
-          );
-        })}
-      </div>
+
+            {fullTrustees.length > 0 ? (
+              <>
+                <div className="text-sm text-gray-700 mb-4">
+                  <div><strong>Shared Messages:</strong> {sharedMessages?.size || 0}</div>
+                  <div><strong>Shared Assets:</strong> {sharedAssets?.size || 0}</div>
+                  <div><strong>Shared Credentials:</strong> {sharedCredentials?.size || 0}</div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {fullTrustees.map((trustee) => (
+                    <div
+                      key={trustee.id}
+                      className="border border-gray-100 rounded-lg p-4 shadow-sm bg-gray-50"
+                    >
+                      <div className="font-semibold text-brandRose">
+                        {trustee.trusteeName || "Unnamed Trustee"}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {trustee.trusteeEmail || "No email provided"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-gray-500 italic">
+                No trustees found for this group.
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
+};
+
+GroupTrustees.propTypes = {
+  groups: PropTypes.array.isRequired,
+  trustees: PropTypes.array.isRequired,
+  onCreateGroup: PropTypes.func.isRequired,
+  onDeleteGroup: PropTypes.func.isRequired,
 };
 
 export default GroupTrustees;

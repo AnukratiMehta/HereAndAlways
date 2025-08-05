@@ -84,16 +84,17 @@ const fetchTrustees = async () => {
     }
   };
 
-  const handleCreateGroup = (groupName, selectedTrustees) => {
-    const newGroup = {
-      id: uuidv4(),
-      name: groupName,
-      trusteeIds: selectedTrustees.map(t => t.id),
-      createdAt: new Date().toISOString()
-    };
-    setGroups([...groups, newGroup]);
-    setShowCreateGroupModal(false);
+const handleCreateGroup = (groupName, selectedTrustees) => {
+  const newGroup = {
+    id: uuidv4(),
+    name: groupName,
+    trusteeIds: selectedTrustees.map(t => t.trusteeId),
+    createdAt: new Date().toISOString()
   };
+  setGroups([...groups, newGroup]);
+  setShowCreateGroupModal(false);
+};
+
 
   const handleDeleteGroup = (groupId) => {
     setGroups(groups.filter(group => group.id !== groupId));
