@@ -85,12 +85,6 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
     vault: {
       filters: [
         {
-          id: "all",
-          label: "All Credentials",
-          icon: icons.lock,
-          view: "all"
-        },
-        {
           id: "social",
           label: "Social Media",
           icon: icons.instagram,
@@ -101,7 +95,19 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
           label: "Bank Accounts",
           icon: icons.creditCard,
           view: "bank"
-        }
+        },
+        {
+      id: "email",
+      label: "Email Accounts",
+      icon: icons.envelope,
+      view: "email"
+    },
+    {
+      id: "others",
+      label: "Other Credentials",
+      icon: icons.lock,
+      view: "others"
+    }
       ],
       newItemButton: {
         label: "New Credential",

@@ -30,7 +30,6 @@ const Vault = () => {
   useEffect(() => {
     const fetchCredentials = async () => {
       if (!ownerId) return;
-      
       setIsLoading(true);
       setError(null);
       try {
@@ -60,53 +59,49 @@ const Vault = () => {
     };
   }, [showModal, editingCredential, viewingCredential]);
 
-// In Vault.jsx, update the handleUpdate function:
-const handleUpdate = async (updatedCredential) => {
-  try {
-    const response = await axios.put(
-      `/api/credentials/${updatedCredential.id}`,
-      updatedCredential,
-      {
-        params: { ownerId }, // Add ownerId as query param
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
+  const handleUpdate = async (updatedCredential) => {
+    try {
+      const response = await axios.put(
+        `/api/credentials/${updatedCredential.id}`,
+        updatedCredential,
+        {
+          params: { ownerId },
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
         }
-      }
-    );
-    setCredentials((prev) =>
-      prev.map((item) =>
-        item.id === updatedCredential.id ? response.data : item
-      )
-    );
-    setEditingCredential(null);
-  } catch (err) {
-    console.error("Failed to update credential", err);
-    setError(err.response?.data?.message || "Failed to update credential. Please try again.");
-  }
-};
+      );
+      setCredentials((prev) =>
+        prev.map((item) =>
+          item.id === updatedCredential.id ? response.data : item
+        )
+      );
+      setEditingCredential(null);
+    } catch (err) {
+      console.error("Failed to update credential", err);
+      setError(err.response?.data?.message || "Failed to update credential. Please try again.");
+    }
+  };
 
-// Update handleDelete:
-const handleDelete = async (deletedId) => {
-  try {
-    await axios.delete(`/api/credentials/${deletedId}`, {
-      params: { ownerId }, // Add ownerId as query param
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
-    setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
-  } catch (err) {
-    console.error("Failed to delete credential", err);
-    setError(err.response?.data?.message || "Failed to delete credential. Please try again.");
-  }
-};
+  const handleDelete = async (deletedId) => {
+    try {
+      await axios.delete(`/api/credentials/${deletedId}`, {
+        params: { ownerId },
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setCredentials((prev) => prev.filter((item) => item.id !== deletedId));
+    } catch (err) {
+      console.error("Failed to delete credential", err);
+      setError(err.response?.data?.message || "Failed to delete credential. Please try again.");
+    }
+  };
 
   const handleEditClick = (credential) => {
     setEditingCredential(credential);
   };
-
-
 
   const handleUploadComplete = (newCredential) => {
     setCredentials((prev) => [...prev, newCredential]);
@@ -115,9 +110,14 @@ const handleDelete = async (deletedId) => {
 
   const getFilteredCredentials = () => {
     let filtered = credentials;
-    
-    // Apply view filter
+
     switch (view) {
+      case "email":
+        filtered = filtered.filter((c) => c.category === "EMAIL");
+        break;
+      case "others":
+        filtered = filtered.filter((c) => c.category == "OTHER");
+        break;
       case "social":
         filtered = filtered.filter((c) => c.category === "SOCIAL");
         break;
@@ -129,17 +129,16 @@ const handleDelete = async (deletedId) => {
       default:
         break;
     }
-    
-    // Apply search filter
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(cred => 
+      filtered = filtered.filter(cred =>
         cred.serviceName?.toLowerCase().includes(query) ||
         cred.username?.toLowerCase().includes(query) ||
         cred.description?.toLowerCase().includes(query)
       );
     }
-    
+
     return filtered;
   };
 
@@ -154,7 +153,7 @@ const handleDelete = async (deletedId) => {
           searchPlaceholder="Search credentials by service, username..." 
           onSearch={handleSearch}
         />
-        
+
         <div className="flex flex-1">
           <div className="flex-1 p-8 overflow-y-auto">
             {error && (
@@ -206,7 +205,6 @@ const handleDelete = async (deletedId) => {
         </div>
       </div>
 
-      {/* Modals */}
       {showModal && ownerId && (
         <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg">Error loading upload form</div>
