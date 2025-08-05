@@ -62,7 +62,7 @@ public class CredentialService {
                 .collect(Collectors.toList());
     }
 
-    private CredentialResponse toResponse(Credential credential) {
+private CredentialResponse toResponse(Credential credential) {
     return CredentialResponse.builder()
             .id(credential.getId())
             .title(credential.getTitle())
@@ -76,6 +76,16 @@ public class CredentialService {
                 credential.getLinkedTrustees()
                         .stream()
                         .map(User::getId)
+                        .collect(Collectors.toList())
+            )
+            .trustees( // Ensure this is populated
+                credential.getLinkedTrustees()
+                        .stream()
+                        .map(user -> CredentialResponse.TrusteeSummary.builder()
+                                .id(user.getId())
+                                .name(user.getName())
+                                .email(user.getEmail())
+                                .build())
                         .collect(Collectors.toList())
             )
             .build();

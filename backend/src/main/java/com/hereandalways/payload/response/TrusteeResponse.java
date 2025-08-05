@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.hereandalways.models.enums.VaultCategory;
+
 @Data
 @AllArgsConstructor
 public class TrusteeResponse {
@@ -18,6 +20,7 @@ public class TrusteeResponse {
 
     private List<MessageSummary> messages;
     private List<AssetSummary> assets;
+    private List<CredentialSummary> credentials;
 
     @Data
     @AllArgsConstructor
@@ -31,5 +34,13 @@ public class TrusteeResponse {
     public static class AssetSummary {
         private UUID id;
         private String name;
+    }
+
+      @Data
+    @AllArgsConstructor
+    public static class CredentialSummary {
+        private UUID id;
+        private String title;
+        private VaultCategory category;
     }
 }

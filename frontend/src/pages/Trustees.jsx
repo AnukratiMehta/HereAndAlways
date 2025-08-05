@@ -46,7 +46,9 @@ const fetchTrustees = async () => {
       status: trustee.status,
       invitedAt: trustee.invitedAt,
       messages: trustee.messages || [],
-      assets: trustee.assets || []
+      assets: trustee.assets || [],
+      credentials: trustee.credentials || []
+
     }));
 
     setTrustees(formatted);

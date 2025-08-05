@@ -6,6 +6,8 @@ import com.hereandalways.models.enums.UserRole;
 import com.hereandalways.payload.request.TrusteeUpdateRequest;
 import com.hereandalways.repositories.LegacyOwnerTrusteeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LegacyOwnerTrusteeService {
@@ -64,10 +67,16 @@ public class LegacyOwnerTrusteeService {
     }
 
 
-    @Transactional(readOnly = true)
     public List<LegacyOwnerTrustee> getTrusteesForOwner(UUID ownerId) {
-        return relationshipRepo.findByLegacyOwnerId(ownerId);
-    }
+    List<LegacyOwnerTrustee> relationships = relationshipRepo.findByLegacyOwnerId(ownerId);
+    
+    relationships.forEach(rel -> {
+        log.info("Trustee ID: {}", rel.getTrustee().getId());
+        log.info("Credentials count via JPA: {}", rel.getTrustee().getCredentials().size());
+    });
+    
+    return relationships;
+}
 
     @Transactional
     public void removeTrustee(UUID relationshipId) {

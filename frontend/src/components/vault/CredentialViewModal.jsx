@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
@@ -9,47 +9,77 @@ const CredentialViewModal = ({ credential, onClose }) => {
   const [decryptedPassword, setDecryptedPassword] = useState(null);
   const [loading, setLoading] = useState(false);
 
-const handleReveal = async () => {
-  if (showPassword) {
-    setShowPassword(false);
-    return;
-  }
+    useEffect(() => {
+    console.log('Credential data received:', credential);
+    console.log('Credential trustees:', credential?.trustees);
+    console.log('Credential trusteeIds:', credential?.trusteeIds);
+  }, [credential]);
 
-  if (decryptedPassword) {
-    setShowPassword(true);
-    return;
-  }
+  const handleReveal = async () => {
+    if (showPassword) {
+      setShowPassword(false);
+      return;
+    }
 
-  setLoading(true);
-  try {
-    const fileResponse = await fetch(credential.passwordOrPin);
-    if (!fileResponse.ok) throw new Error("Failed to fetch encrypted content");
-    const encryptedText = await fileResponse.text();
+    if (decryptedPassword) {
+      setShowPassword(true);
+      return;
+    }
 
-    const decrypted = await decryptTextWithBase64Key(
-      encryptedText,
-      credential.encryptedKey
-    );
-    setDecryptedPassword(decrypted);
-    setShowPassword(true);
-  } catch (err) {
-    console.error("Failed to decrypt:", err);
-    alert("Failed to reveal password.");
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      const fileResponse = await fetch(credential.passwordOrPin);
+      if (!fileResponse.ok) throw new Error("Failed to fetch encrypted content");
+      const encryptedText = await fileResponse.text();
 
+      const decrypted = await decryptTextWithBase64Key(
+        encryptedText,
+        credential.encryptedKey
+      );
+      setDecryptedPassword(decrypted);
+      setShowPassword(true);
+    } catch (err) {
+      console.error("Failed to decrypt:", err);
+      alert("Failed to reveal password.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCategoryName = () => {
+    switch (credential.category) {
+      case "SOCIAL": return "Social Media";
+      case "BANK": return "Bank Account";
+      case "EMAIL": return "Email";
+      default: return "Other";
+    }
+  };
+
+  const getTrusteeNames = () => {
+    if (!credential.trustees || credential.trustees.length === 0) return [];
+    
+    return credential.trustees.map(t => t.name || t.email || `Trustee ID: ${t.id}`);
+  };
 
   return (
     <div className="fixed inset-0 z-50 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-lg relative border border-lightGray">
+
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl"
+        >
+          &times;
+        </button>
 
         <h2 className="text-2xl font-bold text-brandRose-dark mb-6">View Credential</h2>
 
         <div className="space-y-4 text-sm text-gray-700">
           <div>
             <span className="font-medium">Title:</span> {credential.title}
+          </div>
+          <div>
+            <span className="font-medium">Category:</span> {getCategoryName()}
           </div>
           <div>
             <span className="font-medium">Username / Card Number:</span>{" "}
@@ -72,9 +102,6 @@ const handleReveal = async () => {
               {loading ? "Decrypting..." : showPassword ? "Hide" : "Reveal"}
             </button>
           </div>
-          <div>
-            <span className="font-medium">Category:</span> {credential.category}
-          </div>
           {credential.notes && (
             <div>
               <span className="font-medium">Notes:</span>
@@ -84,10 +111,20 @@ const handleReveal = async () => {
             </div>
           )}
           <div>
+            <span className="font-medium">Created:</span>{" "}
+            {credential.createdAt ? new Date(credential.createdAt).toLocaleString() : "Unknown"}
+          </div>
+          <div>
             <span className="font-medium">Linked Trustees:</span>{" "}
-            {credential.trustees?.length > 0
-              ? credential.trustees.join(", ")
-              : <span className="text-gray-400">None</span>}
+            {getTrusteeNames().length > 0 ? (
+              <ul className="list-disc pl-5 mt-1">
+                {getTrusteeNames().map((name, index) => (
+                  <li key={index} className="text-gray-800">{name}</li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-gray-400">None</span>
+            )}
           </div>
         </div>
 

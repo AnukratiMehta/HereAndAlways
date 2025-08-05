@@ -8,6 +8,7 @@ import com.hereandalways.models.enums.VaultCategory;
 import lombok.Builder;
 import lombok.Data;
 
+// CredentialResponse.java
 @Data
 @Builder
 public class CredentialResponse {
@@ -18,7 +19,17 @@ public class CredentialResponse {
     private String notes;
     private LocalDateTime createdAt;
     private List<UUID> trusteeIds;
-
     private String passwordOrPin;  
-    private String encryptedKey;    
+    private String encryptedKey;
+    
+    // Add this to include trustee names
+    private List<TrusteeSummary> trustees;
+    
+    @Data
+    @Builder
+    public static class TrusteeSummary {
+        private UUID id;
+        private String name;
+        private String email;
+    }
 }

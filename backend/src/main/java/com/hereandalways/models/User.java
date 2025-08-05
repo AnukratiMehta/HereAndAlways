@@ -51,6 +51,10 @@ private List<Message> messages;
 @JsonIgnore
 private List<DigitalAsset> assets;
 
+ @ManyToMany(mappedBy = "linkedTrustees")
+    @JsonIgnore
+    private List<Credential> credentials;
+
 
 
     @PrePersist

@@ -1,13 +1,67 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
+import { useEffect } from "react";
 
 const TrusteeViewModal = ({ trustee, onClose }) => {
   if (!trustee) return null;
 
+   useEffect(() => {
+    console.log('Trustee data received:', trustee);
+    console.log('Trustee credentials:', trustee?.credentials);
+    console.log('Trustee messages:', trustee?.messages);
+    console.log('Trustee assets:', trustee?.assets);
+  }, [trustee]);
+
+  // Helper to safely access nested properties
+  const getMessages = () => {
+    if (!trustee.messages) return [];
+    if (Array.isArray(trustee.messages)) {
+      return trustee.messages.map(msg => ({
+        id: msg.id || uuidv4(),
+        subject: msg.subject || "Untitled Message"
+      }));
+    }
+    return [];
+  };
+
+  const getAssets = () => {
+    if (!trustee.assets) return [];
+    if (Array.isArray(trustee.assets)) {
+      return trustee.assets.map(asset => ({
+        id: asset.id || uuidv4(),
+        name: asset.name || "Untitled Asset"
+      }));
+    }
+    return [];
+  };
+
+ const getCredentials = () => {
+  if (!trustee.credentials) return [];
+  if (Array.isArray(trustee.credentials)) {
+    return trustee.credentials.map(credential => ({
+      id: credential.id || uuidv4(),
+      title: credential.title || "Untitled Credential",
+      category: credential.category || "OTHER"
+    }));
+  }
+  return [];
+};
+
+
+
+  const getCategoryName = (category) => {
+    switch (category) {
+      case "SOCIAL": return "Social Media";
+      case "BANK": return "Bank Account";
+      case "EMAIL": return "Email";
+      default: return "Other";
+    }
+  };
+
   return (
-<div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">      
-  <div className="relative w-full max-w-2xl mx-4 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">      
+      <div className="relative w-full max-w-2xl mx-4 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
         {/* Modal Header */}
         <div className="px-6 py-4 bg-brandRose-light border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -15,7 +69,12 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
               <FontAwesomeIcon icon={icons.userShield} className="mr-2 text-brandRose" />
               {trustee.trusteeName || "Unnamed Trustee"}
             </h2>
-            
+            <button 
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 text-xl"
+            >
+              &times;
+            </button>
           </div>
         </div>
 
@@ -51,7 +110,7 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
                 <div>
                   <p className="text-sm font-medium text-gray-500">Status</p>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    trustee.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                    trustee.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
                     trustee.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
@@ -66,12 +125,12 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
           <div className="border-t border-gray-200 pt-4">
             <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
               <FontAwesomeIcon icon={icons.messages} className="mr-2 text-brandRose" />
-              Linked Messages
+              Linked Messages ({getMessages().length})
             </h3>
-            {trustee.messages && trustee.messages.length > 0 ? (
+            {getMessages().length > 0 ? (
               <ul className="space-y-2">
-                {trustee.messages.map((msg, idx) => (
-                  <li key={idx} className="flex items-start">
+                {getMessages().map((msg, idx) => (
+                  <li key={msg.id} className="flex items-start">
                     <span className="flex items-center justify-center h-5 w-5 bg-gray-100 rounded-full mr-2 mt-0.5">
                       <span className="text-xs text-gray-500">{idx + 1}</span>
                     </span>
@@ -84,16 +143,42 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
             )}
           </div>
 
+          {/* Linked Credentials Section */}
+<div className="border-t border-gray-200 pt-4">
+  <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
+    <FontAwesomeIcon icon={icons.key} className="mr-2 text-brandRose" />
+    Linked Credentials ({getCredentials().length})
+  </h3>
+  {getCredentials().length > 0 ? (
+    <ul className="space-y-2">
+      {getCredentials().map((cred, idx) => (
+        <li key={cred.id} className="flex items-start">
+          <span className="flex items-center justify-center h-5 w-5 bg-gray-100 rounded-full mr-2 mt-0.5">
+            <span className="text-xs text-gray-500">{idx + 1}</span>
+          </span>
+          <div>
+            <p className="text-gray-700">{cred.title}</p>
+            <p className="text-xs text-gray-500">{getCategoryName(cred.category)}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <div className="text-sm text-gray-500 italic">No credentials linked to this trustee</div>
+  )}
+</div>
+
+
           {/* Linked Assets Section */}
           <div className="border-t border-gray-200 pt-4">
             <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
               <FontAwesomeIcon icon={icons.assets} className="mr-2 text-brandRose" />
-              Linked Assets
+              Linked Assets ({getAssets().length})
             </h3>
-            {trustee.assets && trustee.assets.length > 0 ? (
+            {getAssets().length > 0 ? (
               <ul className="space-y-2">
-                {trustee.assets.map((asset, idx) => (
-                  <li key={idx} className="flex items-start">
+                {getAssets().map((asset, idx) => (
+                  <li key={asset.id} className="flex items-start">
                     <span className="flex items-center justify-center h-5 w-5 bg-gray-100 rounded-full mr-2 mt-0.5">
                       <span className="text-xs text-gray-500">{idx + 1}</span>
                     </span>

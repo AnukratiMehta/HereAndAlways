@@ -45,7 +45,7 @@ public class Credential {
     @Column(length = 1000)
     private String notes;
 
-    @ManyToMany
+     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "credential_trustees",
         joinColumns = @JoinColumn(name = "credential_id"),
