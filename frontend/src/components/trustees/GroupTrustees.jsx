@@ -1,6 +1,12 @@
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { icons } from "../../icons/icons";
+import TrusteeViewModal from "./TrusteeViewModal";
+import { useState } from "react";
 
 const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
+  const [selectedTrustee, setSelectedTrustee] = useState(null);
+
   if (!groups || groups.length === 0) {
     return (
       <div className="text-center text-gray-500 italic py-12">
@@ -34,11 +40,6 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
           .map((id) => trustees.find((t) => t.id === id))
           .filter(Boolean);
 
-        console.log("Debug: Group", group.name);
-        console.log("Debug: Trustee IDs", group.trusteeIds);
-        console.log("Debug: Matched Trustees", fullTrustees);
-
-        // Determine intersection of linked items
         const sharedMessages = fullTrustees.reduce((acc, trustee) => {
           const ids = trustee.messages?.map((m) => m.id) || [];
           return acc === null ? new Set(ids) : new Set(ids.filter((id) => acc.has(id)));
@@ -54,6 +55,10 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
           return acc === null ? new Set(ids) : new Set(ids.filter((id) => acc.has(id)));
         }, null);
 
+        const sharedMessageTitles = fullTrustees[0]?.messages?.filter(m => sharedMessages?.has(m.id)).map(m => m.subject) || [];
+        const sharedAssetNames = fullTrustees[0]?.assets?.filter(a => sharedAssets?.has(a.id)).map(a => a.name) || [];
+        const sharedCredentialTitles = fullTrustees[0]?.credentials?.filter(c => sharedCredentials?.has(c.id)).map(c => c.title) || [];
+
         return (
           <div
             key={group.id}
@@ -61,32 +66,57 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
           >
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">{group.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <FontAwesomeIcon icon={icons.users} className="text-brandRose" />
+                  {group.name}
+                </h3>
                 <p className="text-sm text-gray-500">
                   Created on {new Date(group.createdAt).toLocaleDateString()}
                 </p>
               </div>
               <button
                 onClick={() => onDeleteGroup(group.id)}
-                className="text-red-500 text-sm hover:underline"
+                className="text-red-500 text-sm hover:underline flex items-center gap-1"
               >
-                Delete Group
+                <FontAwesomeIcon icon={icons.trash} className="text-sm" /> Delete Group
               </button>
             </div>
 
             {fullTrustees.length > 0 ? (
               <>
-                <div className="text-sm text-gray-700 mb-4">
-                  <div><strong>Shared Messages:</strong> {sharedMessages?.size || 0}</div>
-                  <div><strong>Shared Assets:</strong> {sharedAssets?.size || 0}</div>
-                  <div><strong>Shared Credentials:</strong> {sharedCredentials?.size || 0}</div>
+                <div className="text-sm text-gray-700 mb-4 space-y-2">
+                  <div>
+                    <strong>Shared Messages:</strong>
+                    <ul className="list-disc ml-5 text-gray-600">
+                      {sharedMessageTitles.length > 0 ? sharedMessageTitles.map((title, idx) => (
+                        <li key={idx}>{title}</li>
+                      )) : <li className="italic">None</li>}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong>Shared Assets:</strong>
+                    <ul className="list-disc ml-5 text-gray-600">
+                      {sharedAssetNames.length > 0 ? sharedAssetNames.map((name, idx) => (
+                        <li key={idx}>{name}</li>
+                      )) : <li className="italic">None</li>}
+                    </ul>
+                  </div>
+                  <div>
+                    <strong>Shared Credentials:</strong>
+                    <ul className="list-disc ml-5 text-gray-600">
+                      {sharedCredentialTitles.length > 0 ? sharedCredentialTitles.map((title, idx) => (
+                        <li key={idx}>{title}</li>
+                      )) : <li className="italic">None</li>}
+                    </ul>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {fullTrustees.map((trustee) => (
-                    <div
+                    <button
                       key={trustee.id}
-                      className="border border-gray-100 rounded-lg p-4 shadow-sm bg-gray-50"
+                      onClick={() => setSelectedTrustee(trustee)}
+                      className="border border-gray-100 rounded-lg p-4 shadow-sm bg-gray-50 cursor-pointer hover:shadow-md text-left"
                     >
                       <div className="font-semibold text-brandRose">
                         {trustee.trusteeName || "Unnamed Trustee"}
@@ -94,7 +124,7 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
                       <div className="text-sm text-gray-600">
                         {trustee.trusteeEmail || "No email provided"}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </>
@@ -106,6 +136,13 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
           </div>
         );
       })}
+
+      {selectedTrustee && (
+        <TrusteeViewModal 
+          trustee={selectedTrustee} 
+          onClose={() => setSelectedTrustee(null)} 
+        />
+      )}
     </div>
   );
 };
@@ -114,7 +151,7 @@ GroupTrustees.propTypes = {
   groups: PropTypes.array.isRequired,
   trustees: PropTypes.array.isRequired,
   onCreateGroup: PropTypes.func.isRequired,
-  onDeleteGroup: PropTypes.func.isRequired,
+  onDeleteGroup: PropTypes.func.isRequired
 };
 
 export default GroupTrustees;
