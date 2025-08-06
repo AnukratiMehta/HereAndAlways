@@ -15,6 +15,8 @@ const GroupTrustees = ({
   setReloadKey // Added this prop
 }) => {
   const [editingGroup, setEditingGroup] = useState(null);
+    const [viewingTrustee, setViewingTrustee] = useState(null); // Add this state
+
 
   if (!groups || groups.length === 0) {
     return (
@@ -181,7 +183,7 @@ GroupTrustees.propTypes = {
   trustees: PropTypes.array.isRequired,
   onCreateGroup: PropTypes.func.isRequired,
   onDeleteGroup: PropTypes.func.isRequired,
-  onTrusteeClick: PropTypes.func,
+  onTrusteeClick: PropTypes.func.isRequired,
   onEditGroup: PropTypes.func,
   onTrusteeUpdate: PropTypes.func, // Add this
   setReloadKey: PropTypes.func.isRequired

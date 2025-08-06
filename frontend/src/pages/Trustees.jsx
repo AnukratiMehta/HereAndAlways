@@ -12,6 +12,7 @@ import GroupTrustees from "../components/trustees/GroupTrustees";
 import CreateGroupModal from "../components/trustees/CreateGroupModal";
 import axios from "axios";
 import { v4 as uuidv4 } from 'uuid';
+import TrusteeViewModal from "../components/trustees/TrusteeViewModal";
 
 const Trustees = () => {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ const Trustees = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [trustees, setTrustees] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [viewingTrustee, setViewingTrustee] = useState(null);
   const [groups, setGroups] = useState(() => {
     const saved = localStorage.getItem('trusteeGroups');
     return saved ? JSON.parse(saved) : [];
@@ -30,11 +32,29 @@ const Trustees = () => {
 
   const handleSearch = (query) => setSearchQuery(query);
 
+
+  useEffect(() => {
+  if (viewingTrustee) {
+    const updatedTrustee = trustees.find(t => t.trusteeId === viewingTrustee.trusteeId);
+    if (updatedTrustee) {
+      setViewingTrustee(updatedTrustee);
+    }
+  }
+}, [trustees]); // This will update the viewing trustee when trustees change
+
 const handleTrusteeUpdate = (updatedTrustees) => {
   setTrustees(prev => prev.map(trustee => {
     const updated = updatedTrustees.find(t => t.trusteeId === trustee.trusteeId);
     return updated || trustee;
   }));
+  
+  // Update the viewing trustee if it's among the updated ones
+  if (viewingTrustee) {
+    const updated = updatedTrustees.find(t => t.trusteeId === viewingTrustee.trusteeId);
+    if (updated) {
+      setViewingTrustee(updated);
+    }
+  }
 };
 
   const fetchTrustees = async () => {
@@ -181,8 +201,11 @@ const handleEditGroup = (updatedGroup) => {
   onCreateGroup={() => setShowCreateGroupModal(true)}
   onDeleteGroup={handleDeleteGroup}
   onEditGroup={handleEditGroup}
-  onTrusteeUpdate={handleTrusteeUpdate} // Make sure this is passed
+  onTrusteeUpdate={handleTrusteeUpdate}
   setReloadKey={setReloadKey}
+  onTrusteeClick={(trustee) => {
+    setViewingTrustee(trustee);
+  }}
 />
             )}
           </div>
@@ -218,6 +241,15 @@ const handleEditGroup = (updatedGroup) => {
           onClose={() => setShowCreateGroupModal(false)}
         />
       )}
+
+      {viewingTrustee && (
+  <TrusteeViewModal 
+      key={viewingTrustee.trusteeId} // Add this key to force re-render
+
+    trustee={viewingTrustee} 
+    onClose={() => setViewingTrustee(null)} 
+  />
+)}
     </div>
   );
 };
