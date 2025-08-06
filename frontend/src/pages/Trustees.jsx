@@ -28,44 +28,44 @@ const Trustees = () => {
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
   const ownerId = user?.id;
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-  };
+  const handleSearch = (query) => setSearchQuery(query);
 
-const fetchTrustees = async () => {
-  if (!ownerId) return;
-  setLoading(true);
-  try {
-    const response = await axios.get(`/api/trustees/${ownerId}`);
-    
-    const formatted = response.data.map(trustee => ({
-      id: trustee.trusteeId,
-      trusteeId: trustee.trusteeId,
-      trusteeName: trustee.trusteeName,
-      trusteeEmail: trustee.trusteeEmail,
-      status: trustee.status,
-      invitedAt: trustee.invitedAt,
-      messages: trustee.messages || [],
-      assets: trustee.assets || [],
-      credentials: trustee.credentials || []
-
-    }));
-
-    setTrustees(formatted);
-  } catch (error) {
-    console.error("Failed to fetch trustees:", error);
-  } finally {
-    setLoading(false);
-  }
+const handleTrusteeUpdate = (updatedTrustees) => {
+  setTrustees(prev => prev.map(trustee => {
+    const updated = updatedTrustees.find(t => t.trusteeId === trustee.trusteeId);
+    return updated || trustee;
+  }));
 };
 
+  const fetchTrustees = async () => {
+    if (!ownerId) return;
+    setLoading(true);
+    try {
+      const response = await axios.get(`/api/trustees/${ownerId}`);
+      const formatted = response.data.map(trustee => ({
+        id: trustee.trusteeId,
+        trusteeId: trustee.trusteeId,
+        trusteeName: trustee.trusteeName,
+        trusteeEmail: trustee.trusteeEmail,
+        status: trustee.status,
+        invitedAt: trustee.invitedAt,
+        messages: trustee.messages || [],
+        assets: trustee.assets || [],
+        credentials: trustee.credentials || []
+      }));
+      setTrustees(formatted);
+    } catch (error) {
+      console.error("Failed to fetch trustees:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-  if ((view === "individual" || view === "external" || view === "group") && ownerId && trustees.length === 0) {
-    fetchTrustees();
-  }
-}, [view, ownerId, reloadKey]);
-
+    if ((view === "individual" || view === "external" || view === "group") && ownerId && trustees.length === 0) {
+      fetchTrustees();
+    }
+  }, [view, ownerId, reloadKey]);
 
   useEffect(() => {
     localStorage.setItem('trusteeGroups', JSON.stringify(groups));
@@ -84,21 +84,33 @@ const fetchTrustees = async () => {
     }
   };
 
-const handleCreateGroup = (groupName, selectedTrustees) => {
-  const newGroup = {
-    id: uuidv4(),
-    name: groupName,
-    trusteeIds: selectedTrustees.map(t => t.trusteeId),
-    createdAt: new Date().toISOString()
+  const handleCreateGroup = (groupName, selectedTrustees) => {
+    const newGroup = {
+      id: uuidv4(),
+      name: groupName,
+      trusteeIds: selectedTrustees.map(t => t.trusteeId),
+      createdAt: new Date().toISOString()
+    };
+    setGroups([...groups, newGroup]);
+    setShowCreateGroupModal(false);
   };
-  setGroups([...groups, newGroup]);
-  setShowCreateGroupModal(false);
-};
-
 
   const handleDeleteGroup = (groupId) => {
     setGroups(groups.filter(group => group.id !== groupId));
   };
+
+const handleEditGroup = (updatedGroup) => {
+  setGroups(prev => prev.map(g => 
+    g.id === updatedGroup.id 
+      ? {
+          ...g,
+          sharedMessages: updatedGroup.sharedMessages,
+          sharedAssets: updatedGroup.sharedAssets,
+          sharedCredentials: updatedGroup.sharedCredentials
+        } 
+      : g
+  ));
+};
 
   const filteredTrustees = trustees.filter(trustee => {
     if (view === "individual") return true;
@@ -109,41 +121,23 @@ const handleCreateGroup = (groupName, selectedTrustees) => {
   const searchedTrustees = filteredTrustees.filter(trustee => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
-    return (
-      trustee.trusteeName?.toLowerCase().includes(query) ||
-      trustee.trusteeEmail?.toLowerCase().includes(query)
-    );
+    return trustee.trusteeName?.toLowerCase().includes(query) || trustee.trusteeEmail?.toLowerCase().includes(query);
   });
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      
       <div className="flex-1 flex flex-col">
-        <Header 
-          searchPlaceholder="Search trustees by name or email..." 
-          onSearch={handleSearch}
-        />
-        
+        <Header searchPlaceholder="Search trustees by name or email..." onSearch={handleSearch} />
         <div className="flex flex-1">
           <div className="flex-1 p-8 overflow-y-auto">
             {view === "home" && (
               <>
                 <ErrorBoundary fallback={<div className="mb-8 text-red-500">Error loading recent trustees</div>}>
-                  <RecentTrustees 
-                    ownerId={ownerId} 
-                    reloadKey={reloadKey}
-                    searchQuery={searchQuery}
-                    onTrusteeUpdated={handleUpdateTrustee} 
-                  />
+                  <RecentTrustees ownerId={ownerId} reloadKey={reloadKey} searchQuery={searchQuery} onTrusteeUpdated={handleUpdateTrustee} />
                 </ErrorBoundary>
                 <ErrorBoundary fallback={<div className="text-red-500">Error loading pending trustees</div>}>
-                  <PendingTrustees 
-                    ownerId={ownerId} 
-                    reloadKey={reloadKey}
-                    searchQuery={searchQuery}
-                    onTrusteeUpdated={handleUpdateTrustee} 
-                  />
+                  <PendingTrustees ownerId={ownerId} reloadKey={reloadKey} searchQuery={searchQuery} onTrusteeUpdated={handleUpdateTrustee} />
                 </ErrorBoundary>
               </>
             )}
@@ -163,9 +157,7 @@ const handleCreateGroup = (groupName, selectedTrustees) => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brandRose"></div>
                   </div>
                 ) : searchedTrustees.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No trustees found
-                  </div>
+                  <div className="text-center py-8 text-gray-500">No trustees found</div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {searchedTrustees.map(trustee => (
@@ -182,20 +174,17 @@ const handleCreateGroup = (groupName, selectedTrustees) => {
             )}
 
             {view === "group" && (
-  <>
-    {/* Temporary debug */}
-    <div className="hidden">
-      Groups: {JSON.stringify(groups)}<br />
-      Trustees: {JSON.stringify(trustees)}
-    </div>
-    <GroupTrustees 
-      groups={groups} 
-      trustees={trustees}
-      onCreateGroup={() => setShowCreateGroupModal(true)}
-      onDeleteGroup={handleDeleteGroup}
-    />
-  </>
-)}
+              // In Trustees.jsx, update the GroupTrustees component:
+<GroupTrustees
+  groups={groups}
+  trustees={trustees}
+  onCreateGroup={() => setShowCreateGroupModal(true)}
+  onDeleteGroup={handleDeleteGroup}
+  onEditGroup={handleEditGroup}
+  onTrusteeUpdate={handleTrusteeUpdate} // Make sure this is passed
+  setReloadKey={setReloadKey}
+/>
+            )}
           </div>
 
           <div className="pt-6">
@@ -212,18 +201,14 @@ const handleCreateGroup = (groupName, selectedTrustees) => {
       </div>
 
       {showInviteModal && ownerId && (
-        <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg">Error loading invite form</div>
-        </div>}>
-          <InviteTrusteeModal
-            ownerId={ownerId}
-            onClose={() => setShowInviteModal(false)}
-            onSuccess={() => {
-              setReloadKey(prev => prev + 1);
-              setShowInviteModal(false);
-            }}
-          />
-        </ErrorBoundary>
+        <InviteTrusteeModal
+          ownerId={ownerId}
+          onClose={() => setShowInviteModal(false)}
+          onSuccess={() => {
+            setReloadKey(prev => prev + 1);
+            setShowInviteModal(false);
+          }}
+        />
       )}
 
       {showCreateGroupModal && (

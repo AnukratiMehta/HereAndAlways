@@ -1,11 +1,20 @@
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
-import TrusteeViewModal from "./TrusteeViewModal";
+import GroupEditModal from "./GroupEditModal";
 import { useState } from "react";
 
-const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
-  const [selectedTrustee, setSelectedTrustee] = useState(null);
+const GroupTrustees = ({ 
+  groups, 
+  trustees, 
+  onCreateGroup, 
+  onDeleteGroup, 
+  onTrusteeClick, 
+  onEditGroup,
+  onTrusteeUpdate,
+  setReloadKey // Added this prop
+}) => {
+  const [editingGroup, setEditingGroup] = useState(null);
 
   if (!groups || groups.length === 0) {
     return (
@@ -62,7 +71,7 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
         return (
           <div
             key={group.id}
-            className="border border-gray-200 rounded-lg p-6 shadow-sm bg-white"
+            className="relative border border-gray-200 rounded-lg p-6 shadow-sm bg-white"
           >
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -115,7 +124,7 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
                   {fullTrustees.map((trustee) => (
                     <button
                       key={trustee.id}
-                      onClick={() => setSelectedTrustee(trustee)}
+                      onClick={() => onTrusteeClick?.(trustee)}
                       className="border border-gray-100 rounded-lg p-4 shadow-sm bg-gray-50 cursor-pointer hover:shadow-md text-left"
                     >
                       <div className="font-semibold text-brandRose">
@@ -133,16 +142,36 @@ const GroupTrustees = ({ groups, trustees, onCreateGroup, onDeleteGroup }) => {
                 No trustees found for this group.
               </div>
             )}
+
+            <button
+              onClick={() => setEditingGroup(group)}
+              className="absolute bottom-4 right-4 text-brandRose hover:text-white hover:bg-brandRose bg-white border border-brandRose rounded-full p-2 shadow-md transition-colors"
+              title="Edit Group"
+            >
+              <FontAwesomeIcon icon={icons.pen} className="w-4 h-4" />
+            </button>
+
+{editingGroup && (
+  <GroupEditModal
+    group={editingGroup}
+    trustees={trustees}
+    onClose={() => setEditingGroup(null)}
+    onSave={({ updatedGroup, updatedTrustees }) => {
+      // Update the group
+      onEditGroup(updatedGroup);
+      
+      // Update the trustees if onTrusteeUpdate is provided
+      if (onTrusteeUpdate && updatedTrustees) {
+        onTrusteeUpdate(updatedTrustees);
+      }
+      
+      setEditingGroup(null);
+    }}
+  />
+)}
           </div>
         );
       })}
-
-      {selectedTrustee && (
-        <TrusteeViewModal 
-          trustee={selectedTrustee} 
-          onClose={() => setSelectedTrustee(null)} 
-        />
-      )}
     </div>
   );
 };
@@ -151,7 +180,11 @@ GroupTrustees.propTypes = {
   groups: PropTypes.array.isRequired,
   trustees: PropTypes.array.isRequired,
   onCreateGroup: PropTypes.func.isRequired,
-  onDeleteGroup: PropTypes.func.isRequired
+  onDeleteGroup: PropTypes.func.isRequired,
+  onTrusteeClick: PropTypes.func,
+  onEditGroup: PropTypes.func,
+  onTrusteeUpdate: PropTypes.func, // Add this
+  setReloadKey: PropTypes.func.isRequired
 };
 
 export default GroupTrustees;

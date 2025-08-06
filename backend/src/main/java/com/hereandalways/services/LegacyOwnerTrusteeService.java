@@ -90,6 +90,8 @@ public List<LegacyOwnerTrustee> getRecentTrustees(UUID ownerId) {
 
 @Transactional
 public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
+    log.info("🔄 Updating trustee {} with request: {}", trusteeId, request);
+
     User trustee = userService.getUserEntityById(trusteeId)
             .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
 
@@ -98,45 +100,71 @@ public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
     trustee.setEmail(request.getEmail());
     userService.saveUserEntity(trustee);
 
-    // Remove
+    // === REMOVALS ===
     if (request.getMessageIdsToRemove() != null) {
         for (UUID messageId : request.getMessageIdsToRemove()) {
-            userService.removeTrusteeFromMessage(trusteeId, messageId);
+            if (messageId != null) {
+                log.debug("⛔ Removing trustee from message {}", messageId);
+                userService.removeTrusteeFromMessage(trusteeId, messageId);
+            }
         }
     }
+
     if (request.getAssetIdsToRemove() != null) {
         for (UUID assetId : request.getAssetIdsToRemove()) {
-            userService.removeTrusteeFromAsset(trusteeId, assetId);
+            if (assetId != null) {
+                log.debug("⛔ Removing trustee from asset {}", assetId);
+                userService.removeTrusteeFromAsset(trusteeId, assetId);
+            }
         }
     }
+
     if (request.getCredentialIdsToRemove() != null) {
         for (UUID credentialId : request.getCredentialIdsToRemove()) {
-            userService.removeTrusteeFromCredential(trusteeId, credentialId);
+            if (credentialId != null) {
+                log.debug("⛔ Removing trustee from credential {}", credentialId);
+                userService.removeTrusteeFromCredential(trusteeId, credentialId);
+            }
         }
     }
 
-    // Add
+    // === ADDITIONS ===
     if (request.getMessageIdsToAdd() != null) {
         for (UUID messageId : request.getMessageIdsToAdd()) {
-            userService.addTrusteeToMessage(trusteeId, messageId);
+            if (messageId != null) {
+                log.debug("➕ Adding trustee to message {}", messageId);
+                userService.addTrusteeToMessage(trusteeId, messageId);
+            }
         }
     }
+
     if (request.getAssetIdsToAdd() != null) {
         for (UUID assetId : request.getAssetIdsToAdd()) {
-            userService.addTrusteeToAsset(trusteeId, assetId);
+            if (assetId != null) {
+                log.debug("➕ Adding trustee to asset {}", assetId);
+                userService.addTrusteeToAsset(trusteeId, assetId);
+            }
         }
     }
+
     if (request.getCredentialIdsToAdd() != null) {
         for (UUID credentialId : request.getCredentialIdsToAdd()) {
-            userService.addTrusteeToCredential(trusteeId, credentialId);
+            if (credentialId != null) {
+                log.debug("➕ Adding trustee to credential {}", credentialId);
+                userService.addTrusteeToCredential(trusteeId, credentialId);
+            }
         }
     }
+
+    log.info("✅ Trustee {} update completed", trusteeId);
+}
+
 }
 
 
 
 
-}
+
 
 
 
