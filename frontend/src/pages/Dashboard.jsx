@@ -47,6 +47,13 @@ const Dashboard = () => {
           axios.get(`/api/credentials?ownerId=${user.id}`)
         ]);
 
+        // Normalize all data with unique keys
+        const normalizeData = (data, prefix) => 
+          data.slice(0, 5).map(item => ({
+            ...item,
+            uniqueKey: `${prefix}-${item.id || item.trusteeId}`
+          }));
+
         setDashboardData({
           stats: {
             messages: messagesRes.data.length,
@@ -54,10 +61,10 @@ const Dashboard = () => {
             trustees: trusteesRes.data.length,
             credentials: credentialsRes.data.length
           },
-          recentMessages: messagesRes.data.slice(0, 5),
-          recentAssets: assetsRes.data.slice(0, 5),
-          recentTrustees: trusteesRes.data.slice(0, 5),
-          recentCredentials: credentialsRes.data.slice(0, 5)
+          recentMessages: normalizeData(messagesRes.data, 'msg'),
+          recentAssets: normalizeData(assetsRes.data, 'asset'),
+          recentCredentials: normalizeData(credentialsRes.data, 'cred'),
+          recentTrustees: normalizeData(trusteesRes.data, 'trustee')
         });
       } catch (error) {
         console.error("Dashboard data error:", error);
@@ -75,24 +82,26 @@ const Dashboard = () => {
 
   const handleModalClose = () => {
     setEditingItem({ type: null, data: null });
-    // Refresh data when modals close
+    // Refresh data with consistent unique keys
     if (user?.id) {
-      axios.get(`/api/messages/${user.id}`).then(res => {
-        setDashboardData(prev => ({ 
-          ...prev, 
-          recentMessages: res.data.slice(0, 5) 
+      const refreshData = (endpoint, prefix) => 
+        axios.get(endpoint).then(res => ({
+          items: res.data.slice(0, 5).map(item => ({
+            ...item,
+            uniqueKey: `${prefix}-${item.id || item.trusteeId}`
+          }))
         }));
-      });
-      axios.get(`/api/assets?ownerId=${user.id}`).then(res => {
-        setDashboardData(prev => ({ 
-          ...prev, 
-          recentAssets: res.data.slice(0, 5) 
-        }));
-      });
-      axios.get(`/api/credentials?ownerId=${user.id}`).then(res => {
-        setDashboardData(prev => ({ 
-          ...prev, 
-          recentCredentials: res.data.slice(0, 5) 
+
+      Promise.all([
+        refreshData(`/api/messages/${user.id}`, 'msg'),
+        refreshData(`/api/assets?ownerId=${user.id}`, 'asset'),
+        refreshData(`/api/credentials?ownerId=${user.id}`, 'cred')
+      ]).then(([messages, assets, credentials]) => {
+        setDashboardData(prev => ({
+          ...prev,
+          recentMessages: messages.items,
+          recentAssets: assets.items,
+          recentCredentials: credentials.items
         }));
       });
     }
@@ -164,7 +173,6 @@ const Dashboard = () => {
 
             {/* Recent Activity Sections */}
             <div className="space-y-8">
-              {/* First row with 2 sections */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent messages</div>}>
                   <RecentActivitySection 
@@ -176,6 +184,7 @@ const Dashboard = () => {
                     onItemClick={(item) => handleItemClick('message', item)}
                     getItemTitle={(item) => item.subject || "Untitled message"}
                     getItemSubtitle={(item) => item.deliveryStatus}
+                    itemKey={(item) => item.uniqueKey}
                   />
                 </ErrorBoundary>
                 <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent memories</div>}>
@@ -188,11 +197,11 @@ const Dashboard = () => {
                     onItemClick={(item) => handleItemClick('asset', item)}
                     getItemTitle={(item) => item.name || "Unnamed asset"}
                     getItemSubtitle={(item) => item.assetType}
+                    itemKey={(item) => item.uniqueKey}
                   />
                 </ErrorBoundary>
               </div>
 
-              {/* Second row with 2 sections */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent credentials</div>}>
                   <RecentActivitySection 
@@ -204,6 +213,7 @@ const Dashboard = () => {
                     onItemClick={(item) => handleItemClick('credential', item)}
                     getItemTitle={(item) => item.title || "Unnamed credential"}
                     getItemSubtitle={(item) => item.category}
+                    itemKey={(item) => item.uniqueKey}
                   />
                 </ErrorBoundary>
                 <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent trustees</div>}>
@@ -215,22 +225,12 @@ const Dashboard = () => {
                     link="/trustees"
                     getItemTitle={(item) => item.trusteeName || item.trusteeEmail || "Unnamed trustee"}
                     getItemSubtitle={(item) => item.status}
+                    itemKey={(item) => item.uniqueKey}
                   />
                 </ErrorBoundary>
               </div>
             </div>
           </div>
-
-          {/* <div className="pt-6">
-            <ErrorBoundary fallback={<div className="w-64 p-4 text-red-500">Error loading profile bar</div>}>
-              <ProfileBar 
-                type="dashboard" 
-                view={view} 
-                setView={setView} 
-                onNewItem={() => {}} 
-              />
-            </ErrorBoundary>
-          </div> */}
         </div>
       </div>
 

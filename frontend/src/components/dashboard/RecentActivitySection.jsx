@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import PropTypes from 'prop-types';
 
 const RecentActivitySection = ({ 
   title, 
@@ -11,7 +12,8 @@ const RecentActivitySection = ({
   getItemSubtitle = (item) => "",
   dateField = "createdAt",
   searchQuery = "",
-  maxItems = 3 // Add a new prop with default value of 3
+  maxItems = 3,
+  itemKey = (item) => item.id // Default to using item.id if no key function provided
 }) => {
   const handleClick = (e, item) => {
     e.preventDefault();
@@ -20,7 +22,6 @@ const RecentActivitySection = ({
     }
   };
 
-  // Highlight search matches in text
   const highlightMatch = (text) => {
     if (!searchQuery || !text) return text;
     
@@ -34,7 +35,6 @@ const RecentActivitySection = ({
     );
   };
 
-  // Get the first maxItems items
   const displayedItems = items?.slice(0, maxItems) || [];
 
   return (
@@ -54,7 +54,7 @@ const RecentActivitySection = ({
       {displayedItems.length > 0 ? (
         <ul className="space-y-3">
           {displayedItems.map((item) => (
-            <li key={item.id} className="py-2 border-b border-lightGray last:border-0">
+            <li key={itemKey(item)} className="py-2 border-b border-lightGray last:border-0">
               <div 
                 onClick={(e) => handleClick(e, item)}
                 className="flex justify-between items-center w-full hover:bg-gray-50 p-2 rounded transition-colors text-left cursor-pointer"
@@ -83,6 +83,21 @@ const RecentActivitySection = ({
       )}
     </div>
   );
+};
+
+RecentActivitySection.propTypes = {
+  title: PropTypes.string.isRequired,
+  icon: PropTypes.object.isRequired,
+  items: PropTypes.array.isRequired,
+  emptyMessage: PropTypes.string,
+  link: PropTypes.string,
+  onItemClick: PropTypes.func,
+  getItemTitle: PropTypes.func,
+  getItemSubtitle: PropTypes.func,
+  dateField: PropTypes.string,
+  searchQuery: PropTypes.string,
+  maxItems: PropTypes.number,
+  itemKey: PropTypes.func
 };
 
 export default RecentActivitySection;
