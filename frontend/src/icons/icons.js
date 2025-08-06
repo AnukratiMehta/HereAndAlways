@@ -44,7 +44,9 @@ import {
   faCalendar,
   faCircleInfo,
   faPause,
-  faUserCog
+  faUserCog,
+  faHdd,
+  faCrown
 } from '@fortawesome/free-solid-svg-icons';
 import { FaCheckCircle } from 'react-icons/fa';
 
@@ -98,6 +100,8 @@ const icons = {
   circleInfo: faCircleInfo,
   pause: faPause,
   userCog: faUserCog,
+  hdd: faHdd,
+  crown: faCrown
     
 };
 

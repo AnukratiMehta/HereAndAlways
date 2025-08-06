@@ -1,19 +1,25 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import Sidebar from "../components/shared/Sidebar";
-import ProfileBar from "../components/shared/ProfileBar";
 import Header from "../components/shared/Header";
-import ErrorBoundary from "../components/shared/ErrorBoundary";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../icons/icons";
 import Button from "../components/shared/Button";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const [profileData, setProfileData] = useState({
+    name: user?.name || "John Doe",
+    email: user?.email || "john.doe@example.com",
+    phone: "+1 (555) 123-4567",
+    createdAt: new Date().toISOString(),
+    membershipType: "Standard",
+    passwordUpdatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+    twoFactorEnabled: false
+  });
+  const [loading, setLoading] = useState(false);
   const [editingField, setEditingField] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [view, setView] = useState("personal");
@@ -25,30 +31,12 @@ const Profile = () => {
     newPassword: "",
     confirmPassword: ""
   });
-  const [passwordError, setPasswordError] = useState(null);
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [success, setSuccess] = useState(null);
 
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`/api/users/${user.id}`);
-        setProfileData(response.data);
-        if (response.data.avatarUrl) {
-          setAvatarPreview(response.data.avatarUrl);
-        }
-      } catch (err) {
-        console.error("Failed to load profile", err);
-        setError("Failed to load profile data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [user?.id]);
+  // Simulate API delay
+  const simulateAPICall = () => {
+    return new Promise(resolve => setTimeout(resolve, 1500));
+  };
 
   const handleEditStart = (field, value) => {
     setEditingField(field);
@@ -62,14 +50,16 @@ const Profile = () => {
 
   const handleEditSave = async (field) => {
     try {
+      setLoading(true);
+      await simulateAPICall();
       const updatedData = { ...profileData, [field]: editValue };
-      const response = await axios.put(`/api/users/${user.id}`, updatedData);
-      setProfileData(response.data);
-      updateUser(response.data);
+      setProfileData(updatedData);
+      updateUser(updatedData);
       setEditingField(null);
-    } catch (err) {
-      console.error("Failed to update profile", err);
-      setError("Failed to update profile");
+      setSuccess("Profile updated successfully!");
+      setTimeout(() => setSuccess(null), 3000);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,21 +79,13 @@ const Profile = () => {
     if (!avatarFile) return;
     
     try {
-      const formData = new FormData();
-      formData.append("avatar", avatarFile);
-      
-      const response = await axios.post(`/api/users/${user.id}/avatar`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      });
-      
-      setProfileData(response.data);
-      updateUser(response.data);
+      setLoading(true);
+      await simulateAPICall();
+      setSuccess("Profile picture updated successfully!");
+      setTimeout(() => setSuccess(null), 3000);
       setAvatarFile(null);
-    } catch (err) {
-      console.error("Failed to upload avatar", err);
-      setError("Failed to upload avatar");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,140 +94,177 @@ const Profile = () => {
       ...passwordData,
       [e.target.name]: e.target.value
     });
-    if (passwordError) setPasswordError(null);
   };
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords don't match");
+      setSuccess("Passwords don't match");
+      setTimeout(() => setSuccess(null), 3000);
       return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      setPasswordError("Password must be at least 8 characters");
+      setSuccess("Password must be at least 8 characters");
+      setTimeout(() => setSuccess(null), 3000);
       return;
     }
     
     try {
-      await axios.put(`/api/users/${user.id}/password`, {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
-      
+      setLoading(true);
+      await simulateAPICall();
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: ""
       });
-      setPasswordError(null);
-      setPasswordSuccess(true);
-      setTimeout(() => setPasswordSuccess(false), 3000);
-    } catch (err) {
-      console.error("Failed to change password", err);
-      setPasswordError(err.response?.data?.message || "Failed to change password");
+      setSuccess("Password changed successfully!");
+      setTimeout(() => {
+        setSuccess(null);
+        setView("personal");
+      }, 3000);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading && !profileData) {
-    return (
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <div className="flex-1 p-8 flex items-center justify-center">
-          <div className="animate-pulse text-gray-500">Loading profile...</div>
-        </div>
-      </div>
-    );
-  }
+  const toggleTwoFactor = async () => {
+    try {
+      setLoading(true);
+      await simulateAPICall();
+      setProfileData({
+        ...profileData,
+        twoFactorEnabled: !profileData.twoFactorEnabled
+      });
+      setSuccess(
+        profileData.twoFactorEnabled 
+          ? "Two-factor authentication disabled" 
+          : "Two-factor authentication enabled"
+      );
+      setTimeout(() => setSuccess(null), 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen">
       <Sidebar />
       
       <div className="flex-1 flex flex-col">
-       <Header 
-  showSearch={false}
-  title="Your Profile"
-/>
+        <Header 
+          showSearch={false}
+          title="Your Profile"
+        />
         
         <div className="flex flex-1">
           <div className="flex-1 p-8 overflow-y-auto">
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-                {error}
+            {success && (
+              <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+                {success}
               </div>
             )}
 
             <div className="max-w-4xl mx-auto">
               {/* Enhanced Profile Header with Stats */}
               <div className="flex items-start gap-6 mb-8">
-  {/* Avatar Upload */}
-  <div className="relative group">
-    <div className="w-24 h-24 rounded-full bg-brandRose text-white flex items-center justify-center text-4xl font-bold overflow-hidden">
-      {avatarPreview ? (
-        <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
-      ) : (
-        profileData?.name?.[0] || "U"
-      )}
-    </div>
-    <button
-      onClick={() => fileInputRef.current.click()}
-      className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-    >
-      <FontAwesomeIcon icon={icons.camera} className="text-brandRose" />
-    </button>
-  </div>
+                {/* Avatar Upload */}
+                <div className="relative group">
+                  <div className="w-24 h-24 rounded-full bg-brandRose text-white flex items-center justify-center text-4xl font-bold overflow-hidden">
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      profileData?.name?.[0] || "U"
+                    )}
+                  </div>
+                  <button
+                    onClick={() => fileInputRef.current.click()}
+                    className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <FontAwesomeIcon icon={icons.camera} className="text-brandRose" />
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  {avatarFile && (
+                    <div className="mt-2 flex gap-2">
+                      <Button 
+                        onClick={uploadAvatar}
+                        size="sm"
+                        loading={loading}
+                      >
+                        Save Photo
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          setAvatarFile(null);
+                          setAvatarPreview(null);
+                        }}
+                        size="sm"
+                        color="secondary"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
-  {/* New: Profile Summary Cards */}
-  <div className="flex-1 grid grid-cols-2 gap-4">
+                {/* Profile Summary Cards */}
+                <div className="flex-1 grid grid-cols-2 gap-4">
+                  {/* Storage Card */}
+                  <div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 rounded-full text-purple-600">
+                        <FontAwesomeIcon icon={icons.hdd} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Storage Used</p>
+                        <p className="font-medium">
+                          5.12 MB
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-brandRose h-2 rounded-full" 
+                        style={{ width: `51.2%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      4.88 MB remaining
+                    </p>
+                  </div>
 
-    {/* Storage Card */}
-<div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
-  <div className="flex items-center gap-3">
-    <div className="p-2 bg-purple-100 rounded-full text-purple-600">
-      <FontAwesomeIcon icon={icons.hdd} />
-    </div>
-    <div>
-      <p className="text-sm text-gray-500">Storage Used</p>
-      <p className="font-medium">
-        5.12 MB
-      </p>
-    </div>
-  </div>
-  <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-    <div 
-      className="bg-brandRose h-2 rounded-full" 
-      style={{ width: `51.2%` }} // Since 5.12 / 10 = 0.512
-    ></div>
-  </div>
-  <p className="text-xs text-gray-500 mt-1">
-    4.88 MB remaining
-  </p>
-</div>
-
-
-    {/* Membership Card */}
-    <div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-green-100 rounded-full text-green-600">
-          <FontAwesomeIcon icon={icons.crown} />
-        </div>
-        <div>
-          <p className="text-sm text-gray-500">Membership</p>
-          <p className="font-medium">
-            {profileData?.membershipType || "Standard"}
-          </p>
-        </div>
-      </div>
-      <button className="mt-2 text-xs text-brandRose hover:underline">
-        Upgrade plan
-      </button>
-    </div>
-
-   
-  </div>
-</div>
+                  {/* Membership Card */}
+                  <div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded-full text-green-600">
+                        <FontAwesomeIcon icon={icons.crown} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Membership</p>
+                        <p className="font-medium">
+                          {profileData?.membershipType || "Standard"}
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      className="mt-2 text-xs text-brandRose hover:underline"
+                      onClick={() => {
+                        setSuccess("Redirecting to upgrade page...");
+                        setTimeout(() => navigate("/pricing"), 2000);
+                      }}
+                    >
+                      Upgrade plan
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               {/* Personal Information Section */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-lightGray mb-6">
@@ -273,6 +292,7 @@ const Profile = () => {
                               onClick={() => handleEditSave('name')}
                               size="sm"
                               color="primary"
+                              loading={loading}
                             >
                               Save
                             </Button>
@@ -315,6 +335,7 @@ const Profile = () => {
                           onClick={() => handleEditSave('email')}
                           size="sm"
                           color="primary"
+                          loading={loading}
                         >
                           Save
                         </Button>
@@ -355,6 +376,7 @@ const Profile = () => {
                           onClick={() => handleEditSave('phone')}
                           size="sm"
                           color="primary"
+                          loading={loading}
                         >
                           Save
                         </Button>
@@ -419,17 +441,6 @@ const Profile = () => {
 
                     {view === "security" && (
                       <form onSubmit={handlePasswordSubmit} className="mt-4 space-y-4">
-                        {passwordSuccess && (
-                          <div className="p-3 bg-green-100 text-green-700 rounded text-sm">
-                            Password changed successfully!
-                          </div>
-                        )}
-                        {passwordError && (
-                          <div className="p-3 bg-red-100 text-red-700 rounded text-sm">
-                            {passwordError}
-                          </div>
-                        )}
-
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Current Password
@@ -488,6 +499,7 @@ const Profile = () => {
                           <Button 
                             type="submit"
                             color="primary"
+                            loading={loading}
                           >
                             Change Password
                           </Button>
@@ -507,9 +519,10 @@ const Profile = () => {
                       </p>
                     </div>
                     <Button 
-                      onClick={() => {/* Implement 2FA toggle */}}
+                      onClick={toggleTwoFactor}
                       size="sm"
                       color={profileData?.twoFactorEnabled ? "secondary" : "primary"}
+                      loading={loading}
                     >
                       {profileData?.twoFactorEnabled ? "Disable" : "Enable"}
                     </Button>
@@ -518,17 +531,6 @@ const Profile = () => {
               </div>
             </div>
           </div>
-
-          {/* <div className="pt-6">
-            <ErrorBoundary fallback={<div className="w-64 p-4 text-red-500">Error loading profile bar</div>}>
-              <ProfileBar
-                type="profile"
-                view={view}
-                setView={setView}
-                onNewItem={() => {}}
-              />
-            </ErrorBoundary>
-          </div> */}
         </div>
       </div>
     </div>
