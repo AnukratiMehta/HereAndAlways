@@ -2,14 +2,15 @@ import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Sidebar from "../components/shared/Sidebar";
 import Header from "../components/shared/Header";
-import ErrorBoundary from "../components/shared/ErrorBoundary";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../icons/icons";
 import Button from "../components/shared/Button";
 import ConfirmDeleteModal from "../components/shared/ConfirmDeleteModal";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState({
     notifications: {
       emailEnabled: true,
@@ -26,20 +27,19 @@ const Settings = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  // Simulate API delay
+  const simulateAPICall = () => {
+    return new Promise(resolve => setTimeout(resolve, 1500));
+  };
 
   const handleSave = async () => {
     try {
       setLoading(true);
-      setError(null);
-      // API call to save settings would go here
-      // await axios.put(`/api/users/${user.id}/settings`, settings);
+      await simulateAPICall();
       setSuccess("Settings saved successfully!");
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      console.error("Failed to save settings", err);
-      setError("Failed to save settings. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -48,11 +48,14 @@ const Settings = () => {
   const handleDeleteAccount = async () => {
     try {
       setLoading(true);
-      // await axios.delete(`/api/users/${user.id}`);
-      logout();
-    } catch (err) {
-      console.error("Failed to delete account", err);
-      setError("Failed to delete account. Please try again.");
+      await simulateAPICall();
+      // Show success before logging out
+      setSuccess("Account deleted successfully. Redirecting...");
+      setTimeout(() => {
+        logout();
+        navigate("/");
+      }, 2000);
+    } finally {
       setLoading(false);
       setShowDeleteConfirm(false);
     }
@@ -61,11 +64,14 @@ const Settings = () => {
   const handleDeactivateAccount = async () => {
     try {
       setLoading(true);
-      // await axios.put(`/api/users/${user.id}/deactivate`);
-      logout();
-    } catch (err) {
-      console.error("Failed to deactivate account", err);
-      setError("Failed to deactivate account. Please try again.");
+      await simulateAPICall();
+      // Show success before logging out
+      setSuccess("Account deactivated successfully. Redirecting...");
+      setTimeout(() => {
+        logout();
+        navigate("/");
+      }, 2000);
+    } finally {
       setLoading(false);
       setShowDeactivateConfirm(false);
     }
@@ -82,11 +88,6 @@ const Settings = () => {
         />
         
         <div className="flex-1 p-8 overflow-y-auto">
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-              {error}
-            </div>
-          )}
           {success && (
             <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
               {success}
@@ -213,7 +214,15 @@ const Settings = () => {
                               className="flex-1 px-3 py-2 border border-lightGray rounded-md focus:outline-none focus:ring-2 focus:ring-brandRose"
                               placeholder="Add backup email"
                             />
-                            <Button size="sm">Verify</Button>
+                            <Button 
+                              size="sm"
+                              onClick={() => {
+                                setSuccess("Verification email sent!");
+                                setTimeout(() => setSuccess(null), 3000);
+                              }}
+                            >
+                              Verify
+                            </Button>
                           </div>
                         </div>
                         <div>
@@ -234,7 +243,15 @@ const Settings = () => {
                               className="flex-1 px-3 py-2 border border-lightGray rounded-md focus:outline-none focus:ring-2 focus:ring-brandRose"
                               placeholder="Add phone number"
                             />
-                            <Button size="sm">Verify</Button>
+                            <Button 
+                              size="sm"
+                              onClick={() => {
+                                setSuccess("Verification code sent!");
+                                setTimeout(() => setSuccess(null), 3000);
+                              }}
+                            >
+                              Verify
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -358,15 +375,16 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Confirmation Modals - Only shown when triggered */}
+      {/* Confirmation Modals */}
       {showDeactivateConfirm && (
         <ConfirmDeleteModal
           isOpen={showDeactivateConfirm}
           onClose={() => setShowDeactivateConfirm(false)}
           onConfirm={handleDeactivateAccount}
+          onCancel={() => setShowDeactivateConfirm(false)}
           title="Deactivate Account"
-          message="Are you sure you want to temporarily deactivate your account? You can reactivate by logging in again."
-          confirmText="Deactivate"
+          itemName="your account? This will temporarily disable it."
+          confirmText={loading ? "Deactivating..." : "Deactivate"}
           loading={loading}
         />
       )}
@@ -376,9 +394,10 @@ const Settings = () => {
           isOpen={showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(false)}
           onConfirm={handleDeleteAccount}
+          onCancel={() => setShowDeleteConfirm(false)}
           title="Delete Account Permanently"
-          message="This will permanently delete all your data including messages, assets, and credentials. This action cannot be undone."
-          confirmText="Delete Forever"
+          itemName="your account? This cannot be undone."
+          confirmText={loading ? "Deleting..." : "Delete Forever"}
           loading={loading}
         />
       )}

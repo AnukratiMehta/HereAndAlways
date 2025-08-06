@@ -17,7 +17,7 @@ const ConfirmDeleteModal = ({
         <h2 className="text-lg font-semibold mb-2 text-red-600">{title}</h2>
         <p className="text-gray-700 mb-6 break-words">
           Are you sure you want to permanently delete
-          <strong className="block break-words break-all whitespace-normal mt-1">{itemName}?</strong>
+          <strong className="block break-words break-all whitespace-normal mt-1">{itemName}</strong>
         </p>
 
         <div className="flex justify-between gap-4">

@@ -42,7 +42,9 @@ import {
   faChevronUp,
   faChevronDown,
   faCalendar,
-  faCircleInfo
+  faCircleInfo,
+  faPause,
+  faUserCog
 } from '@fortawesome/free-solid-svg-icons';
 import { FaCheckCircle } from 'react-icons/fa';
 
@@ -94,6 +96,8 @@ const icons = {
   chevronDown: faChevronDown,
   calendar: faCalendar,
   circleInfo: faCircleInfo,
+  pause: faPause,
+  userCog: faUserCog,
     
 };
 

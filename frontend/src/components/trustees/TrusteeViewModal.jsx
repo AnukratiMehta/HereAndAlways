@@ -1,54 +1,35 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "../../icons/icons";
 import Button from "../shared/Button";
-import { useEffect } from "react";
 
 const TrusteeViewModal = ({ trustee, onClose }) => {
   if (!trustee) return null;
 
-   useEffect(() => {
-    console.log('Trustee data received:', trustee);
-    console.log('Trustee credentials:', trustee?.credentials);
-    console.log('Trustee messages:', trustee?.messages);
-    console.log('Trustee assets:', trustee?.assets);
-  }, [trustee]);
-
   // Helper to safely access nested properties
   const getMessages = () => {
-    if (!trustee.messages) return [];
-    if (Array.isArray(trustee.messages)) {
-      return trustee.messages.map(msg => ({
-        id: msg.id || uuidv4(),
-        subject: msg.subject || "Untitled Message"
-      }));
-    }
-    return [];
+    if (!trustee.messages || !Array.isArray(trustee.messages)) return [];
+    return trustee.messages.map(msg => ({
+      id: msg.id,
+      subject: msg.subject || "Untitled Message"
+    }));
   };
 
   const getAssets = () => {
-    if (!trustee.assets) return [];
-    if (Array.isArray(trustee.assets)) {
-      return trustee.assets.map(asset => ({
-        id: asset.id || uuidv4(),
-        name: asset.name || "Untitled Asset"
-      }));
-    }
-    return [];
+    if (!trustee.assets || !Array.isArray(trustee.assets)) return [];
+    return trustee.assets.map(asset => ({
+      id: asset.id,
+      name: asset.name || "Untitled Asset"
+    }));
   };
 
- const getCredentials = () => {
-  if (!trustee.credentials) return [];
-  if (Array.isArray(trustee.credentials)) {
+  const getCredentials = () => {
+    if (!trustee.credentials || !Array.isArray(trustee.credentials)) return [];
     return trustee.credentials.map(credential => ({
-      id: credential.id || uuidv4(),
+      id: credential.id,
       title: credential.title || "Untitled Credential",
       category: credential.category || "OTHER"
     }));
-  }
-  return [];
-};
-
-
+  };
 
   const getCategoryName = (category) => {
     switch (category) {
@@ -144,30 +125,29 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
           </div>
 
           {/* Linked Credentials Section */}
-<div className="border-t border-gray-200 pt-4">
-  <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
-    <FontAwesomeIcon icon={icons.key} className="mr-2 text-brandRose" />
-    Linked Credentials ({getCredentials().length})
-  </h3>
-  {getCredentials().length > 0 ? (
-    <ul className="space-y-2">
-      {getCredentials().map((cred, idx) => (
-        <li key={cred.id} className="flex items-start">
-          <span className="flex items-center justify-center h-5 w-5 bg-gray-100 rounded-full mr-2 mt-0.5">
-            <span className="text-xs text-gray-500">{idx + 1}</span>
-          </span>
-          <div>
-            <p className="text-gray-700">{cred.title}</p>
-            <p className="text-xs text-gray-500">{getCategoryName(cred.category)}</p>
+          <div className="border-t border-gray-200 pt-4">
+            <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
+              <FontAwesomeIcon icon={icons.key} className="mr-2 text-brandRose" />
+              Linked Credentials ({getCredentials().length})
+            </h3>
+            {getCredentials().length > 0 ? (
+              <ul className="space-y-2">
+                {getCredentials().map((cred, idx) => (
+                  <li key={cred.id} className="flex items-start">
+                    <span className="flex items-center justify-center h-5 w-5 bg-gray-100 rounded-full mr-2 mt-0.5">
+                      <span className="text-xs text-gray-500">{idx + 1}</span>
+                    </span>
+                    <div>
+                      <p className="text-gray-700">{cred.title}</p>
+                      <p className="text-xs text-gray-500">{getCategoryName(cred.category)}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-sm text-gray-500 italic">No credentials linked to this trustee</div>
+            )}
           </div>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <div className="text-sm text-gray-500 italic">No credentials linked to this trustee</div>
-  )}
-</div>
-
 
           {/* Linked Assets Section */}
           <div className="border-t border-gray-200 pt-4">
