@@ -15,12 +15,10 @@ const GroupEditModal = ({ group, trustees, onClose, onSave }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Get full trustee objects
   const fullTrustees = group.trusteeIds
     .map(id => trustees.find(t => t.trusteeId === id))
     .filter(Boolean);
 
-  // Calculate shared items (intersection of all trustees' items)
   const getSharedItems = (items) => {
     if (fullTrustees.length === 0) return new Set();
     return fullTrustees.reduce((shared, trustee) => {
@@ -35,7 +33,6 @@ const GroupEditModal = ({ group, trustees, onClose, onSave }) => {
   const sharedAssets = getSharedItems('assets');
   const sharedCredentials = getSharedItems('credentials');
 
-  // State for selected items
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState([]);
   const [selectedCredentials, setSelectedCredentials] = useState([]);
@@ -67,7 +64,6 @@ const GroupEditModal = ({ group, trustees, onClose, onSave }) => {
         setAvailableAssets(assetsRes.data);
         setAvailableCredentials(credentialsRes.data);
 
-        // Initialize selected items with shared items
         setSelectedMessages(messagesRes.data.filter(m => sharedMessages.has(m.id)));
         setSelectedAssets(assetsRes.data.filter(a => sharedAssets.has(a.id)));
         setSelectedCredentials(credentialsRes.data.filter(c => sharedCredentials.has(c.id)));
@@ -105,9 +101,7 @@ const GroupEditModal = ({ group, trustees, onClose, onSave }) => {
     }
   };
 
-// Update the handleRemove function in GroupEditModal.jsx:
 const handleRemove = (type, id) => {
-  // Convert id to string if it's not already, since UUIDs might be compared as strings
   const itemId = String(id);
   
   switch (type) {
@@ -136,12 +130,10 @@ const saveChanges = async () => {
 
     const baseUrl = import.meta.env.VITE_API_URL || '';
 
-    // Prepare updates for all trustees in the group
 const updates = group.trusteeIds.map(trusteeId => {
   const trustee = trustees.find(t => t.trusteeId === trusteeId);
   if (!trustee) return null;
 
-  // Convert all IDs to strings for consistent comparison
   const originalMessageIds = (trustee.messages || []).map(m => String(m.id));
   const originalAssetIds = (trustee.assets || []).map(a => String(a.id));
   const originalCredentialIds = (trustee.credentials || []).map(c => String(c.id));
@@ -171,21 +163,18 @@ const updates = group.trusteeIds.map(trusteeId => {
   };
 }).filter(Boolean);
 
-    // Send updates to the server
     await Promise.all(
       updates.map(({ trusteeId, updateData }) => 
         axios.patch(`${baseUrl}/api/trustees/update/${trusteeId}`, updateData, { headers })
       )
     );
 
-    // Return the updated data
     onSave({
       updatedGroup: {
         ...group,
         sharedMessages: selectedMessages,
         sharedAssets: selectedAssets,
         sharedCredentials: selectedCredentials,
-        // Also include the trusteeIds to help with updates
         trusteeIds: group.trusteeIds
       },
       updatedTrustees: trustees.map(trustee => {
@@ -203,7 +192,6 @@ const updates = group.trusteeIds.map(trusteeId => {
   }
 };
 
-  // Filter options to only show items not already selected
   const messageOptions = availableMessages
     .filter(m => !selectedMessages.some(sm => sm.id === m.id))
     .map(m => ({ value: m.id, label: m.subject }));
@@ -217,7 +205,7 @@ const updates = group.trusteeIds.map(trusteeId => {
     .map(c => ({ value: c.id, label: c.title }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative">
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
         <h2 className="text-2xl font-bold text-brandRose-dark mb-6">Edit Group: {group.name}</h2>

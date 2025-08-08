@@ -47,7 +47,6 @@ const Dashboard = () => {
           axios.get(`/api/credentials?ownerId=${user.id}`)
         ]);
 
-        // Normalize all data with unique keys
         const normalizeData = (data, prefix) => 
           data.slice(0, 5).map(item => ({
             ...item,
@@ -82,7 +81,6 @@ const Dashboard = () => {
 
   const handleModalClose = () => {
     setEditingItem({ type: null, data: null });
-    // Refresh data with consistent unique keys
     if (user?.id) {
       const refreshData = (endpoint, prefix) => 
         axios.get(endpoint).then(res => ({
@@ -107,7 +105,6 @@ const Dashboard = () => {
     }
   };
 
-  // Filter items based on search query
   const filterItems = (items, getTitleFn) => {
     if (!searchQuery) return items;
     const query = searchQuery.toLowerCase();
@@ -140,7 +137,6 @@ const Dashboard = () => {
         
         <div className="flex flex-1">
           <div className="flex-1 p-8 overflow-y-auto">
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <StatCard 
                 icon={icons.messages} 
@@ -171,7 +167,6 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Recent Activity Sections */}
             <div className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <ErrorBoundary fallback={<div className="bg-white rounded-xl shadow-sm p-6 text-red-500">Error loading recent messages</div>}>
@@ -234,7 +229,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Edit Modals */}
       {editingItem.type === 'message' && (
         <ErrorBoundary fallback={<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg">Error loading message editor</div>

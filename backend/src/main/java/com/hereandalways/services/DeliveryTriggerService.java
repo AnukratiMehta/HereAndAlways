@@ -39,7 +39,6 @@ public class DeliveryTriggerService {
     triggerRepo.save(trigger);
   }
 
-  /** Gets all triggers for a legacy owner */
   @Transactional(readOnly = true)
   public List<DeliveryTrigger> getTriggersForOwner(UUID ownerId) {
     return triggerRepo.findByLegacyOwnerId(ownerId);

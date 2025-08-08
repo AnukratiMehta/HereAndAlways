@@ -16,7 +16,6 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave, onDelete }) => {
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Populate fields when message is passed
   useEffect(() => {
     if (message) {
       setSubject(message.subject || "");
@@ -29,25 +28,22 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave, onDelete }) => {
       setSelectedTrustees(
         message.trusteeIds?.map((id) => ({
           value: id,
-          label: "", // Will be updated after fetching full trustee data
+          label: "", 
         })) || []
       );
       setDeliveryStatus(message.deliveryStatus || "DRAFT");
     }
   }, [message]);
 
-  // Fetch trustees and assets when ownerId changes
   useEffect(() => {
     if (!ownerId) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch trustees (original working approach)
         const trusteesRes = await axios.get(`/api/trustees/${ownerId}`);
         setTrustees(trusteesRes.data);
 
-        // Update selected trustees with labels
         setSelectedTrustees(prev => 
           prev.map(t => {
             const full = trusteesRes.data.find(tt => tt.trusteeId === t.value);
@@ -58,11 +54,9 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave, onDelete }) => {
           })
         );
 
-        // Fetch all available assets for the owner
         const assetsRes = await axios.get(`/api/assets?ownerId=${ownerId}`);
         setAssets(assetsRes.data);
 
-        // If editing existing message, fetch its linked assets
         if (message?.id) {
           const linkedAssetsRes = await axios.get(`/api/assets?messageId=${message.id}`);
           setSelectedAssets(
@@ -90,7 +84,7 @@ const MessageEditModal = ({ message, ownerId, onClose, onSave, onDelete }) => {
         body,
         scheduledDelivery: scheduledDelivery || null,
         trusteeIds: selectedTrustees.map(t => t.value),
-        assetIds: selectedAssets.map(a => a.value), // Include asset IDs
+        assetIds: selectedAssets.map(a => a.value), 
         deliveryStatus
       };
 

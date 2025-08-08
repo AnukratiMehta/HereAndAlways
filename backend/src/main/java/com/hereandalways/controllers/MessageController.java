@@ -44,7 +44,7 @@ public class MessageController {
                 request.getSubject(),
                 request.getBody(),
                 request.getScheduledDelivery(),
-                request.getTrusteeIds(),   // list of trustees
+                request.getTrusteeIds(),  
                 status
         );
 
@@ -82,17 +82,16 @@ public ResponseEntity<MessageResponse> updateMessage(
         @PathVariable UUID messageId,
         @RequestBody UpdateMessageRequest request
 ) {
-    log.info("⏩ Received PATCH request for message {} with data: {}", messageId, request);
+    log.info(" Received PATCH request for message {} with data: {}", messageId, request);
     
     try {
-        // Validate and convert status
         DeliveryStatus status = null;
         if (request.getDeliveryStatus() != null) {
             try {
                 status = DeliveryStatus.valueOf(request.getDeliveryStatus().toUpperCase());
-                log.debug("✅ Converted deliveryStatus '{}' to enum {}", request.getDeliveryStatus(), status);
+                log.debug("Converted deliveryStatus '{}' to enum {}", request.getDeliveryStatus(), status);
             } catch (IllegalArgumentException e) {
-                log.error("❌ Invalid delivery status value: {}", request.getDeliveryStatus());
+                log.error("Invalid delivery status value: {}", request.getDeliveryStatus());
                 throw new IllegalArgumentException("Invalid delivery status: " + request.getDeliveryStatus());
             }
         }
@@ -104,20 +103,19 @@ public ResponseEntity<MessageResponse> updateMessage(
                 request.getBody(),
                 request.getScheduledDelivery(),
                 request.getTrusteeIds(),
-                request.getAssetIds(), // Add this line
+                request.getAssetIds(),
                 status
         );
 
-        // Verify the status was actually updated
         if (status != null && !updated.getDeliveryStatus().equals(status)) {
-            log.error("❌ Status mismatch! Requested: {}, Actual: {}", status, updated.getDeliveryStatus());
+            log.error("Status mismatch! Requested: {}, Actual: {}", status, updated.getDeliveryStatus());
             throw new IllegalStateException("Status update failed");
         }
 
-        log.info("✅ Successfully updated message {}", messageId);
+        log.info("Successfully updated message {}", messageId);
         return ResponseEntity.ok(toResponse(updated));
     } catch (Exception e) {
-        log.error("❌ Failed to update message {}: {}", messageId, e.getMessage());
+        log.error("Failed to update message {}: {}", messageId, e.getMessage());
         throw e;
     }
 }
@@ -157,7 +155,7 @@ public ResponseEntity<MessageResponse> updateMessage(
             message.getCreatedAt(),
             trusteeNames,
             trusteeIds,
-            assetIds // Add this to the constructor
+            assetIds 
     );
 }
 

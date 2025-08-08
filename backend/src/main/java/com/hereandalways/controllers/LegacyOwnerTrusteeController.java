@@ -87,7 +87,6 @@ public ResponseEntity<List<TrusteeResponse>> getTrustees(@PathVariable UUID owne
     var responses = relationships.stream().map(rel -> {
         var trustee = rel.getTrustee();
 
-        // Fetch credentials through repository to ensure proper loading
         List<CredentialSummary> credentials = credentialRepo.findByLinkedTrustees_Id(trustee.getId())
             .stream()
             .map(c -> new CredentialSummary(c.getId(), c.getTitle(), c.getCategory()))
@@ -108,7 +107,7 @@ public ResponseEntity<List<TrusteeResponse>> getTrustees(@PathVariable UUID owne
                     .map(a -> new AssetSummary(a.getId(), a.getName()))
                     .collect(Collectors.toList()) : 
                 List.of(),
-            credentials // Now properly populated
+            credentials 
         );
     }).collect(Collectors.toList());
 

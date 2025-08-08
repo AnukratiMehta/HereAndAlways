@@ -90,21 +90,19 @@ public List<LegacyOwnerTrustee> getRecentTrustees(UUID ownerId) {
 
 @Transactional
 public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
-    log.info("🔄 Updating trustee {} with request: {}", trusteeId, request);
+    log.info(" Updating trustee {} with request: {}", trusteeId, request);
 
     User trustee = userService.getUserEntityById(trusteeId)
             .orElseThrow(() -> new IllegalArgumentException("Trustee not found"));
 
-    // Update name/email
     trustee.setName(request.getName());
     trustee.setEmail(request.getEmail());
     userService.saveUserEntity(trustee);
 
-    // === REMOVALS ===
     if (request.getMessageIdsToRemove() != null) {
         for (UUID messageId : request.getMessageIdsToRemove()) {
             if (messageId != null) {
-                log.debug("⛔ Removing trustee from message {}", messageId);
+                log.debug(" Removing trustee from message {}", messageId);
                 userService.removeTrusteeFromMessage(trusteeId, messageId);
             }
         }
@@ -113,7 +111,7 @@ public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
     if (request.getAssetIdsToRemove() != null) {
         for (UUID assetId : request.getAssetIdsToRemove()) {
             if (assetId != null) {
-                log.debug("⛔ Removing trustee from asset {}", assetId);
+                log.debug(" Removing trustee from asset {}", assetId);
                 userService.removeTrusteeFromAsset(trusteeId, assetId);
             }
         }
@@ -122,13 +120,12 @@ public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
     if (request.getCredentialIdsToRemove() != null) {
         for (UUID credentialId : request.getCredentialIdsToRemove()) {
             if (credentialId != null) {
-                log.debug("⛔ Removing trustee from credential {}", credentialId);
+                log.debug(" Removing trustee from credential {}", credentialId);
                 userService.removeTrusteeFromCredential(trusteeId, credentialId);
             }
         }
     }
 
-    // === ADDITIONS ===
     if (request.getMessageIdsToAdd() != null) {
         for (UUID messageId : request.getMessageIdsToAdd()) {
             if (messageId != null) {
@@ -156,7 +153,7 @@ public void updateTrustee(UUID trusteeId, TrusteeUpdateRequest request) {
         }
     }
 
-    log.info("✅ Trustee {} update completed", trusteeId);
+    log.info(" Trustee {} update completed", trusteeId);
 }
 
 }

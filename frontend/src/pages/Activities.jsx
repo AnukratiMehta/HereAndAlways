@@ -42,7 +42,7 @@ const Activities = () => {
           ...item,
           type: 'message',
           icon: icons.messages,
-          link: '/messages', // Main messages page
+          link: '/messages', 
           text: `Created message: ${item.subject || "Untitled message"}`,
           date: item.createdAt,
           uniqueKey: `message-${item.id || index}`
@@ -51,7 +51,7 @@ const Activities = () => {
           ...item,
           type: 'asset',
           icon: icons.assets,
-          link: '/assets', // Main assets page
+          link: '/assets', 
           text: `Uploaded asset: ${item.name || "Untitled asset"}`,
           date: item.createdAt,
           uniqueKey: `asset-${item.id || index}`
@@ -60,7 +60,7 @@ const Activities = () => {
           ...item,
           type: 'trustee',
           icon: icons.trustees,
-          link: '/trustees', // Main trustees page
+          link: '/trustees', 
           text: `Added trustee: ${item.trusteeName || item.trusteeEmail || "Unnamed trustee"}`,
           date: item.invitedAt,
           uniqueKey: `trustee-${item.trusteeId || index}`
@@ -69,7 +69,7 @@ const Activities = () => {
           ...item,
           type: 'credential',
           icon: icons.vault,
-          link: '/credentials', // Main credentials page
+          link: '/credentials', 
           text: `Added credential: ${item.title || "Untitled credential"}`,
           date: item.createdAt,
           uniqueKey: `credential-${item.id || index}`
@@ -89,7 +89,6 @@ const Activities = () => {
     navigate(link);
   };
 
-  // Pagination logic
   const totalPages = Math.ceil(activities.length / itemsPerPage);
   const currentItems = activities.slice(
     (currentPage - 1) * itemsPerPage,

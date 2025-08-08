@@ -26,23 +26,20 @@ const Messages = () => {
   const [viewingMessage, setViewingMessage] = useState(null);
 const [editingMessage, setEditingMessage] = useState(null);
 
-// In Messages.jsx
 const handleDelete = async () => {
   if (!deletingMessage) return;
   
   setDeleteLoading(true);
   try {
     await axios.delete(`/api/messages/${deletingMessage.id}`);
-    // Update local state
     setMessages(prev => prev.filter(msg => msg.id !== deletingMessage.id));
     setLatestMessage(null);
     
-    // Close any open modals that might be showing this message
     setViewingMessage(null);
     setEditingMessage(null);
     setDeletingMessage(null);
     
-    handleRefresh(); // Trigger a refresh
+    handleRefresh(); 
   } catch (err) {
     console.error("Failed to delete message:", err);
   } finally {
@@ -75,7 +72,6 @@ useEffect(() => {
   const handleSearch = (query) => {
     try {
       setSearchQuery(query);
-      // No view switching here - we'll let the components handle the filtering
     } catch (err) {
       setError(err);
       console.error("Search error:", err);
@@ -115,8 +111,8 @@ useEffect(() => {
                     searchQuery={searchQuery} 
           newMessage={latestMessage}
                   refreshTrigger={handleRefresh}
-                          onRefresh={handleRefresh} // Pass the refresh handler
-  onDeleteMessage={setDeletingMessage} // Pass the setter
+                          onRefresh={handleRefresh}
+  onDeleteMessage={setDeletingMessage} 
   viewingMessage={viewingMessage}
   setViewingMessage={setViewingMessage}
   editingMessage={editingMessage}
@@ -131,7 +127,7 @@ useEffect(() => {
                     searchQuery={searchQuery} 
                       newMessage={latestMessage}
                               refreshTrigger={handleRefresh}
-                                      onRefresh={handleRefresh} // Pass the refresh handler
+                                      onRefresh={handleRefresh} 
   onDeleteMessage={setDeletingMessage}
   viewingMessage={viewingMessage}
   setViewingMessage={setViewingMessage}
@@ -203,7 +199,7 @@ useEffect(() => {
       onClose={() => setShowModal(false)}
       onSave={(newMessage) => {
         setLatestMessage(newMessage);
-        setMessages(prev => [newMessage, ...prev]); // Update both states
+        setMessages(prev => [newMessage, ...prev]); 
         setShowModal(false);
       }}
     />

@@ -8,7 +8,6 @@ import axios from "axios";
 import { supabase } from "../../utils/supabaseClient";
 import { generateAESKey, exportKeyAsBase64 } from "../../utils/encryptionUtils";
 
-// Utility to determine assetType from MIME type
 const determineAssetType = (mimeType) => {
   if (!mimeType) return "DOCUMENT";
 
@@ -25,7 +24,7 @@ const determineAssetType = (mimeType) => {
 };
 
 const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
-  const { user } = useAuth(); // Get authenticated user
+  const { user } = useAuth(); 
   const [files, setFiles] = useState([]);
   const [trustees, setTrustees] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -35,7 +34,7 @@ const AssetUploadForm = ({ onUploadComplete, onCancel }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const ownerId = user?.id; // Use dynamic ownerId
+  const ownerId = user?.id; 
 
   useEffect(() => {
     const fetchData = async () => {

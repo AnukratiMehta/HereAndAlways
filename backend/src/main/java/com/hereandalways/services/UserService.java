@@ -34,7 +34,7 @@ public class UserService {
 
 
 
-    /** DTO-based create */
+ 
     public UserResponse createUser(UserRequest request) {
         User user = new User();
         user.setName(request.getName());
@@ -45,7 +45,6 @@ public class UserService {
         return mapToResponse(saved);
     }
 
-    /** DTO-based update */
     public UserResponse updateUser(UUID id, UserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -53,43 +52,37 @@ public class UserService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setRole(request.getRole());
-        // You can also update password if desired:
+        // update password:
         // user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
         User updated = userRepository.save(user);
         return mapToResponse(updated);
     }
 
-    /** DTO-based get */
     public UserResponse getUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return mapToResponse(user);
     }
 
-    /** DTO-based get all */
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    /** DTO-based delete */
     public void deleteUser(UUID id) {
         userRepository.deleteById(id);
     }
 
-    /** entity-level retrieval for other services */
     public Optional<User> getUserEntityById(UUID id) {
         return userRepository.findById(id);
     }
 
-    /** entity-level save for other services */
     public User saveUserEntity(User user) {
         return userRepository.save(user);
     }
 
-    /** reusable mapper */
     private UserResponse mapToResponse(User user) {
         UserResponse dto = new UserResponse();
         dto.setId(user.getId());

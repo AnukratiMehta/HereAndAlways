@@ -84,14 +84,6 @@ public class MessageService {
         messageRepo.deleteById(id);
     }
 
-    // @Transactional
-    // public Message updateStatus(UUID messageId, DeliveryStatus newStatus) {
-    //     Message message = messageRepo.findById(messageId)
-    //             .orElseThrow(() -> new IllegalArgumentException("Message not found with id: " + messageId));
-    //     message.setDeliveryStatus(newStatus);
-    //     return messageRepo.save(message);
-    // }
-
     @Transactional(readOnly = true)
     public List<Message> getRecentMessages(UUID ownerId) {
         return messageRepo.findByLegacyOwnerIdOrderByLastAccessedAtDesc(ownerId);
@@ -110,41 +102,39 @@ public Message updateMessage(
     log.info("🔍 Looking for message {}", messageId);
     Message message = messageRepo.findById(messageId)
             .orElseThrow(() -> {
-                log.error("❌ Message not found: {}", messageId);
+                log.error("Message not found: {}", messageId);
                 return new RuntimeException("Message not found");
             });
 
-    log.info("📝 Current message state - Status: {}, Subject: '{}'", 
+    log.info("Current message state - Status: {}, Subject: '{}'", 
         message.getDeliveryStatus(), message.getSubject());
 
-    // Apply updates
     if (subject != null) {
-        log.info("🔄 Updating subject from '{}' to '{}'", message.getSubject(), subject);
+        log.info("Updating subject from '{}' to '{}'", message.getSubject(), subject);
         message.setSubject(subject);
     }
 
     if (body != null) {
-        log.info("🔄 Updating body content");
+        log.info(" Updating body content");
         message.setBody(body);
     }
 
     if (scheduledDelivery != null) {
-        log.info("🔄 Updating scheduled delivery from {} to {}", 
+        log.info(" Updating scheduled delivery from {} to {}", 
             message.getScheduledDelivery(), scheduledDelivery);
         message.setScheduledDelivery(scheduledDelivery);
     }
 
     if (trusteeIds != null) {
-        log.info("🔄 Updating trustees to: {}", trusteeIds);
+        log.info(" Updating trustees to: {}", trusteeIds);
         List<User> trustees = userRepo.findAllById(trusteeIds);
         message.setTrustees(trustees);
     }
 
     if (assetIds != null) {
-        log.info("🔄 Updating linked assets to: {}", assetIds);
+        log.info(" Updating linked assets to: {}", assetIds);
         List<DigitalAsset> assets = assetRepo.findAllById(assetIds);
         
-        // Clear existing assets and establish new relationships
         message.getLinkedAssets().forEach(asset -> 
             asset.getLinkedMessages().remove(message));
         message.getLinkedAssets().clear();
@@ -155,17 +145,15 @@ public Message updateMessage(
         });
     }
 
-    // Force status update if provided
     if (status != null) {
-        log.info("🔄 Updating status from {} to {}", 
+        log.info(" Updating status from {} to {}", 
             message.getDeliveryStatus(), status);
         message.setDeliveryStatus(status);
     }
 
     log.info("💾 Saving updated message...");
-    Message saved = messageRepo.saveAndFlush(message); // Using saveAndFlush to ensure immediate write
+    Message saved = messageRepo.saveAndFlush(message);
     
-    // Verify the save
     Message freshFromDb = messageRepo.findById(messageId).orElseThrow();
     log.info("💾 Fresh from DB - Status: {}, Subject: '{}'", 
         freshFromDb.getDeliveryStatus(), freshFromDb.getSubject());

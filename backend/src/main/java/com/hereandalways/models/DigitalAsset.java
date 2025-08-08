@@ -49,7 +49,6 @@ private String description;
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  // Ownership
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "legacy_owner_id",
@@ -57,7 +56,6 @@ private String description;
       foreignKey = @ForeignKey(name = "fk_digital_asset_owner"))
   private User legacyOwner;
 
-  // Trustee linkage
   @ManyToMany
   @JoinTable(
       name = "asset_trustees",
@@ -72,7 +70,7 @@ private String description;
     joinColumns = @JoinColumn(name = "asset_id"),
     inverseJoinColumns = @JoinColumn(name = "message_id")
 )
-private Set<Message> linkedMessages; // CHANGED FROM List to Set
+private Set<Message> linkedMessages;
 
 
 

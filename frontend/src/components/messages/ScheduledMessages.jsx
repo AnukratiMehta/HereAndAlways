@@ -13,7 +13,6 @@ const ScheduledMessages = ({
   refreshTrigger, 
   onRefresh, 
   onDeleteMessage,
-  // These props come from parent component
   viewingMessage,
   setViewingMessage,
   editingMessage,
@@ -23,7 +22,6 @@ const ScheduledMessages = ({
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch messages
   useEffect(() => {
     if (!ownerId) return;
     
@@ -49,14 +47,12 @@ const ScheduledMessages = ({
     fetchMessages();
   }, [ownerId, refreshTrigger]);
 
-  // Handle new messages
   useEffect(() => {
     if (newMessage && newMessage.deliveryStatus === "QUEUED") {
       setMessages(prev => [newMessage, ...prev]);
     }
   }, [newMessage]);
 
-  // Apply search filtering
   useEffect(() => {
     if (!searchQuery) {
       setFilteredMessages(messages);

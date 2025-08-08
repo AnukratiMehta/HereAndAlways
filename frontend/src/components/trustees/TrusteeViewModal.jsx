@@ -5,7 +5,6 @@ import Button from "../shared/Button";
 const TrusteeViewModal = ({ trustee, onClose }) => {
   if (!trustee) return null;
 
-  // Helper to safely access nested properties
   const getMessages = () => {
     if (!trustee.messages || !Array.isArray(trustee.messages)) return [];
     return trustee.messages.map(msg => ({
@@ -43,7 +42,6 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">      
       <div className="relative w-full max-w-2xl mx-4 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden">
-        {/* Modal Header */}
         <div className="px-6 py-4 bg-brandRose-light border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900">
@@ -59,9 +57,7 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
           </div>
         </div>
 
-        {/* Modal Content */}
         <div className="p-6 space-y-6">
-          {/* Trustee Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-start">
@@ -102,7 +98,6 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
             </div>
           </div>
 
-          {/* Linked Messages Section */}
           <div className="border-t border-gray-200 pt-4">
             <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
               <FontAwesomeIcon icon={icons.messages} className="mr-2 text-brandRose" />
@@ -124,7 +119,6 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
             )}
           </div>
 
-          {/* Linked Credentials Section */}
           <div className="border-t border-gray-200 pt-4">
             <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
               <FontAwesomeIcon icon={icons.key} className="mr-2 text-brandRose" />
@@ -149,7 +143,6 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
             )}
           </div>
 
-          {/* Linked Assets Section */}
           <div className="border-t border-gray-200 pt-4">
             <h3 className="flex items-center text-sm font-medium text-gray-900 mb-3">
               <FontAwesomeIcon icon={icons.assets} className="mr-2 text-brandRose" />
@@ -172,7 +165,6 @@ const TrusteeViewModal = ({ trustee, onClose }) => {
           </div>
         </div>
 
-        {/* Modal Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
           <Button 
             onClick={onClose} 

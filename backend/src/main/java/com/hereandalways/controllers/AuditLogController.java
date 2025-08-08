@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.hereandalways.models.enums.AuditEntity;
-// import java.time.LocalDateTime;
 
 
 @RestController
@@ -30,9 +29,4 @@ public class AuditLogController {
     return ResponseEntity.ok(auditLogService.getUserActivity(userId, limit));
   }
 
-  // @GetMapping("/date-range")
-  // public ResponseEntity<List<AuditLog>> getLogsByDateRange(
-  //     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start, @RequestParam String end) {
-  //   return ResponseEntity.ok(auditLogService.getAuditLogsByDateRange(start, end));
-  // }
 }

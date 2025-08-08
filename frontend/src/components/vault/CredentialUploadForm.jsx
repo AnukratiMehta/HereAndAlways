@@ -70,12 +70,10 @@ const CredentialUploadForm = ({ ownerId, onUploadComplete, onCancel }) => {
     setError(null);
 
     try {
-      // 1. Encrypt the password/PIN
       const key = await generateAESKey();
       const encryptedKey = await exportKeyAsBase64(key);
       const encryptedPassword = await encryptText(formData.passwordOrPin, key);
 
-      // 2. Create filename and upload to Supabase
       const safeName = formData.title
         .replace(/\s+/g, "_")
         .replace(/[^\w.-]/g, "")
@@ -92,16 +90,14 @@ const CredentialUploadForm = ({ ownerId, onUploadComplete, onCancel }) => {
 
       if (uploadError) throw new Error(`Supabase upload failed: ${uploadError.message}`);
 
-      // 3. Get signed URL
       const { data: urlData, error: urlError } = await supabase.storage
         .from("vault")
-        .createSignedUrl(fileName, 7 * 24 * 60 * 60); // 7 days
+        .createSignedUrl(fileName, 7 * 24 * 60 * 60); 
 
       if (urlError || !urlData?.signedUrl) {
         throw new Error("Failed to generate download URL");
       }
 
-      // 4. Prepare payload
       const payload = {
         ...formData,
         category: formData.category.value,

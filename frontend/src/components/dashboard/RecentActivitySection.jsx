@@ -13,7 +13,7 @@ const RecentActivitySection = ({
   dateField = "createdAt",
   searchQuery = "",
   maxItems = 3,
-  itemKey = (item) => item.id // Default to using item.id if no key function provided
+  itemKey = (item) => item.id
 }) => {
   const handleClick = (e, item) => {
     e.preventDefault();

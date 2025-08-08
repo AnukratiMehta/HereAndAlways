@@ -46,24 +46,21 @@ const handleDownload = async () => {
   try {
     const filePath = downloadUrl.replace(/^\/?assets\//, "");
     
-    // Method 1: Try to get public URL first (if bucket is public)
     try {
       const { data: { publicUrl } } = supabase.storage
         .from('assets')
         .getPublicUrl(filePath);
       
-      // Open in new tab (works for images, PDFs, etc.)
       window.open(publicUrl, '_blank');
       return;
     } catch (publicUrlError) {
       console.log("Public URL not available, trying authenticated methods");
     }
 
-    // Method 2: Create and use signed URL
     try {
       const { data: { signedUrl }, error } = await supabase.storage
         .from('assets')
-        .createSignedUrl(filePath, 3600); // 1 hour expiry
+        .createSignedUrl(filePath, 3600); 
       
       if (!error && signedUrl) {
         window.open(signedUrl, '_blank');
@@ -73,7 +70,6 @@ const handleDownload = async () => {
       console.log("Signed URL failed:", signedUrlError);
     }
 
-    // Method 3: Direct download via API
     try {
       const { data, error } = await supabase.storage
         .from('assets')
@@ -96,7 +92,6 @@ const handleDownload = async () => {
       console.log("Direct download failed:", downloadError);
     }
 
-    // Final fallback
     setDownloadError("Could not access file. Please check permissions.");
     
   } catch (err) {

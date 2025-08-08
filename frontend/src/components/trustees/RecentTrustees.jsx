@@ -25,7 +25,6 @@ const RecentTrustees = ({ ownerId, reloadKey, onTrusteeUpdated, searchQuery }) =
       .finally(() => setLoading(false));
   }, [ownerId, reloadKey]);
 
-  // Apply search filter
   useEffect(() => {
     if (!searchQuery) {
       setFilteredTrustees(trustees);

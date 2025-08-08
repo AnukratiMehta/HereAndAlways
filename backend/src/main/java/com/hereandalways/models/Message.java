@@ -61,11 +61,9 @@ private DeliveryStatus deliveryStatus;
     )
     private List<User> trustees;
 
-    // Message.java
 @ManyToMany(mappedBy = "linkedMessages")
 private Set<DigitalAsset> linkedAssets = new HashSet<>();
 
-// Helper methods for bidirectional sync
 public void addAsset(DigitalAsset asset) {
     this.linkedAssets.add(asset);
     asset.getLinkedMessages().add(this);

@@ -18,5 +18,5 @@ public class MessageResponse {
     private LocalDateTime createdAt;
     private List<String> trusteeNames;  
     private List<UUID> trusteeIds;
-    private List<UUID> assetIds; // Add this line
+    private List<UUID> assetIds;
 }

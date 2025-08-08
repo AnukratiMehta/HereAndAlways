@@ -13,7 +13,6 @@ const InviteTrusteeModal = ({ ownerId, onClose, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic validation
     if (!email || !email.includes('@')) {
       setError('Please enter a valid email address');
       return;
@@ -32,7 +31,7 @@ const InviteTrusteeModal = ({ ownerId, onClose, onSuccess }) => {
         {
           email,
           name,
-          trusteeId: null // Explicitly null for new trustees
+          trusteeId: null
         },
         {
           headers: {

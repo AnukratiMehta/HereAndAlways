@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DeathConfirmationRepository extends JpaRepository<DeathConfirmation, UUID> {
 
-     // For getEntityAuditHistory()
     Optional<DeathConfirmation> findFirstByLegacyOwnerIdOrderByConfirmedAtDesc(UUID legacyOwnerId);
     
 

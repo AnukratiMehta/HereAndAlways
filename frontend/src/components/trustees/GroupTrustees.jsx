@@ -12,10 +12,10 @@ const GroupTrustees = ({
   onTrusteeClick, 
   onEditGroup,
   onTrusteeUpdate,
-  setReloadKey // Added this prop
+  setReloadKey 
 }) => {
   const [editingGroup, setEditingGroup] = useState(null);
-    const [viewingTrustee, setViewingTrustee] = useState(null); // Add this state
+    const [viewingTrustee, setViewingTrustee] = useState(null); 
 
 
   if (!groups || groups.length === 0) {
@@ -159,10 +159,8 @@ const GroupTrustees = ({
     trustees={trustees}
     onClose={() => setEditingGroup(null)}
     onSave={({ updatedGroup, updatedTrustees }) => {
-      // Update the group
       onEditGroup(updatedGroup);
       
-      // Update the trustees if onTrusteeUpdate is provided
       if (onTrusteeUpdate && updatedTrustees) {
         onTrusteeUpdate(updatedTrustees);
       }
@@ -185,7 +183,7 @@ GroupTrustees.propTypes = {
   onDeleteGroup: PropTypes.func.isRequired,
   onTrusteeClick: PropTypes.func.isRequired,
   onEditGroup: PropTypes.func,
-  onTrusteeUpdate: PropTypes.func, // Add this
+  onTrusteeUpdate: PropTypes.func,
   setReloadKey: PropTypes.func.isRequired
 };
 

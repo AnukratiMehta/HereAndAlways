@@ -1,4 +1,3 @@
-// src/main/java/com/hereandalways/payload/request/UserLoginRequest.java
 package com.hereandalways.payload.request;
 
 import jakarta.validation.constraints.Email;

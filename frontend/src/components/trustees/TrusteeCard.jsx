@@ -25,7 +25,6 @@ const TrusteeCard = ({ trustee, onUpdate, onRemove }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Card Header */}
       <div className="relative p-4 border-b border-lightGray">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-brandRose-light text-brandRose-dark flex items-center justify-center font-bold flex-shrink-0">
@@ -42,14 +41,12 @@ const TrusteeCard = ({ trustee, onUpdate, onRemove }) => {
           </div>
         </div>
         
-        {/* Status Badge */}
         <div className={`absolute top-3 right-3 px-2 py-1 text-xs rounded-full flex items-center ${statusColor}`}>
           <FontAwesomeIcon icon={statusIcon} className="mr-1 text-xs" />
           {trustee.status || "UNKNOWN"}
         </div>
       </div>
 
-      {/* Card Body */}
       <div className="p-4">
         <div className="space-y-2 text-sm">
           <div className="flex items-center text-gray-600">
@@ -71,14 +68,11 @@ const TrusteeCard = ({ trustee, onUpdate, onRemove }) => {
         </div>
       </div>
 
-      {/* Card Footer - Actions */}
       <div className="px-4 pb-3 border-t border-lightGray bg-gray-50">
-        {/* Hover hint (only shows when not hovered) */}
         <div className={`text-center py-1 ${isHovered ? 'hidden' : 'block'}`}>
           <span className="text-xs text-gray-400">Hover for actions</span>
         </div>
 
-        {/* Action buttons (only shows when hovered) */}
         <div className={`flex justify-end space-x-2 ${isHovered ? 'block' : 'hidden'}`}>
           <button 
             onClick={() => setShowViewModal(true)}
@@ -106,7 +100,6 @@ const TrusteeCard = ({ trustee, onUpdate, onRemove }) => {
         </div>
       </div>
 
-      {/* Modals */}
       {showViewModal && (
         <TrusteeViewModal 
           trustee={trustee} 

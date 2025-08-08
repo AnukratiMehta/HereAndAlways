@@ -36,13 +36,11 @@ public class ScheduledJobService {
       Integer timeOffset,
       List<String> trusteeEmails) {
 
-    // 1. Validate owner exists
     User owner =
         userRepo
             .findById(ownerId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid owner ID"));
 
-    // 2. Create and configure the job
     ScheduledJob job = new ScheduledJob();
     job.setJobType(jobType);
     job.setEntityId(entityId);
@@ -50,50 +48,34 @@ public class ScheduledJobService {
     job.setStatus(JobStatus.PENDING);
     job.setScheduleType(scheduleType);
 
-    // 3. Handle timing based on schedule type
     if (scheduleType == ScheduleType.ABSOLUTE) {
       job.setScheduledFor(exactTime);
     } else {
       job.setTimeOffset(timeOffset);
-      // Will be calculated when trigger occurs
       job.setScheduledFor(LocalDateTime.MIN);
     }
 
-    // 4. Save the parent job first
     jobRepo.save(job);
 
-    // 5. Create access grants for each trustee
     trusteeEmails.forEach(
         email -> {
           JobRecipient recipient = new JobRecipient();
           recipient.setJob(job);
           recipient.setStatus(RecipientStatus.PENDING);
 
-          // For absolute schedules, use job's scheduled time
-          // For relative, this will be updated when trigger occurs
           recipient.setScheduledDeliveryTime(
               scheduleType == ScheduleType.ABSOLUTE ? exactTime : null);
 
-          recipientRepo.save(recipient); // Generates access_code automatically
+          recipientRepo.save(recipient); 
 
           log.info("Created access for {} with code {}", email, recipient.getAccessCode());
-          // In production: Send email with registration link
         });
 
     return job;
   }
 
-  // ==== TRIGGER PROCESSING ==== //
-
-  /**
-   * Processes death confirmations and calculates delivery times for relative jobs.
-   *
-   * @param ownerId The deceased owner's ID
-   * @param deathDate Verified date of death
-   */
   @Transactional
   public void processDeathConfirmation(UUID ownerId, LocalDateTime deathDate) {
-    // 1. Find all pending relative-to-death jobs
     List<ScheduledJob> jobs =
         jobRepo.findByLegacyOwnerIdAndScheduleTypeIn(
             ownerId,
@@ -104,22 +86,17 @@ public class ScheduledJobService {
                 ScheduleType.RELATIVE_MONTHS_AFTER_DEATH,
                 ScheduleType.RELATIVE_YEARS_AFTER_DEATH));
 
-    // 2. Process each job
     jobs.forEach(
         job -> {
-          // Calculate delivery time
           job.calculateDeliveryTime(deathDate);
 
-          // Check if delivery should happen immediately
           if (job.getScheduledFor().isBefore(LocalDateTime.now())) {
-            // deliverJobContent(job);
             job.setStatus(JobStatus.COMPLETED);
             job.setExecutedAt(LocalDateTime.now());
           }
 
           jobRepo.save(job);
 
-          // Update recipient schedules
           job.getRecipients()
               .forEach(
                   recipient -> {
@@ -135,35 +112,23 @@ public class ScheduledJobService {
         jobRepo.findById(jobId).orElseThrow(() -> new IllegalArgumentException("Job not found"));
 
     if (job.getScheduleType() == ScheduleType.ABSOLUTE && job.getStatus() == JobStatus.PENDING) {
-      // deliverJobContent(job);
       job.setStatus(JobStatus.COMPLETED);
       job.setExecutedAt(LocalDateTime.now());
       jobRepo.save(job);
     }
   }
 
-  // ==== TRUSTEE ACCESS ==== //
-
-  /**
-   * Links a trustee account to an access grant during registration.
-   *
-   * @param accessCode The unique invitation code
-   * @param trusteeId The newly created user ID
-   */
   @Transactional
   public void registerTrusteeAccess(String accessCode, UUID trusteeId) {
-    // 1. Find the pending access grant
     JobRecipient recipient =
         recipientRepo
             .findByAccessCode(accessCode)
             .orElseThrow(() -> new IllegalArgumentException("Invalid access code"));
 
-    // 2. Verify not already claimed
     if (recipient.getStatus() != RecipientStatus.PENDING) {
       throw new IllegalStateException("Access already claimed");
     }
 
-    // 3. Link to trustee account
     User trustee =
         userRepo
             .findById(trusteeId)
@@ -175,12 +140,7 @@ public class ScheduledJobService {
     recipientRepo.save(recipient);
   }
 
-  /**
-   * Gets all content accessible to a trustee.
-   *
-   * @param trusteeId The authenticated trustee's ID
-   * @return Map containing lists of messages and assets
-   */
+
   @Transactional(readOnly = true)
 public Map<String, Object> getTrusteeContent(UUID trusteeId) {
     Map<String, Object> result = new HashMap<>();

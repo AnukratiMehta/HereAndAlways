@@ -15,7 +15,6 @@ const EditAssetModal = ({ asset, onClose, onSave }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Get ownerId from the asset
   const ownerId = asset?.legacyOwnerId;
 
   useEffect(() => {
@@ -41,7 +40,6 @@ const EditAssetModal = ({ asset, onClose, onSave }) => {
         setTrustees(trusteeRes.data);
         setMessages(messageRes.data);
 
-        // Set initially selected trustees
         if (asset.linkedTrustees) {
           setSelectedTrustees(
             asset.linkedTrustees.map(t => ({
@@ -51,7 +49,6 @@ const EditAssetModal = ({ asset, onClose, onSave }) => {
           );
         }
 
-        // Set initially linked messages
         if (asset.linkedMessages) {
           setSelectedMessages(
             asset.linkedMessages.map(m => ({

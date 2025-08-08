@@ -17,16 +17,13 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
       const res = await axios.get(`/api/messages/${ownerId}`);
       let filtered = res.data.filter((m) => m.deliveryStatus === filter);
       
-      // Apply sorting based on filter type
       filtered = filtered.sort((a, b) => {
         if (filter === "QUEUED") {
-          // For scheduled messages: sort by scheduled date (soonest first)
-          // Messages without dates go to end
+
           if (!a.scheduledDelivery) return 1;
           if (!b.scheduledDelivery) return -1;
           return new Date(a.scheduledDelivery) - new Date(b.scheduledDelivery);
         } else {
-          // For drafts/other: sort by last accessed (newest first)
           const dateA = a.lastAccessedAt || a.createdAt;
           const dateB = b.lastAccessedAt || b.createdAt;
           return new Date(dateB) - new Date(dateA);
@@ -43,7 +40,6 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
     fetchMessages();
   }, [ownerId, filter, refreshTrigger]);
 
-  // Apply search filtering
   useEffect(() => {
     if (!searchQuery) {
       setDisplayedMessages(allMessages);
@@ -72,7 +68,6 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
     }
   };
 
-  // Pagination logic
   const paginatedMessages = displayedMessages.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -82,25 +77,22 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
 
   return (
     <div className="space-y-4">
-      {/* Search status indicator */}
       {searchQuery && (
         <div className="text-sm text-gray-500 mb-2">
           Showing {displayedMessages.length} {filter.toLowerCase()} messages matching "{searchQuery}"
         </div>
       )}
 
-      {/* Message cards */}
       {paginatedMessages.map((msg) => (
         <MessageCard
           key={msg.id}
           message={msg}
           onEdit={() => setEditingMessage(msg)}
-                    onDelete={() => onDeleteMessage(msg)} // Pass the delete handler
+                    onDelete={() => onDeleteMessage(msg)}
 
         />
       ))}
 
-      {/* Empty state */}
       {displayedMessages.length === 0 && (
         <div className="text-gray-500">
           {searchQuery
@@ -109,7 +101,6 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
         </div>
       )}
 
-      {/* Pagination controls */}
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-4">
           <button
@@ -132,7 +123,6 @@ const MessageCardList = ({ ownerId, filter, searchQuery, refreshTrigger, onRefre
         </div>
       )}
 
-      {/* Edit modal */}
       {editingMessage && (
         <MessageEditModal
           message={editingMessage}

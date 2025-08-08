@@ -10,15 +10,12 @@ public class TrusteeUpdateRequest {
     private String name;
     private String email;
 
-    // Messages
     private List<UUID> messageIdsToRemove;
     private List<UUID> messageIdsToAdd;
 
-    // Assets
     private List<UUID> assetIdsToRemove;
     private List<UUID> assetIdsToAdd;
 
-    // Credentials
     private List<UUID> credentialIdsToRemove;
     private List<UUID> credentialIdsToAdd;
 }

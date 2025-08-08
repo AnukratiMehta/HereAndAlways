@@ -9,6 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ScheduledJobRepository extends JpaRepository<ScheduledJob, UUID> {
     
-    // Used in ScheduledJobService.processDeathConfirmation()
     List<ScheduledJob> findByLegacyOwnerIdAndScheduleTypeIn(UUID ownerId, Set<ScheduleType> types);
 }

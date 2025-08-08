@@ -37,7 +37,6 @@ const VaultCard = ({ credential, onView, onEdit, onDelete }) => {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col justify-between h-full relative">
-      {/* Edit icon top-right */}
       <button
         onClick={() => onEdit?.(credential)}
         className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
@@ -63,7 +62,6 @@ const VaultCard = ({ credential, onView, onEdit, onDelete }) => {
         {credential.usernameOrCardNumber}
       </div>
 
-      {/* View + Delete icons */}
       <div className="mt-auto pt-4 flex justify-end gap-4 text-lg">
         <button
           onClick={() => onView?.(credential)}

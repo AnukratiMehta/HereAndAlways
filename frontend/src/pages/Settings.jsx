@@ -49,7 +49,6 @@ const Settings = () => {
     try {
       setLoading(true);
       await simulateAPICall();
-      // Show success before logging out
       setSuccess("Account deleted successfully. Redirecting...");
       setTimeout(() => {
         logout();
@@ -65,7 +64,6 @@ const Settings = () => {
     try {
       setLoading(true);
       await simulateAPICall();
-      // Show success before logging out
       setSuccess("Account deactivated successfully. Redirecting...");
       setTimeout(() => {
         logout();
@@ -117,7 +115,6 @@ const Settings = () => {
               </button>
             </div>
 
-            {/* Notification Preferences */}
             {activeTab === "notifications" && (
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-lightGray">
@@ -184,7 +181,6 @@ const Settings = () => {
               </div>
             )}
 
-            {/* Account Settings */}
             {activeTab === "account" && (
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-lightGray">
@@ -288,7 +284,6 @@ const Settings = () => {
               </div>
             )}
 
-            {/* Inactivity Settings */}
             {activeTab === "inactivity" && (
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-lightGray">
@@ -361,7 +356,6 @@ const Settings = () => {
               </div>
             )}
 
-            {/* Save Button */}
             <div className="mt-8 flex justify-end">
               <Button 
                 onClick={handleSave}
@@ -375,7 +369,6 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Confirmation Modals */}
       {showDeactivateConfirm && (
         <ConfirmDeleteModal
           isOpen={showDeactivateConfirm}

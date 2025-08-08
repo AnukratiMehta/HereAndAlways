@@ -30,19 +30,17 @@ const CreateGroupModal = ({ onCreate, onClose }) => {
     fetchTrustees();
   }, [user?.id]);
 
-  // Consistent with MessageEditModal - using trusteeId as value
   const trusteeOptions = trustees.map(trustee => ({
-    value: trustee.trusteeId,  // Changed from id to trusteeId
+    value: trustee.trusteeId,  
     label: trustee.trusteeName || trustee.trusteeEmail || "Unnamed",
-    trustee // Include full trustee object for onSubmit
+    trustee 
   }));
 
   const handleSubmit = () => {
     if (!groupName.trim() || selectedTrustees.length === 0) return;
     
-    // Get full trustee objects for selected options
     const selectedTrusteeObjects = selectedTrustees.map(option => 
-      trustees.find(t => t.trusteeId === option.value) // Changed from id to trusteeId
+      trustees.find(t => t.trusteeId === option.value)
     );
     
     onCreate(groupName, selectedTrusteeObjects);

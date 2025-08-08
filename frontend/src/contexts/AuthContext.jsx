@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
       role: role || 'LEGACY_OWNER'
     };
 
-    console.log('Storing user data:', userData); // Debug log
+    console.log('Storing user data:', userData); 
 
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));

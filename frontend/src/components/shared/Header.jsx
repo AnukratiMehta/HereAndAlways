@@ -25,12 +25,10 @@ const Header = ({
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-lightGray w-full">
       <div className="flex items-center justify-between px-6 py-4">
-        {/* Page title - now accepts prop or falls back to path-based title */}
         <h1 className="text-2xl font-bold text-charcoal min-w-[200px]">
           {title || getPageTitle()}
         </h1>
         
-        {/* Conditionally rendered search bar */}
         {showSearch && (
           <div className="flex-1 mx-4 max-w-2xl">
             <div className="relative">
@@ -48,9 +46,7 @@ const Header = ({
           </div>
         )}
 
-        {/* Right side controls */}
         <div className={`flex items-center gap-4 ${showSearch ? 'min-w-[200px]' : ''} justify-end`}>
-          {/* Mobile notifications icon (links to notifications page) */}
           <Link 
             to="/notifications" 
             className="md:hidden p-2 text-gray-600 hover:text-brandRose transition-colors"
@@ -58,12 +54,10 @@ const Header = ({
             <FontAwesomeIcon icon={icons.bell} size="lg" />
           </Link>
           
-          {/* Desktop notifications dropdown */}
           <div className="hidden md:block">
             <NotificationsDropdown />
           </div>
           
-          {/* Divider - only shown when there are controls before the avatar */}
           <div className="h-8 w-px bg-lightGray"></div>
           
           <UserAvatar />

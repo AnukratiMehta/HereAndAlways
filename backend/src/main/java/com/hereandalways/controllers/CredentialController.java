@@ -42,7 +42,7 @@ public class CredentialController {
     }
 
     /**
-     * Optional: Filter credentials by category (e.g. BANK, SOCIAL)
+     * Filter credentials by category (e.g. BANK, SOCIAL)
      */
     @GetMapping("/filter")
     public ResponseEntity<List<CredentialResponse>> getByCategory(

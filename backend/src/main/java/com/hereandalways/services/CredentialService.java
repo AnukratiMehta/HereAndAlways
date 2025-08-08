@@ -78,7 +78,7 @@ private CredentialResponse toResponse(Credential credential) {
                         .map(User::getId)
                         .collect(Collectors.toList())
             )
-            .trustees( // Ensure this is populated
+            .trustees( 
                 credential.getLinkedTrustees()
                         .stream()
                         .map(user -> CredentialResponse.TrusteeSummary.builder()
@@ -93,7 +93,6 @@ private CredentialResponse toResponse(Credential credential) {
 
 
     private String encrypt(String input) {
-        // 🔐 Temporary simple Base64 for demo — replace with AES or secure solution
         return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -124,7 +123,6 @@ public CredentialResponse updateCredential(UUID credentialId, UUID ownerId, Crea
     credential.setCategory(request.getCategory());
     credential.setUpdatedAt(LocalDateTime.now());
 
-    // Only update password and key if provided
     if (request.getPasswordOrPin() != null && !request.getPasswordOrPin().isBlank()) {
         credential.setPasswordOrPin(request.getPasswordOrPin());
     }
@@ -133,7 +131,6 @@ public CredentialResponse updateCredential(UUID credentialId, UUID ownerId, Crea
         credential.setEncryptedKey(request.getEncryptedKey());
     }
 
-    // Update trustees
     List<User> trustees = request.getTrusteeIds() != null
             ? userRepository.findAllById(request.getTrusteeIds())
             : new ArrayList<>();

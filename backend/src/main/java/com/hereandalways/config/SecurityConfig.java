@@ -14,7 +14,6 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    // Explicitly define the PasswordEncoder bean
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -26,7 +25,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(requests -> requests
-                .anyRequest().permitAll()); // Adjust authorization as needed
+                .anyRequest().permitAll());
         return http.build();
     }
 

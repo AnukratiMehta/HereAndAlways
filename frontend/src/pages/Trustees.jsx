@@ -40,7 +40,7 @@ const Trustees = () => {
       setViewingTrustee(updatedTrustee);
     }
   }
-}, [trustees]); // This will update the viewing trustee when trustees change
+}, [trustees]); 
 
 const handleTrusteeUpdate = (updatedTrustees) => {
   setTrustees(prev => prev.map(trustee => {
@@ -48,7 +48,6 @@ const handleTrusteeUpdate = (updatedTrustees) => {
     return updated || trustee;
   }));
   
-  // Update the viewing trustee if it's among the updated ones
   if (viewingTrustee) {
     const updated = updatedTrustees.find(t => t.trusteeId === viewingTrustee.trusteeId);
     if (updated) {
@@ -194,7 +193,6 @@ const handleEditGroup = (updatedGroup) => {
             )}
 
             {view === "group" && (
-              // In Trustees.jsx, update the GroupTrustees component:
 <GroupTrustees
   groups={groups}
   trustees={trustees}
@@ -244,7 +242,7 @@ const handleEditGroup = (updatedGroup) => {
 
       {viewingTrustee && (
   <TrusteeViewModal 
-      key={viewingTrustee.trusteeId} // Add this key to force re-render
+      key={viewingTrustee.trusteeId}
 
     trustee={viewingTrustee} 
     onClose={() => setViewingTrustee(null)} 

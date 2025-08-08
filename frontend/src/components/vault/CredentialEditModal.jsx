@@ -53,7 +53,6 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
         }));
         setTrustees(options);
 
-        // Preselect already linked trustees
         if (credential.trusteeIds?.length > 0) {
           setSelectedTrustees(
             options.filter((opt) => credential.trusteeIds.includes(opt.value))
@@ -89,7 +88,6 @@ const CredentialEditModal = ({ credential, ownerId, onClose, onUpdate }) => {
         trusteeIds: selectedTrustees.map((t) => t.value),
       };
 
-      // Only update password if a new one was provided
       if (formData.passwordOrPin.trim()) {
         const key = await generateAESKey();
         const encryptedKey = await exportKeyAsBase64(key);

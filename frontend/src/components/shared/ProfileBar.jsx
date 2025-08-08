@@ -142,7 +142,6 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
     }
   };
 
-  // Safely get config with multiple fallbacks
   const config = pageConfigs[type] || pageConfigs.dashboard || { 
     filters: [], 
     newItemButton: null 
@@ -159,7 +158,6 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
         }}
       >
         <div>
-          {/* User Profile Section */}
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-full bg-brandRose text-white flex items-center justify-center text-lg font-bold shadow">
               {user?.name?.[0]?.toUpperCase() || "U"}
@@ -170,7 +168,6 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
             </div>
           </div>
 
-          {/* Action Buttons Section */}
           <div className="space-y-3 mb-6 border-b border-lightGray pb-4">
             {view !== "home" && !isDashboard && (
   <Button
@@ -198,7 +195,6 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
             )}
           </div>
 
-          {/* Filters Section */}
           <div className="mb-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">
               View Options
@@ -225,7 +221,6 @@ const ProfileBar = ({ type = "dashboard", view, setView, onNewItem }) => {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="text-xs text-brandRose-dark text-center mt-6">
           Here & Always
         </div>

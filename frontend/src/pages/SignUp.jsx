@@ -30,7 +30,6 @@ const handleSignup = async (e) => {
   try {
     const response = await signup({ name, email, password });
     
-    // Check if response contains error (from handleApiError)
     if (response instanceof Error) {
       throw response;
     }

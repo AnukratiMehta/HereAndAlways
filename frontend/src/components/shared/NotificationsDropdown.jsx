@@ -106,11 +106,9 @@ const NotificationsDropdown = () => {
     setIsOpen(newState);
     
     if (newState) {
-      // Set current view time when opening
       const now = new Date().toISOString();
       setCurrentViewTime(now);
     } else {
-      // Only update lastViewed when closing the dropdown
       if (currentViewTime) {
         localStorage.setItem('notificationsLastViewed', currentViewTime);
         setLastViewed(currentViewTime);

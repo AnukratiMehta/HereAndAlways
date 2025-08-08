@@ -34,7 +34,7 @@ public class ScheduledJob {
   private JobStatus status = JobStatus.PENDING;
 
   @Column(name = "entity_id", nullable = false)
-  private UUID entityId; // Links to Message or DigitalAsset id
+  private UUID entityId; 
 
   @Column(name = "scheduled_for", nullable = false)
   private LocalDateTime scheduledFor;
@@ -50,9 +50,9 @@ public class ScheduledJob {
   private ScheduleType scheduleType;
 
   @Column(name = "time_offset")
-  private Integer timeOffset; // Replaces yearsOffset
+  private Integer timeOffset;
 
-  // Relationships
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
       name = "legacy_owner_id",
@@ -63,7 +63,7 @@ public class ScheduledJob {
   @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<JobRecipient> recipients = new ArrayList<>();
 
-  // Callback
+
   @PreUpdate
   protected void onUpdate() {
     if (this.status == JobStatus.COMPLETED && this.executedAt == null) {
@@ -71,7 +71,6 @@ public class ScheduledJob {
     }
   }
 
-  // Helper methods
   public void addRecipient(User trustee, LocalDateTime deliveryTime) {
     JobRecipient recipient = new JobRecipient();
     recipient.setJob(this);
@@ -103,7 +102,7 @@ public class ScheduledJob {
         break;
 
       case ABSOLUTE:
-        // No calculation needed
+ 
         break;
     }
   }

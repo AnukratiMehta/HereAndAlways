@@ -34,9 +34,8 @@ public class JobRecipient {
   private RecipientStatus status = RecipientStatus.PENDING;
 
   @Column(name = "scheduled_delivery_time")
-  private LocalDateTime scheduledDeliveryTime; // Per trustee timing
+  private LocalDateTime scheduledDeliveryTime;
 
-  // Relationships
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(
@@ -52,7 +51,6 @@ public class JobRecipient {
       foreignKey = @ForeignKey(name = "fk_jobrecipient_trustee"))
   private User trustee;
 
-  //  Callback
 
   @PrePersist
   @PreUpdate

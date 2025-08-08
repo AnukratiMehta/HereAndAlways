@@ -12,6 +12,6 @@ public class UpdateMessageRequest {
     private String body;
     private LocalDateTime scheduledDelivery;
     private List<UUID> trusteeIds;
-    private List<UUID> assetIds; // Add this line
+    private List<UUID> assetIds; 
     private String deliveryStatus;
 }

@@ -13,7 +13,6 @@ const RecentMessages = ({
   onRefresh, 
   refreshTrigger, 
   onDeleteMessage,
-  // Parent-controlled modal states
   viewingMessage,
   setViewingMessage,
   editingMessage,
@@ -23,7 +22,6 @@ const RecentMessages = ({
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch and sort messages by lastAccessedAt
   const fetchMessages = async () => {
     try {
       setLoading(true);
@@ -40,14 +38,12 @@ const RecentMessages = ({
     if (ownerId) fetchMessages();
   }, [ownerId, refreshTrigger]);
 
-  // Handle new messages from parent
   useEffect(() => {
     if (newMessage) {
       setMessages(prev => [newMessage, ...prev]);
     }
   }, [newMessage]);
 
-  // Apply search filtering
   useEffect(() => {
     if (!searchQuery) {
       setFilteredMessages(messages);
@@ -154,7 +150,6 @@ const RecentMessages = ({
         />
       )}
 
-      {/* Modals using parent-controlled state */}
       {viewingMessage && (
         <MessageViewModal
           message={viewingMessage}

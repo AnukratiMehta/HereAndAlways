@@ -33,7 +33,6 @@ const Profile = () => {
   });
   const [success, setSuccess] = useState(null);
 
-  // Simulate API delay
   const simulateAPICall = () => {
     return new Promise(resolve => setTimeout(resolve, 1500));
   };
@@ -167,9 +166,7 @@ const Profile = () => {
             )}
 
             <div className="max-w-4xl mx-auto">
-              {/* Enhanced Profile Header with Stats */}
               <div className="flex items-start gap-6 mb-8">
-                {/* Avatar Upload */}
                 <div className="relative group">
                   <div className="w-24 h-24 rounded-full bg-brandRose text-white flex items-center justify-center text-4xl font-bold overflow-hidden">
                     {avatarPreview ? (
@@ -214,9 +211,7 @@ const Profile = () => {
                   )}
                 </div>
 
-                {/* Profile Summary Cards */}
                 <div className="flex-1 grid grid-cols-2 gap-4">
-                  {/* Storage Card */}
                   <div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-purple-100 rounded-full text-purple-600">
@@ -240,7 +235,6 @@ const Profile = () => {
                     </p>
                   </div>
 
-                  {/* Membership Card */}
                   <div className="bg-white p-4 rounded-lg border border-lightGray shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-green-100 rounded-full text-green-600">
@@ -266,7 +260,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Personal Information Section */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-lightGray mb-6">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <FontAwesomeIcon icon={icons.user} className="text-brandRose" />
@@ -274,7 +267,6 @@ const Profile = () => {
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Name Field */}
                   <div>
                     <div className="flex justify-between items-start">
                       <div>
@@ -319,7 +311,6 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Email Field */}
                   <div>
                     <p className="text-sm text-gray-500">Email</p>
                     {editingField === 'email' ? (
@@ -360,7 +351,6 @@ const Profile = () => {
                     )}
                   </div>
 
-                  {/* Phone Field */}
                   <div>
                     <p className="text-sm text-gray-500">Phone</p>
                     {editingField === 'phone' ? (
@@ -401,7 +391,6 @@ const Profile = () => {
                     )}
                   </div>
 
-                  {/* Member Since */}
                   <div>
                     <p className="text-sm text-gray-500">Member Since</p>
                     <p className="font-medium">
@@ -411,7 +400,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Security Section */}
               <div className="bg-white rounded-xl shadow-sm p-6 border border-lightGray">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <FontAwesomeIcon icon={icons.lock} className="text-brandRose" />
@@ -419,7 +407,6 @@ const Profile = () => {
                 </h2>
 
                 <div className="space-y-6">
-                  {/* Password Change Section */}
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex justify-between items-center mb-3">
                       <div>
@@ -508,7 +495,6 @@ const Profile = () => {
                     )}
                   </div>
 
-                  {/* Two-Factor Authentication */}
                   <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                     <div>
                       <p className="font-medium">Two-Factor Authentication</p>

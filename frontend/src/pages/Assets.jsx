@@ -77,11 +77,9 @@ const Assets = () => {
     setShowModal(false);
   };
 
-  // Assets.jsx
 const getFilteredAssets = () => {
   let filtered = assets;
   
-  // Apply view filter
   switch (view) {
     case "messages":
       filtered = filtered.filter(a => a.linkedMessages?.length > 0);
@@ -95,7 +93,6 @@ const getFilteredAssets = () => {
       break;
   }
   
-  // Apply search filter
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
     filtered = filtered.filter(asset => 
